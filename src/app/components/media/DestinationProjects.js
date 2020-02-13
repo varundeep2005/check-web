@@ -1,5 +1,5 @@
 import React from 'react';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import styled from 'styled-components';

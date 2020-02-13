@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import { FormattedMessage, defineMessages, injectIntl, intlShape } from 'react-intl';
 import { Card, CardHeader, CardActions, CardText } from 'material-ui/Card';
 import EditIcon from '@material-ui/icons/Edit';

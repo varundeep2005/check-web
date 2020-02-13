@@ -1,4 +1,4 @@
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 
 class DeleteTeamUserMutation extends Relay.Mutation {
   getMutation() {

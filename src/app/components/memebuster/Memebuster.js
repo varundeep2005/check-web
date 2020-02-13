@@ -1,5 +1,5 @@
 import React from 'react';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import MemebusterComponent from './MemebusterComponent';
 import MediaRoute from '../../relay/MediaRoute';
 import RelayContainer from '../../relay/RelayContainer';

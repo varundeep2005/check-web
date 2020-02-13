@@ -1,4 +1,4 @@
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import optimisticProjectMedia from './optimisticProjectMedia';
 
 class UpdateProjectMediaMutation extends Relay.Mutation {

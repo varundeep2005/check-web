@@ -1,4 +1,4 @@
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import config from 'config'; // eslint-disable-line require-path-exists/exists
 import { SET_CONTEXT } from './redux/ActionTypes';
 // import { request } from './redux/actions';

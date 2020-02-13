@@ -1,5 +1,5 @@
 import React from 'react';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import AboutRoute from '../AboutRoute';
 import Footer from '../../components/Footer';
 

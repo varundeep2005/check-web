@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 import Popover from 'material-ui/Popover';

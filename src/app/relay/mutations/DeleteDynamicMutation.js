@@ -1,4 +1,4 @@
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 
 class DeleteDynamicMutation extends Relay.Mutation {
   getMutation() {

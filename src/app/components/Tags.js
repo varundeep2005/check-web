@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl, defineMessages } from 'react-intl';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import AutoComplete from 'material-ui/AutoComplete';
 import Chip from 'material-ui/Chip';
 import CreateTagMutation from '../relay/mutations/CreateTagMutation';

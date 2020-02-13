@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import PropTypes from 'prop-types';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { CardTitle, CardText, CardActions } from 'material-ui/Card';

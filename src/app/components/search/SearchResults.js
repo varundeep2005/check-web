@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import { defineMessages, injectIntl, intlShape, FormattedMessage } from 'react-intl';
 import config from 'config'; // eslint-disable-line require-path-exists/exists
 import sortby from 'lodash.sortby';

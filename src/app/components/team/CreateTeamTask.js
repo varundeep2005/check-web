@@ -1,6 +1,6 @@
 import React from 'react';
 import { defineMessages, injectIntl } from 'react-intl';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import CreateTaskMenu from '../task/CreateTaskMenu';
 import EditTaskDialog from '../task/EditTaskDialog';
 import CreateTeamTaskMutation from '../../relay/mutations/CreateTeamTaskMutation';

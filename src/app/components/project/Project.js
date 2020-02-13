@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import isEqual from 'lodash.isequal';
 import ProjectActions from './ProjectActions';
 import ProjectRoute from '../../relay/ProjectRoute';

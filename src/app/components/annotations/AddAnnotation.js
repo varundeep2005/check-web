@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import MdInsertPhoto from 'react-icons/lib/md/insert-photo';

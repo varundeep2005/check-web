@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { injectIntl, defineMessages } from 'react-intl';
 import PropTypes from 'prop-types';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import styled from 'styled-components';
 import ChatBubble from 'material-ui/svg-icons/communication/chat-bubble';
 import Tooltip from '@material-ui/core/Tooltip';

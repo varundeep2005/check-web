@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import PropTypes from 'prop-types';
 import { FormattedHTMLMessage, injectIntl } from 'react-intl';
 import { Link } from 'react-router';

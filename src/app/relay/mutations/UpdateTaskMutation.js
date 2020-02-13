@@ -1,4 +1,4 @@
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 
 class UpdateTaskMutation extends Relay.Mutation {
   getMutation() {

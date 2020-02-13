@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import CreateStatusMutation from '../../relay/mutations/CreateStatusMutation';
 import UpdateStatusMutation from '../../relay/mutations/UpdateStatusMutation';
 import MediaStatusCommon from './MediaStatusCommon';

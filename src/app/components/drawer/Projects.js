@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import { Link } from 'react-router';
 import Button from '@material-ui/core/Button';
 import MenuItem from 'material-ui/MenuItem';

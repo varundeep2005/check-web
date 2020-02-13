@@ -1,5 +1,5 @@
 import React from 'react';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import { injectIntl } from 'react-intl';
 import MeRoute from '../../relay/MeRoute';
 import userFragment from '../../relay/userFragment';

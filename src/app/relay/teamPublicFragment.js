@@ -1,4 +1,4 @@
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 
 const teamPublicFragment = Relay.QL`
   fragment on PublicTeam {

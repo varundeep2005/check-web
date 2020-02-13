@@ -1,5 +1,5 @@
 import React from 'react';
-import Relay from 'react-relay/classic';
+import Relay from 'react-relay/compat';
 import Checkbox from 'material-ui/Checkbox';
 import { FormattedMessage } from 'react-intl';
 import FlatButton from 'material-ui/FlatButton';
