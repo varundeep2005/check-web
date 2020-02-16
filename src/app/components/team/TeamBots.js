@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import { FormattedMessage, defineMessages, injectIntl, intlShape } from 'react-intl';
 import { Card, CardText, CardActions } from 'material-ui/Card';
 import Divider from 'material-ui/Divider';

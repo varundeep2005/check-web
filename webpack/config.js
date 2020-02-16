@@ -36,7 +36,7 @@ export default {
     new CompressionPlugin({
       asset: '[path].gz[query]',
       algorithm: 'gzip',
-      test: /\.js$|\.css$|\.html$/,
+      test: /\.js$|\.css$|\.html$|\.mjs$/,
       threshold: 5000,
       minRatio: 0.8
     }),
@@ -58,29 +58,40 @@ export default {
   ],
   resolve: {
     alias: {app: path.join(__dirname, '../src/app')},
-    extensions: ['.js']
+    extensions: ['.js', '.mjs']
   },
   module: {
-    loaders: [{
-      test: /\.js$/,
-      loader: 'babel-loader',
-      exclude: /node_modules/,
-      query: { presets: ['es2015', 'stage-0', 'react'], plugins: [path.join(__dirname, './babelRelayPlugin.js')]}
-    }, {
-      enforce: 'pre',
-      test: /\.js$/,
-      loader: 'eslint-loader',
-      exclude: /node_modules/,
-      include: [
-        path.join(__dirname, '../src/app')
-      ]
-    }, {
-      test: /\.css?$/,
-      use: ['style-loader', 'raw-loader']
-    }, {
-      test: /\.json$/,
-      loader: 'ignore-loader'
-    }]
+    loaders: [
+      {
+        test: /Modern\.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules/,
+        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [["relay", { "compat": true, "schema": "../relay.json" }]]},
+      },
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules|Modern\.js/,
+        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [path.join(__dirname, './babelRelayPlugin.js')] },
+      },
+      {
+        enforce: 'pre',
+        test: /js$/,
+        loader: 'eslint-loader',
+        exclude: /node_modules/,
+        include: [
+          path.join(__dirname, '../src/app')
+        ]
+      },
+      {
+        test: /\.css?$/,
+        use: ['style-loader', 'raw-loader']
+      },
+      {
+        test: /\.json$/,
+        loader: 'ignore-loader'
+      },
+    ]
   },
   externals: {
     'config': 'config',

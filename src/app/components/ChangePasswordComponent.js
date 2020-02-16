@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { defineMessages, injectIntl } from 'react-intl';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import ChangePasswordMutation from '../relay/mutations/ChangePasswordMutation';

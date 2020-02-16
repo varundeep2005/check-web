@@ -1,12 +1,14 @@
 import React from 'react';
-import Relay from 'react-relay/compat';
+import {
+  QueryRenderer,
+  graphql,
+} from 'react-relay';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import styled from 'styled-components';
-import { injectIntl, intlShape, defineMessages } from 'react-intl';
-import MeRoute from '../../relay/MeRoute';
-import RelayContainer from '../../relay/RelayContainer';
+import { injectIntl, defineMessages, intlShape } from 'react-intl';
 import { units } from '../../styles/js/shared';
+import environment from '../../CheckNetworkLayerModern';
 
 const messages = defineMessages({
   choose: {
@@ -29,7 +31,8 @@ class DestinationProjectsComponent extends React.Component {
   }
 
   componentWillUpdate(nextProps) {
-    if (nextProps.user.team_users.length > this.props.user.team_users.length || !this.props.user) {
+    if (nextProps.user.team_users.length > this.props.user.team_users.length ||
+      !this.props.user) {
       this.props.onLoad();
     }
   }
@@ -105,53 +108,61 @@ class DestinationProjectsComponent extends React.Component {
   }
 }
 
-const DestinationProjectsContainer = Relay.createContainer(DestinationProjectsComponent, {
-  fragments: {
-    user: () => Relay.QL`
-      fragment on User {
-        id
-        team_users(first: 10000) {
-          edges {
-            node {
-              id
-              status
-              team {
-                id
-                dbid
-                slug
-                name
-                projects(first: 10000) {
-                  edges {
-                    node {
-                      id
-                      dbid
-                      title
-                      search_id
-                      medias_count
+const DestinationProjects = (parentProps) => {
+  const query = (
+    <QueryRenderer
+      environment={environment}
+      query={graphql`
+        query DestinationProjectsModernQuery {
+          me {
+            id
+            team_users(first: 10000) {
+              edges {
+                node {
+                  id
+                  status
+                  team {
+                    id
+                    dbid
+                    slug
+                    name
+                    projects(first: 10000) {
+                      edges {
+                        node {
+                          id
+                          dbid
+                          title
+                          search_id
+                          medias_count
+                        }
+                      }
                     }
                   }
                 }
               }
             }
-          }
+          }  
         }
-      }
-    `,
-  },
-});
-
-const DestinationProjects = (props) => {
-  const route = new MeRoute();
-  return (
-    <RelayContainer
-      Component={DestinationProjectsContainer}
-      route={route}
-      renderFetched={data => <DestinationProjectsContainer {...props} {...data} />}
+      `}
+      render={({ error, props }) => {
+        if (error) {
+          console.log('Error');
+          console.log(error.source);
+          return null;
+        }
+        if (props && props.me) {
+          return (
+            <DestinationProjectsComponent user={props.me} {...parentProps} />
+          );
+        }
+        return null;
+      }}
     />
   );
+  return query;
 };
 
-DestinationProjects.propTypes = {
+DestinationProjectsComponent.propTypes = {
   // https://github.com/yannickcr/eslint-plugin-react/issues/1389
   // eslint-disable-next-line react/no-typos
   intl: intlShape.isRequired,

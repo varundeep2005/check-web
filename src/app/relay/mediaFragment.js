@@ -1,4 +1,4 @@
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 
 const mediaFragment = Relay.QL`
   fragment on ProjectMedia {

@@ -1,6 +1,6 @@
 import React from 'react';
 import Dialog from 'material-ui/Dialog';
-import DestinationProjects from './DestinationProjects';
+import DestinationProjects from './DestinationProjectsModern';
 
 class MoveDialog extends React.Component {
   handleDestinationProjectsLoaded() {

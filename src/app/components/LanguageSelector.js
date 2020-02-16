@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import AboutRoute from '../relay/AboutRoute';
 import { safelyParseJSON } from '../helpers';
 

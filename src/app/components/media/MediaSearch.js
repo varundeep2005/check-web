@@ -1,7 +1,7 @@
 import React from 'react';
 import { defineMessages, injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import styled from 'styled-components';
 import NextIcon from 'material-ui/svg-icons/hardware/keyboard-arrow-right';
 import PrevIcon from 'material-ui/svg-icons/hardware/keyboard-arrow-left';

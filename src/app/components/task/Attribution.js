@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';

@@ -1,4 +1,4 @@
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 
 class CreateTeamMutation extends Relay.Mutation {
   getMutation() {

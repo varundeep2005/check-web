@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import PropTypes from 'prop-types';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 import Favicon from 'react-favicon';

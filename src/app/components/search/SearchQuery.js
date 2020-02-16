@@ -1,6 +1,6 @@
 import React from 'react';
 import { injectIntl } from 'react-intl';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import isEqual from 'lodash.isequal';
 import SearchQueryComponent from './SearchQueryComponent';
 import TeamNodeRoute from '../../relay/TeamNodeRoute';

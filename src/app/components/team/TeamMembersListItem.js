@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, intlShape } from 'react-intl';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import { Link } from 'react-router';
 import { ListItem } from 'material-ui/List';
 import MdClear from 'react-icons/lib/md/clear';

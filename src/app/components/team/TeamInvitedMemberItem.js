@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import { ListItem } from 'material-ui/List';
 import RaisedButton from 'material-ui/RaisedButton';
 import '../../styles/css/tooltip.css';

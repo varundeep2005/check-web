@@ -12,10 +12,16 @@ export default {
         loader: 'istanbul-instrumenter-loader'
       },
       {
-        test: /\.js$/,
+        test: /Modern\.js$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
-        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [path.join(__dirname, './babelRelayPlugin.js')]}
+        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [["relay", { "compat": true, "schema": "../relay.json" }]]},
+      },
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules|Modern\.js/,
+        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [path.join(__dirname, './babelRelayPlugin.js')] },
       },
       {
         test: /\.css?$/,

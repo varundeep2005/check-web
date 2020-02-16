@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl, intlShape } from 'react-intl';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import rtlDetect from 'rtl-detect';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';

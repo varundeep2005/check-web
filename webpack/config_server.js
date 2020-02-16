@@ -23,15 +23,24 @@ module.exports = {
     libraryTarget: 'commonjs2',
   },
   module: {
-    loaders: [{
-      test: /\.js$/,
-      loader: 'babel-loader',
-      exclude: /node_modules/,
-      query: { presets: ['es2015', 'stage-0', 'react'], plugins: [path.join(__dirname, './babelRelayPlugin.js')] },
-    }, {
-      test: /\.css?$/,
-      loaders: ['style-loader', 'raw-loader'],
-    }],
+    loaders: [
+      {
+        test: /Modern.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules/,
+        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [["relay", { "compat": true, "schema": "../relay.json" }]]},
+      },
+      {
+        test: /\.js$/,
+        loader: 'babel-loader',
+        exclude: /node_modules|Modern\.js/,
+        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [path.join(__dirname, './babelRelayPlugin.js')] },
+      },
+      {
+        test: /\.css?$/,
+        loaders: ['style-loader', 'raw-loader'],
+      }
+    ],
   },
 
   externals,

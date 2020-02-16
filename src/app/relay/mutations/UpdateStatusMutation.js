@@ -1,4 +1,4 @@
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import { getStatus } from '../../helpers';
 
 class UpdateStatusMutation extends Relay.Mutation {

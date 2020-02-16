@@ -23,3 +23,5 @@ coverage
 dist
 .idea/
 basic-auth.sh
+RelayFindGraphQLTags-*
+__generated__

@@ -1,5 +1,5 @@
 import React from 'react';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import AutoComplete from 'material-ui/AutoComplete';
 import TeamRoute from '../../relay/TeamRoute';
 import RelayContainer from '../../relay/RelayContainer';

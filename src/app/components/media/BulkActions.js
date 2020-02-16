@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Relay from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import Button from '@material-ui/core/Button';
 import { injectIntl, intlShape, defineMessages, FormattedMessage } from 'react-intl';
 import IconDelete from '@material-ui/icons/Delete';
