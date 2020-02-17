@@ -55,6 +55,7 @@ before_install:
 - bundle exec thin -p 3000 -e test -t 60 --threadpool-size=60 --threaded start >/dev/null &
 - cd -
 - export RAILS_ENV=development
+- cp check-api/public/relay.json .
 # pender
 - git clone https://github.com/meedan/pender.git
 - d=configurator/$APP/travis/pender/; for f in $(find $d -type f); do cp "$f" "pender/${f/$d/}"; done
