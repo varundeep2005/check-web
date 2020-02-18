@@ -4,7 +4,7 @@ import {
   RecordSource,
   Store,
 } from 'relay-runtime';
-import config from 'config';
+import config from 'config'; // eslint-disable-line require-path-exists/exists
 
 function getTeamSlug() {
   const slug = window.location.pathname.match(/^\/([^/]+).*/);
