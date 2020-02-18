@@ -25,3 +25,4 @@ dist
 basic-auth.sh
 RelayFindGraphQLTags-*
 __generated__
+FindGraphQLTags*

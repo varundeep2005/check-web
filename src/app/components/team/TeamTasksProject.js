@@ -1,7 +1,7 @@
 import React from 'react';
 import Card from '@material-ui/core/Card';
 import List from '@material-ui/core/List';
-import TeamTasksListItem from './TeamTasksListItem';
+import TeamTasksListItem from './TeamTasksListItemModern';
 import { units } from '../../styles/js/shared';
 
 const TeamTasksProject = props => props.project.teamTasks.length ? (

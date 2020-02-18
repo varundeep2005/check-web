@@ -1,5 +1,5 @@
 import React from 'react';
-import Relay from 'react-relay/classic';
+import { commitMutation, graphql } from 'react-relay';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -18,9 +18,8 @@ import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import ConfirmDialog from '../layout/ConfirmDialog';
 import EditTaskDialog from '../task/EditTaskDialog';
 import { RequiredIndicator } from '../task/Task';
-import UpdateTeamTaskMutation from '../../relay/mutations/UpdateTeamTaskMutation';
-import DeleteTeamTaskMutation from '../../relay/mutations/DeleteTeamTaskMutation';
 import { getErrorMessage } from '../../helpers';
+import environment from '../../CheckNetworkLayerModern';
 
 const messages = defineMessages({
   editError: {
@@ -89,12 +88,58 @@ class TeamTasksListItem extends React.Component {
   handleDestroy = () => {
     const { task } = this.props;
 
-    Relay.Store.commitUpdate(
-      new DeleteTeamTaskMutation({
-        teamId: this.props.team.id,
-        id: task.id,
-      }),
-      { onFailure: this.fail },
+    const mutation = graphql`
+      mutation TeamTasksListItemModernDeleteMutation(
+        $input: DestroyTeamTaskInput!
+      ) {
+        destroyTeamTask(input: $input) {
+          deletedId
+          team {
+            id
+            team_tasks(first: 10000) {
+              edges {
+                node {
+                  id
+                  dbid
+                  label
+                  description
+                  options
+                  type
+                  project_ids
+                  required
+                  json_schema
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    commitMutation(
+      environment,
+      {
+        mutation,
+        variables: {
+          input: {
+            id: task.id,
+          },
+        },
+        configs: [
+          {
+            type: 'NODE_DELETE',
+            deletedIDFieldName: 'deletedId',
+          },
+          {
+            type: 'RANGE_DELETE',
+            parentID: this.props.team.id,
+            pathToConnection: ['team', 'team_tasks'],
+            connectionKeys: [{ key: 'RemoveTeamTask_teamTasks' }],
+            deletedIDFieldName: 'deletedId',
+          },
+        ],
+        onError: err => this.fail(err),
+      },
     );
   };
 
@@ -109,28 +154,57 @@ class TeamTasksListItem extends React.Component {
   handleSubmitTask = () => {
     const task = this.state.editedTask;
     const { id, type } = this.props.task;
-    const teamTask = {
-      id,
-      task_type: type,
-      label: task.label,
-      description: task.description,
-      required: Boolean(task.required),
-      json_options: task.jsonoptions,
-      json_project_ids: task.json_project_ids,
-      json_schema: task.jsonschema,
+    const variables = {
+      input: {
+        id,
+        task_type: type,
+        label: task.label,
+        description: task.description,
+        required: Boolean(task.required),
+        json_options: task.jsonoptions,
+        json_project_ids: task.json_project_ids,
+        json_schema: task.jsonschema,
+      },
     };
 
-    const onSuccess = () => {
-      this.handleCloseEdit();
-      this.setState({ editedTask: null });
-    };
+    const mutation = graphql`
+      mutation TeamTasksListItemModernUpdateMutation(
+        $input: UpdateTeamTaskInput!
+      ) {
+        updateTeamTask(input: $input) {
+          team {
+            id
+            team_tasks(first: 10000) {
+              edges {
+                node {
+                  id
+                  dbid
+                  label
+                  description
+                  options
+                  type
+                  project_ids
+                  required
+                  json_schema
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
 
-    Relay.Store.commitUpdate(
-      new UpdateTeamTaskMutation({
-        team: this.props.team,
-        teamTask,
-      }),
-      { onSuccess, onFailure: this.fail },
+    commitMutation(
+      environment,
+      {
+        mutation,
+        variables,
+        onError: err => this.fail(err),
+        onCompleted: () => {
+          this.handleCloseEdit();
+          this.setState({ editedTask: null });
+        },
+      },
     );
   };
 

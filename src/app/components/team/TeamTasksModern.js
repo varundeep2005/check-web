@@ -1,5 +1,8 @@
 import React from 'react';
-import Relay from 'react-relay/classic';
+import {
+  QueryRenderer,
+  graphql,
+} from 'react-relay';
 import { FormattedMessage } from 'react-intl';
 import intersection from 'lodash.intersection';
 import TeamTasksProject from './TeamTasksProject';
@@ -9,8 +12,8 @@ import TaskTypeSelector from '../task/TaskTypeSelector';
 import BlankState from '../layout/BlankState';
 import CardHeaderOutside from '../layout/CardHeaderOutside';
 import FilterPopup from '../layout/FilterPopup';
-import TeamRoute from '../../relay/TeamRoute';
 import { ContentColumn, units } from '../../styles/js/shared';
+import environment from '../../CheckNetworkLayerModern';
 
 class TeamTasksComponent extends React.Component {
   state = {
@@ -170,51 +173,62 @@ class TeamTasksComponent extends React.Component {
   }
 }
 
-const TeamTasksContainer = Relay.createContainer(TeamTasksComponent, {
-  fragments: {
-    team: () => Relay.QL`
-      fragment on Team {
-        id
-        dbid
-        team_tasks(first: 10000) {
-          edges {
-            node {
-              id
-              dbid
-              label
-              description
-              options
-              type
-              project_ids
-              required
-              json_schema
+const TeamTasks = (parentProps) => {
+  const params = { propTeam: parentProps.team, direction: parentProps.direction };
+  const query = (
+    <QueryRenderer
+      environment={environment}
+      query={graphql`
+        query TeamTasksModernQuery($slug: String) {
+          team(slug: $slug) {
+            id
+            dbid
+            team_tasks(first: 10000) {
+              edges {
+                node {
+                  id
+                  dbid
+                  label
+                  description
+                  options
+                  type
+                  project_ids
+                  required
+                  json_schema
+                }
+              }
+            }
+            projects(first: 10000) {
+              edges {
+                node {
+                  title,
+                  dbid,
+                  id,
+                }
+              }
             }
           }
         }
-        projects(first: 10000) {
-          edges {
-            node {
-              title,
-              dbid,
-              id,
-            }
-          }
+      `}
+      variables={{
+        slug: parentProps.team.slug,
+      }}
+      render={({ error, props }) => {
+        if (error) {
+          console.log('Error');
+          console.log(error.source);
+          return null;
         }
-      }
-    `,
-  },
-});
-
-const TeamTasks = (props) => {
-  const route = new TeamRoute({ teamSlug: props.team.slug });
-  const params = { propTeam: props.team, direction: props.direction };
-  return (
-    <Relay.RootContainer
-      Component={TeamTasksContainer}
-      route={route}
-      renderFetched={data => <TeamTasksContainer {...data} {...params} />}
+        if (props && props.team) {
+          return (
+            <TeamTasksComponent {...parentProps} {...params} {...props} />
+          );
+        }
+        return null;
+      }}
     />
   );
+  return query;
 };
 
 export default TeamTasks;

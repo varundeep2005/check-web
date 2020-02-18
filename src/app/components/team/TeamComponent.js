@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import TeamBots from './TeamBots';
 import TeamRules from './TeamRules';
 import TeamTags from './TeamTags';
-import TeamTasks from './TeamTasks';
+import TeamTasks from './TeamTasksModern';
 import TeamEmbed from './TeamEmbed';
 import TeamInfo from './TeamInfo';
 import TeamInfoEdit from './TeamInfoEdit';

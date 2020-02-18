@@ -5,7 +5,7 @@
       "plugins": [["react-intl", { "messagesDir": "./localization/react-intl/" }]]
     },
     "development": {
-      "plugins": [["./webpack/babelRelayPlugin.js", { "compat": true }], ["relay", { "compat": true, "schema": "relay.json" }], ["react-intl", { "messagesDir": "./localization/react-intl/" }], [
+      "plugins": [["./webpack/babelRelayPlugin.js", { "compat": true }], ["relay", { "compat": true, "schema": "./relay.json" }], ["react-intl", { "messagesDir": "./localization/react-intl/" }], [
         "react-transform", {
           "transforms": [{
             "transform": "react-transform-hmr",

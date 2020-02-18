@@ -66,7 +66,7 @@ export default {
         test: /Modern\.js$/,
         loader: 'babel-loader',
         exclude: /node_modules/,
-        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [["relay", { "compat": true, "schema": "../relay.json" }]]},
+        query: { presets: ['es2015', 'stage-0', 'react'], plugins: [["relay", { "compat": true, "schema": "./relay.json" }]]},
       },
       {
         test: /\.js$/,
