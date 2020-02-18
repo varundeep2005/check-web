@@ -56,6 +56,7 @@ before_install:
 - cd -
 - export RAILS_ENV=development
 - cp check-api/public/relay.json .
+- cp check-api/public/relay.json /home/travis/build/meedan/relay.json
 # pender
 - git clone https://github.com/meedan/pender.git
 - d=configurator/$APP/travis/pender/; for f in $(find $d -type f); do cp "$f" "pender/${f/$d/}"; done

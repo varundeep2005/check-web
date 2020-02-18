@@ -2,7 +2,7 @@ import React from 'react';
 import { IntlProvider } from 'react-intl';
 import { mountWithIntl } from './helpers/intl-test';
 import { expect } from 'chai';
-import { TeamTasksComponent } from '../../src/app/components/team/TeamTasks';
+import { TeamTasksComponent } from '../../src/app/components/team/TeamTasksModern';
 
 const team = {
   team_tasks: {
