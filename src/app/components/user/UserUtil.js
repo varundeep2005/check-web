@@ -27,7 +27,10 @@ const messages = defineMessages({
 const UserUtil = {
   myRole: (currentUser, teamSlug) => {
     if (!currentUser) return null;
-    const teams = safelyParseJSON(currentUser.teams);
+    let teams = safelyParseJSON(currentUser.teams);
+    if (!teams && currentUser.teams && currentUser.teams.edges) {
+      teams = currentUser.teams.edges.map(team => team.node);
+    }
     return teams[teamSlug] && teams[teamSlug].role;
   },
 

@@ -7,7 +7,6 @@ import { List, ListItem } from 'material-ui/List';
 import styled from 'styled-components';
 import CreateProject from '../project/CreateProject';
 import ProjectAssignment from '../project/ProjectAssignment';
-import CheckContext from '../../CheckContext';
 import Can from '../Can';
 import UserUtil from '../user/UserUtil';
 import LoadMore from '../layout/LoadMore';
@@ -26,10 +25,6 @@ class TeamProjects extends React.Component {
     browserHistory.push(`/${this.props.team.slug}/project/${pdbid}`);
   }
 
-  currentContext() {
-    return new CheckContext(this).getContextStore();
-  }
-
   render() {
     const StyledCardHeader = styled(CardHeader)`
       span {
@@ -38,7 +33,7 @@ class TeamProjects extends React.Component {
     `;
 
     const { team } = this.props;
-    const { currentUser } = this.currentContext();
+    const currentUser = this.context.user;
 
     return (
       <div>
@@ -110,6 +105,8 @@ class TeamProjects extends React.Component {
 
 TeamProjects.contextTypes = {
   store: PropTypes.object,
+  user: PropTypes.object,
+  teamSlug: PropTypes.string,
 };
 
 export default injectIntl(TeamProjects);

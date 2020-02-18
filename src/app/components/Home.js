@@ -128,6 +128,8 @@ class HomeComponent extends Component {
       setMessage: (message) => {
         this.setState({ message });
       },
+      user: this.props.user,
+      teamSlug: this.props.params.team,
     };
   }
 
@@ -334,6 +336,8 @@ HomeComponent.contextTypes = {
 
 HomeComponent.childContextTypes = {
   setMessage: PropTypes.func,
+  user: PropTypes.object,
+  teamSlug: PropTypes.string,
 };
 
 const HomeContainer = Relay.createContainer(injectIntl(HomeComponent), {
@@ -356,6 +360,16 @@ const HomeContainer = Relay.createContainer(injectIntl(HomeComponent), {
         source_id
         team_ids
         user_teams
+        teams(first: 10000) {
+          edges {
+            node {
+              id
+              dbid
+              name
+              slug
+            }
+          }
+        }
         current_project {
           dbid
           id
