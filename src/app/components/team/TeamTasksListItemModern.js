@@ -134,7 +134,7 @@ class TeamTasksListItem extends React.Component {
             type: 'RANGE_DELETE',
             parentID: this.props.team.id,
             pathToConnection: ['team', 'team_tasks'],
-            connectionKeys: [{ key: 'RemoveTeamTask_teamTasks' }],
+            connectionKeys: [{ key: 'Team_team_tasks' }],
             deletedIDFieldName: 'deletedId',
           },
         ],

@@ -6,7 +6,7 @@ import {
 import { FormattedMessage } from 'react-intl';
 import intersection from 'lodash.intersection';
 import TeamTasksProject from './TeamTasksProject';
-import CreateTeamTask from './CreateTeamTask';
+import CreateTeamTask from './CreateTeamTaskModern';
 import ProjectSelector from '../project/ProjectSelector';
 import TaskTypeSelector from '../task/TaskTypeSelector';
 import BlankState from '../layout/BlankState';
@@ -113,7 +113,7 @@ class TeamTasksComponent extends React.Component {
     const filteredTasks = this.filterTeamTasks(team_tasks.edges);
     const filterLabel = this.renderFilterLabel(filteredTasks, team_tasks.edges);
 
-    const getTasksForProjectId = projectId => filteredTasks.filter(task =>
+    const getTasksForProjectId = projectId => filteredTasks.filter(t => !!t.node).filter(task =>
       task.node.project_ids.length === 0 ||
       task.node.project_ids.indexOf(projectId) > -1 ||
       projectId === null).map(task => task.node);
