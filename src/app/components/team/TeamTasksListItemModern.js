@@ -117,10 +117,20 @@ class TeamTasksListItem extends React.Component {
       }
     `;
 
+    const optimisticResponse = {
+      destroyTeamTask: {
+        deletedId: task.id,
+        team: {
+          id: this.props.team.id,
+        },
+      },
+    };
+
     commitMutation(
       environment,
       {
         mutation,
+        optimisticResponse,
         variables: {
           input: {
             id: task.id,

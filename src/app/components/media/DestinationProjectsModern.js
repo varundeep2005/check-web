@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {
   QueryRenderer,
   graphql,
@@ -17,6 +18,8 @@ const messages = defineMessages({
   },
 });
 
+/* eslint react/no-multi-comp: 0 */
+
 class DestinationProjectsComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -28,12 +31,50 @@ class DestinationProjectsComponent extends React.Component {
 
   componentDidMount() {
     this.props.onLoad();
+    this.subscribe();
   }
 
   componentWillUpdate(nextProps) {
     if (nextProps.user.team_users.length > this.props.user.team_users.length ||
       !this.props.user) {
       this.props.onLoad();
+    }
+    this.unsubscribe();
+  }
+
+  componentDidUpdate() {
+    this.subscribe();
+  }
+
+  componentWillUnmount() {
+    this.unsubscribe();
+  }
+
+  subscribe() {
+    const { pusher } = this.context;
+    if (pusher) {
+      this.props.user.team_users.edges.forEach((teamUser) => {
+        const { team } = teamUser.node;
+        pusher.subscribe(team.pusher_channel).bind('project_updated', `DestinationProjects${team.dbid}`, (data, run) => {
+          if (run) {
+            this.props.refetchData();
+            return true;
+          }
+          return {
+            id: `destination-projects-team-${team.dbid}`,
+            callback: this.props.refetchData,
+          };
+        });
+      });
+    }
+  }
+
+  unsubscribe() {
+    const { pusher } = this.context;
+    if (pusher) {
+      this.props.user.team_users.edges.forEach((teamUser) => {
+        pusher.unsubscribe(teamUser.node.team.pusher_channel, 'project_updated', 'DestinationProjects');
+      });
     }
   }
 
@@ -108,64 +149,89 @@ class DestinationProjectsComponent extends React.Component {
   }
 }
 
-const DestinationProjects = (parentProps) => {
-  const query = (
-    <QueryRenderer
-      environment={environment}
-      query={graphql`
-        query DestinationProjectsModernQuery {
-          me {
-            id
-            team_users(first: 10000) {
-              edges {
-                node {
-                  id
-                  status
-                  team {
+class DestinationProjects extends React.Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      parentProps: Object.assign({}, props),
+      refetch: 0,
+    };
+  }
+
+  refetchData() {
+    this.setState({ refetch: this.state.refetch + 1 });
+  }
+
+  render() {
+    const query = (
+      <QueryRenderer
+        environment={environment}
+        variables={{ refetch: this.state.refetch }}
+        query={graphql`
+          query DestinationProjectsModernQuery {
+            me {
+              id
+              team_users(first: 10000) {
+                edges {
+                  node {
                     id
-                    dbid
-                    slug
-                    name
-                    projects(first: 10000) {
-                      edges {
-                        node {
-                          id
-                          dbid
-                          title
-                          search_id
-                          medias_count
+                    status
+                    team {
+                      id
+                      dbid
+                      slug
+                      name
+                      pusher_channel
+                      projects(first: 10000) {
+                        edges {
+                          node {
+                            id
+                            dbid
+                            title
+                            search_id
+                            medias_count
+                          }
                         }
                       }
                     }
                   }
                 }
               }
-            }
-          }  
-        }
-      `}
-      render={({ error, props }) => {
-        if (error) {
-          console.log('Error');
-          console.log(error.source);
+            }  
+          }
+        `}
+        render={({ error, props }) => {
+          if (error) {
+            console.log('Error');
+            console.log(error.source);
+            return null;
+          }
+          if (props && props.me) {
+            return (
+              <DestinationProjectsComponent
+                user={props.me}
+                refetchData={this.refetchData.bind(this)}
+                {...this.state.parentProps}
+              />
+            );
+          }
           return null;
-        }
-        if (props && props.me) {
-          return (
-            <DestinationProjectsComponent user={props.me} {...parentProps} />
-          );
-        }
-        return null;
-      }}
-    />
-  );
-  return query;
-};
+        }}
+      />
+    );
+    return query;
+  }
+}
 
 DestinationProjectsComponent.propTypes = {
   // https://github.com/yannickcr/eslint-plugin-react/issues/1389
   // eslint-disable-next-line react/no-typos
   intl: intlShape.isRequired,
+};
+
+DestinationProjectsComponent.contextTypes = {
+  pusher: PropTypes.object,
 };
 
 export default injectIntl(DestinationProjects);

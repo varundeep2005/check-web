@@ -131,6 +131,7 @@ class HomeComponent extends Component {
       },
       user: this.props.user,
       teamSlug: this.props.params.team,
+      pusher: this.getContext().pusher,
     };
   }
 
@@ -343,6 +344,7 @@ HomeComponent.childContextTypes = {
   setMessage: PropTypes.func,
   user: PropTypes.object,
   teamSlug: PropTypes.string,
+  pusher: PropTypes.object,
 };
 
 const HomeContainer = Relay.createContainer(injectIntl(HomeComponent), {
