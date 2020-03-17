@@ -61,6 +61,16 @@ shared_examples 'smoke' do
     displayed_name = me_pg.title
     expect(displayed_name == 'User With Email').to be(true)
   end
+
+  it "should invite a user by e-mail to join team", bin6: true do
+    team = "team#{Time.now.to_i}"
+    api_create_team(team: team)
+    @driver.navigate.to @config['self_url']+'/'+team
+    wait_for_selector(".team-members__invite-button").click
+    wait_for_selector(".invite-member-email-input input").send_keys("user-email@email.com")
+    wait_for_selector(".team-invite-members__dialog-submit-button").click
+    wait_for_selector_none(".invite-member-email-input")
+  end
 # Login section end
 
 #security section start
@@ -99,7 +109,7 @@ shared_examples 'smoke' do
     wait_for_selector("//h3[contains(text(), 'How')]", :xpath)
     expect(@driver.page_source.include?("How To Check An")).to be(true)
 
-    #from Instagram 
+    #from Instagram
     expect(@driver.page_source.include?('#wEDnesday')).to be(false)
     create_media("https://www.instagram.com/p/BRYob0dA1SC/")
     wait_for_selector_list_size('.media__heading',4)
@@ -107,13 +117,25 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?('#wEDnesday')).to be(true)
   end
 
-  it "should register and create a claim", bin4: true do
+  it "should register, create a claim and assign it", bin4: true do
     page = LoginPage.new(config: @config, driver: @driver).load
     page = page.register_and_login_with_email(email: "sysops+#{Time.now.to_i}#{rand(1000)}@meedan.com", password: @password)
     page
       .create_team
       .create_project
       .create_media(input: 'Claim')
+    expect(@driver.page_source.include?('Assigments updated successfully!')).to be(false)
+    wait_for_selector('.media-actions__icon').click
+    wait_for_selector(".media-actions__assign").click
+    wait_for_selector(".Select-input input").send_keys("user")
+    @driver.action.send_keys(:enter).perform
+    wait_for_selector("//span[contains(text(), 'Done')]", :xpath).click
+    wait_for_selector_none("//span[contains(text(), 'Done')]", :xpath)
+    wait_for_selector(".message")
+    expect(@driver.page_source.include?('Assignments updated successfully!')).to be(true)
+    wait_for_selector(".media-tab__activity").click
+    wait_for_selector(".annotation__timestamp")
+    expect(@driver.page_source.include?('Item assigned to')).to be(true)
   end
 
   it "should lock and unlock status", bin2: true do
@@ -206,7 +228,7 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?('New teamwide task-EDITED')).to be(true)
     expect(@driver.find_element(:css, '.task__required').text == '*').to be(true)
 
-    # Delete tag
+    # Delete task
     wait_for_selector('.team-tasks__menu-item-button').click
     wait_for_selector('.team-tasks__delete-button').click
     wait_for_selector('#confirm-dialog__checkbox').click
@@ -283,7 +305,7 @@ shared_examples 'smoke' do
     delete_task('When was it')
   end
 
-  it "should add a comment to a task", bin5: true do
+  it "should assign, answer with a link and add a comment to a task", bin5: true do
     api_create_team_project_and_claim_and_redirect_to_media_page
     wait_for_selector('.create-task__add-button')
 
@@ -299,6 +321,30 @@ shared_examples 'smoke' do
     wait_for_selector_list_size(".annotations__list-item", 2)
 
     wait_for_selector(".media__annotations-column > div > div > button").click
+
+    #assign the task
+    expect(@driver.page_source.include?("Assigned to")).to be (false)
+    wait_for_selector('.task-type__free_text > div > div > button > div > svg').click
+    wait_for_selector(".task-actions__icon").click
+    wait_for_selector(".task-actions__assign").click
+    wait_for_selector(".Select-input input").send_keys("user")
+    @driver.action.send_keys(:enter).perform
+    wait_for_selector(".attribution-dialog__save").click
+    wait_for_selector(".task__assigned")
+    expect(@driver.page_source.include?("Assigned to")).to be (true)
+
+    # # insert photo
+    # wait_for_selector(".add-annotation__insert-photo").click
+    # wait_for_selector(".without-file")
+    # input = wait_for_selector('input[type=file]')
+    # input.send_keys(File.join(File.dirname(__FILE__), 'test.png'))
+    # wait_for_selector('button[type=submit]').click
+
+    #Answer with link
+    wait_for_selector("textarea[name=response]").send_keys("https://www.youtube.com/watch?v=ykLgjhBnik0")
+    @driver.action.send_keys(:enter).perform
+    expect(@driver.find_elements(:css, ".task__response").size).to eq 1
+
     # Add comment to task
     expect(@driver.page_source.include?('This is a comment under a task')).to be(false)
     wait_for_selector('.task__log-top span').click
@@ -306,7 +352,7 @@ shared_examples 'smoke' do
     fill_field('#cmd-input', 'This is a comment under a task')
     @driver.action.send_keys(:enter).perform
     wait_for_selector(".media__annotations-column > div > div > button + button + button + button").click
-    wait_for_selector(".annotation--verification_status")
+    wait_for_selector(".annotation__author-name")
     expect(@driver.page_source.include?('This is a comment under a task')).to be(true)
   end
 #tasks section end
@@ -342,7 +388,7 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?(new_description)).to be(true)
   end
 
-  it "should assign project", bin3: true do
+  it "should assign and delete list", bin3: true do
     user = api_register_and_login_with_email
     api_create_team_and_project(user: user)
     @driver.navigate.to(@config['self_url'] + '/check/me')
@@ -356,6 +402,13 @@ shared_examples 'smoke' do
     end
     wait_for_selector('.message')
     expect(@driver.page_source.include?('Assigned to one member')).to be(true)
+    wait_for_selector(".project-list__link").click
+    wait_for_selector(".project-actions__icon").click
+    wait_for_selector(".project-actions__destroy").click
+    wait_for_selector("#project-actions__confirm-delete").click
+    wait_for_selector("//span[contains(text(), 'Continue')]",:xpath).click
+    wait_for_selector('.message')
+    expect(@driver.find_elements(:css, '.project-list__link').length == 0 )
   end
 #project section end
 
@@ -439,14 +492,13 @@ shared_examples 'smoke' do
     wait_for_selector('#create-media__quote').click
     wait_for_selector("#create-media-quote-input")
     fill_field('#create-media-quote-input', 'Main Item')
-    fill_field('#create-media-quote-attribution-source-input', 'Related Item')
     press_button('#create-media-dialog__submit-button')
     wait_for_selector_none("#create-media-quote-input")
     wait_for_selector_list_size(".media-detail", 2)
     expect(@driver.page_source.include?('Main Item')).to be(true)
-    wait_for_selector(".media-detail > div > span > div > button").click
-    wait_for_selector('div[role="menu"] > div > span[role="menuitem"]').click
-    wait_for_selector_none('div[role="menu"]')
+    wait_for_selector(".media-codensed__actions_icon").click
+    wait_for_selector('.media-condensed__promote-relationshp').click
+    wait_for_selector_none('.media-condensed__promote-relationshp')
     wait_for_selector(".project-header__back-button").click
     @driver.navigate.refresh
     wait_for_selector("#create-media__add-item")
@@ -500,9 +552,9 @@ shared_examples 'smoke' do
     cards = wait_for_selector_list(".media-detail").length
     expect(cards == 2).to be(true)
     #break the relationship between the items
-    wait_for_selector(".media-detail > div > span > div > button").click
-    wait_for_selector('div[role="menu"] > div + div > span[role="menuitem"]').click
-    wait_for_selector_none('div[role="menu"]')
+    wait_for_selector(".media-codensed__actions_icon").click
+    wait_for_selector('.media-condensed__break-relationship').click
+    wait_for_selector_none('.media-condensed__break-relationship')
     wait_for_selector_list_size(".media-detail", 1)
     list_size = wait_for_selector_list(".media-detail").length
     expect(list_size == 1).to be(true)
@@ -527,7 +579,7 @@ shared_examples 'smoke' do
     wait_for_selector(".media__heading").click
     wait_for_selector(".annotations__list")
     expect(@driver.page_source.include?('In Progress')).to be(false)
-    change_the_status_to(".media-status__menu-item--in-progress")
+    change_the_status_to(".media-status__menu-item--in-progress", true)
     expect(@driver.page_source.include?('In Progress')).to be(true)
     expect(@driver.page_source.include?('Claim Related')).to be(false)
     press_button('.create-related-media__add-button')
@@ -619,7 +671,7 @@ shared_examples 'smoke' do
     wait_for_selector(".media__heading").click
     wait_for_selector(".media-detail")
     expect(@driver.page_source.include?('In Progress')).to be(false)
-    change_the_status_to(".media-status__menu-item--in-progress")
+    change_the_status_to(".media-status__menu-item--in-progress", false)
     expect(@driver.page_source.include?('In Progress')).to be(true)
     generate_a_embed_and_copy_embed_code
     @driver.navigate.to 'https://paste.ubuntu.com/'
@@ -659,45 +711,43 @@ shared_examples 'smoke' do
   end
 #Embed section end
 
-#Meme Generator section start
-  # it "should go to meme generator change the title and description save and publish and generate a embed", bin1: true do
-  #   create_team_project_and_image_and_redirect_to_media_page
-  #   wait_for_selector(".media__annotations-column")
-  #   generate_a_embed_and_copy_embed_code
-  #   expect(@driver.page_source.include?('Meme')).to be(false)
-  #   @driver.navigate.back
-  #   wait_for_selector(".media__annotations-column")
-  #   wait_for_selector('.media-actions__icon').click
-  #   wait_for_selector('.media-actions__edit')
-  #   el = wait_for_selector('.media-actions__memebuster')
-  #   el.location_once_scrolled_into_view
-  #   el.click
-  #   expect(@driver.page_source.include?('Last saved')).to be(false)
-  #   wait_for_selector(".without-file")
-  #   fill_field('input[name="headline"]', 'Meme')
-  #   save_button = wait_for_selector(".memebuster__viewport-column > div > div button + button")
-  #   expect(save_button.attribute('tabindex')== "-1" ).to be(true) #if save_button is not enable
-  #   fill_field('textarea[name="description"]', 'description')
-  #   expect(save_button.attribute('tabindex')== "0" ).to be(true) #if save_button is enable
-  #   save_button.click
-  #   wait_for_selector(".memebuster__viewport-column > div > div >  span")
-  #   expect(@driver.page_source.include?('Last saved')).to be(true)
-  #   publish_button = wait_for_selector(".memebuster__viewport-column > div > div button + button + button")
-  #   publish_button.click
-  #   wait_for_selector(".memebuster__viewport-column > div > div > div")
-  #   expect(@driver.page_source.include?('Publishing')).to be(true)
-  #   wait_for_selector(".memebuster__viewport-column > div > div > div > span")
-  #   wait_for_selector(".memebuster__viewport-column > div > div > div > span > time")
-  #   expect(@driver.page_source.include?('Publishing')).to be(false)
-  #   expect(@driver.page_source.include?('Last published')).to be(true)
-  #   @driver.navigate.back
-  #   wait_for_selector_none(".without-file")
-  #   wait_for_selector(".media__annotations-column")
-  #   generate_a_embed_and_copy_embed_code
-  #   wait_for_selector(".oembed__meme")
-  #   expect(@driver.page_source.include?('Meme')).to be(true)
-  # end
-#Meme Generator section end
+# # Meme Generator section start
+#   it "should go to mem  e generator change the title and description publish and generate a embed", bin1: true do
+#     create_team_project_and_image_and_redirect_to_media_page
+#     wait_for_selector(".media__annotations-column")
+#     wait_for_selector('.media-actions__icon').click
+#     wait_for_selector('.media-actions__edit')
+#     sleep 5
+#     el = wait_for_selector('.media-actions__memebuster')
+#     el.location_once_scrolled_into_view
+#     el.click
+#     sleep 2
+#     expect(@driver.page_source.include?('Last saved')).to be(false)
+#     wait_for_selector(".without-file")
+#     fill_field('input[name="headline"]', 'Meme')
+#     save_button = wait_for_selector(".memebuster__viewport-column > div > div button + button")
+#     expect(save_button.attribute('tabindex')== "-1" ).to be(true) #if save_button is not enable
+#     fill_field('textarea[name="description"]', 'description')
+#     expect(save_button.attribute('tabindex')== "0" ).to be(true) #if save_button is enable
+#     save_button.click
+#     wait_for_selector(".memebuster__viewport-column > div > div >  span")
+#     expect(@driver.page_source.include?('Last saved')).to be(true)
+#     publish_button = wait_for_selector(".memebuster__viewport-column > div > div button + button + button")
+#     publish_button.click
+#     wait_for_selector(".memebuster__viewport-column > div > div > div")
+#     expect(@driver.page_source.include?('Publishing')).to be(true)
+#     wait_for_selector(".memebuster__viewport-column > div > div > div > span")
+#     wait_for_selector(".memebuster__viewport-column > div > div > div > span > time")
+#     expect(@driver.page_source.include?('Publishing')).to be(false)
+#     expect(@driver.page_source.include?('Last published')).to be(true)
+#     @driver.navigate.back
+#     wait_for_selector_none(".without-file")
+#     wait_for_selector(".media__annotations-column")
+#     generate_a_embed_and_copy_embed_code
+#     wait_for_selector(".oembed__meme")
+#     expect(@driver.page_source.include?('Meme')).to be(true)
+#   end
+# Meme Generator section end
 
 #Bulk Actions section start
   it "should move media to another project", bin2: true do
@@ -717,7 +767,7 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?("Add a link or text")).to be(true)
 
     # Go to the second project, make sure that there is no claim, and thus store the data in local Relay store
-    wait_for_selector('.project-list__link + .project-list__link').click
+    wait_for_selector('.project-list__link-container + .project-list__link-container .project-list__link').click
     wait_for_selector('.search__results')
     expect(@driver.page_source.include?(claim)).to be(false)
     expect(@driver.page_source.include?('1 / 1')).to be(false)
@@ -726,7 +776,7 @@ shared_examples 'smoke' do
     # Create a claim under project 2
     create_media(claim)
     # Go to the second project, make sure that the claim is there
-    wait_for_selector('.project-list__link + .project-list__link').click
+    wait_for_selector('.project-list__link-container + .project-list__link-container .project-list__link').click
     wait_for_selector('.medias__item')
     expect(@driver.page_source.include?(claim)).to be(true)
     expect(@driver.page_source.include?('1 / 1')).to be(true)
@@ -748,7 +798,7 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?("Add a link or text")).to be(false)
 
     # Go back to the second project and make sure that the claim is not there anymore
-    wait_for_selector('.project-list__link + .project-list__link').click
+    wait_for_selector('.project-list__link-container + .project-list__link-container .project-list__link').click
     wait_for_selector('.search__results')
     expect(@driver.page_source.include?('1 / 1')).to be(false)
     expect(@driver.page_source.include?("Add a link or text")).to be(true)
@@ -773,12 +823,12 @@ shared_examples 'smoke' do
     api_create_project(project1[:team].dbid.to_s)
     @driver.navigate.to @config['self_url']
     wait_for_selector("#create-media__add-item")
-    create_media ("claim 1")
+    create_media("claim 1")
     wait_for_selector(".medias__item")
-    create_media ("claim 2")
+    create_media("claim 2")
     wait_for_selector_list_size(".medias__item", 2)
     expect(@driver.page_source.include?('Add a link or text')).to be(false)
-    wait_for_selector('.project-list__link + .project-list__link').click #Go to the second project
+    wait_for_selector('.project-list__link-container + .project-list__link-container .project-list__link').click #Go to the second project
     wait_for_selector_none(".medias__item")
     expect(@driver.page_source.include?('Add a link or text')).to be(true)
     wait_for_selector('.project-list__link').click #Go back to the first project
@@ -789,7 +839,7 @@ shared_examples 'smoke' do
     wait_for_selector('.Select-option').click
     wait_for_selector('.media-bulk-actions__add-button').click
     wait_for_selector_none(".Select-placeholder")
-    wait_for_selector('.project-list__link + .project-list__link').click # Go to the second project
+    wait_for_selector('.project-list__link-container + .project-list__link-container .project-list__link').click # Go to the second project
     wait_for_selector_list_size(".medias__item", 2, :css , 80)
     expect(@driver.page_source.include?('claim 1')).to be(true)
     expect(@driver.page_source.include?('claim 2')).to be(true)
@@ -802,6 +852,39 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?('claim 1')).to be(true)
     expect(@driver.page_source.include?('claim 2')).to be(true)
   end
+
+  it "should restore items from the trash", bin2: true do 
+    api_create_team_project_and_claim_and_redirect_to_media_page
+    wait_for_selector(".media")
+    expect(@driver.page_source.include?("Claim")).to be(true)
+    wait_for_selector(".media-actions__icon").click
+    wait_for_selector(".media-actions__send-to-trash").click
+    wait_for_selector(".message").click
+    wait_for_selector(".project-header__back-button").click
+    expect(@driver.find_elements(:css, '.medias__item').length == 0 )
+    wait_for_selector(".project-list__item-trash").click #Go to the trash page
+    wait_for_selector(".media__heading")
+    wait_for_selector(".ag-icon-checkbox-unchecked").click
+    wait_for_selector("#media-bulk-actions__actions").click
+    wait_for_selector(".message")
+    wait_for_selector(".project-list__item-all").click
+    wait_for_selector_list_size(".medias__item", 1, :css , 90)
+    expect(@driver.page_source.include?("Claim")).to be(true)
+  end
+
+  it "should remove item from list", bin2: true do
+    api_create_team_project_and_claim_and_redirect_to_media_page
+    wait_for_selector(".media")
+    wait_for_selector(".project-header__back-button").click
+    expect(@driver.page_source.include?("Add a link or text")).to be(false)
+    wait_for_selector_list_size(".medias__item",1)
+    wait_for_selector(".ag-icon-checkbox-unchecked").click
+    wait_for_selector("#media-bulk-actions__actions >  div > button + button + button").click #remove_button
+    wait_for_selector(".message")
+    expect(@driver.find_elements(:css, '.medias__item').length == 0 )
+    expect(@driver.page_source.include?("Add a link or text")).to be(true)
+  end
+
 #Bulk Actions section end
 
 #Permissions section start
@@ -910,6 +993,200 @@ shared_examples 'smoke' do
     new = wait_for_size_change(old, 'team-members__delete-member', :class)
     expect(new < old).to be(true)
   end
+
+  it "should check user permissions", bin6: true do
+    # setup
+    @user_mail = "test" +Time.now.to_i.to_s+rand(9999).to_s + @user_mail
+    @team1_slug = 'team1'+Time.now.to_i.to_s+rand(9999).to_s
+    user = api_register_and_login_with_email(email: @user_mail, password: @password)
+    team = request_api 'team', { name: 'Team', email: user.email, slug: @team1_slug }
+    request_api 'project', { title: 'Team Project', team_id: team.dbid }
+    page = MePage.new(config: @config, driver: @driver).load.select_team(name: 'Team')
+    expect(page.team_name).to eq('Team')
+    expect(page.project_titles.include?('Team Project')).to be(true)
+    #As a different user, request to join one team and be accepted.
+    user2 = api_register_and_login_with_email(email: "new"+@user_mail, password: @password)
+    page = MePage.new(config: @config, driver: @driver).load
+    page.ask_join_team(subdomain: @team1_slug)
+    @wait.until {
+      expect(@driver.find_element(:class, "message").nil?).to be(false)
+    }
+    api_logout
+    @driver.quit
+    @driver = new_driver(@webdriver_url,@browser_capabilities)
+    page = Page.new(config: @config, driver: @driver)
+    page.go(@config['api_path'] + '/test/session?email='+@user_mail)
+    #As the group creator, go to the members page and approve the joining request.
+    page = MePage.new(config: @config, driver: @driver).load
+    page.go(@config['self_url'] + '/check/me')
+    page.approve_join_team(subdomain: @team1_slug)
+    count = 0
+    elems = @driver.find_elements(:css => ".team-members__list > div > div > div > div")
+    while elems.size <= 1 && count < 15
+      sleep 5
+      count += 1
+      elems = @driver.find_elements(:css => ".team-members__list > div > div > div > div")
+    end
+    expect(elems.size).to be > 1
+    #edit team member role
+    change_the_member_role_to('li.role-journalist')
+    el = wait_for_selector('input[name="role-select"]', :css, 29, 1)
+    expect(el.value).to eq 'journalist'
+
+    #create one media
+    wait_for_selector_list(".project-list__link")[0].click
+    create_media("one item")
+    wait_for_selector_list_size(".medias__item", 1)
+    expect(@driver.page_source.include?('one item')).to be(true)
+
+    # "should redirect to team page if user asking to join a team is already a member"
+    page = Page.new(config: @config, driver: @driver)
+    page.go(@config['api_path'] + '/test/session?email=new'+@user_mail)
+    #page = MePage.new(config: @config, driver: @driver).load
+    @driver.navigate.to @config['self_url'] + "/"+@team1_slug+"/join"
+    wait_for_selector('.team__primary-info')
+    @wait.until {
+      expect(@driver.current_url.eql? @config['self_url']+"/"+@team1_slug ).to be(true)
+    }
+    #As a different user, request to join one team
+    user3 = api_register_and_login_with_email(email: "one_more"+@user_mail, password: @password)
+    page = MePage.new(config: @config, driver: @driver).load
+    page.ask_join_team(subdomain: @team1_slug)
+    @wait.until {
+      expect(@driver.find_element(:class, "message").nil?).to be(false)
+    }
+    api_logout
+    @driver.quit
+    #As the journalist, go to the members page and can't see the request to join the another user
+    @driver = new_driver(@webdriver_url,@browser_capabilities)
+    page = Page.new(config: @config, driver: @driver)
+    page.go(@config['api_path'] + '/test/session?email=new'+@user_mail)
+    page = MePage.new(config: @config, driver: @driver).load
+    @driver.navigate.to @config['self_url'] + "/"+@team1_slug
+    wait_for_selector("#create-project-title")
+    expect(@driver.page_source.include?('Requests to join')).to be(false)
+
+    #go to the project that you don't own and can't see the actions icon
+    wait_for_selector_list(".project-list__link")[0].click
+    wait_for_selector_none(".project-actions__icon") #actions icon
+    expect(@driver.find_elements(:css, ".project-actions__icon").size).to eq 0
+
+    #create media in a project that you don't own
+    expect(@driver.page_source.include?('new item')).to be(false)
+    create_media("new item")
+    wait_for_selector_list_size(".medias__item", 2)
+    expect(@driver.page_source.include?('new item')).to be(true)
+
+    #see the icon 'change the status' that the media you don't own
+    wait_for_selector_list(".media__heading")[1].click
+    wait_for_selector(".create-related-media__add-button")
+    expect(@driver.find_elements(:css, ".media-status--editable").size).to eq 1
+
+    # see the input to add a comment in media you don't own
+    wait_for_selector(".media-tab__comments").click
+    wait_for_selector(".add-annotation__buttons")
+    expect(@driver.find_elements(:css, "#cmd-input").size).to eq 1
+
+    #try edit team and can't see the button 'edit team button'
+    wait_for_selector(".project-header__back-button").click
+    wait_for_selector(".team-menu__team-settings-button").click
+    wait_for_selector(".team-settings__tags-tab")
+    expect(@driver.find_elements(:css, ".team-menu__edit-team-button").size).to eq 0
+
+    api_logout
+    @driver.quit
+
+    #As the group creator, go to the members page and  edit team member role to 'editor'
+    @driver = new_driver(@webdriver_url,@browser_capabilities)
+    page = Page.new(config: @config, driver: @driver)
+    page.go(@config['api_path'] + '/test/session?email='+@user_mail)
+    page = MePage.new(config: @config, driver: @driver).load
+    @driver.navigate.to @config['self_url'] + "/"+@team1_slug
+    #edit team member role
+    change_the_member_role_to('li.role-editor')
+    el = wait_for_selector('input[name="role-select"]', :css, 29, 1)
+    expect(el.value).to eq 'editor'
+
+    api_logout
+    @driver.quit
+
+    #log in as the editor
+    @driver = new_driver(@webdriver_url,@browser_capabilities)
+    page = Page.new(config: @config, driver: @driver)
+    page.go(@config['api_path'] + '/test/session?email=new'+@user_mail)
+    page = MePage.new(config: @config, driver: @driver).load
+    @driver.navigate.to @config['self_url']
+
+    #go to the project that you don't own and can't see the actions icon
+    wait_for_selector_list(".project-list__link")[0].click
+    wait_for_selector_none(".project-actions__icon") #actions icon
+    expect(@driver.find_elements(:css, ".project-actions__icon").size).to eq 1
+
+    api_logout
+    @driver.quit
+
+    #As the group creator, go to the members page and edit team member role to 'contribuitor'
+    @driver = new_driver(@webdriver_url,@browser_capabilities)
+    page = Page.new(config: @config, driver: @driver)
+    page.go(@config['api_path'] + '/test/session?email='+@user_mail)
+    page = MePage.new(config: @config, driver: @driver).load
+    @driver.navigate.to @config['self_url'] + "/"+@team1_slug
+    #edit team member role
+    change_the_member_role_to('li.role-contributor')
+    el = wait_for_selector('input[name="role-select"]', :css, 29, 1)
+    expect(el.value).to eq 'contributor'
+
+    api_logout
+    @driver.quit
+
+    #log in as the contributor
+    @driver = new_driver(@webdriver_url,@browser_capabilities)
+    page = Page.new(config: @config, driver: @driver)
+    page.go(@config['api_path'] + '/test/session?email=new'+@user_mail)
+    page = MePage.new(config: @config, driver: @driver).load
+    @driver.navigate.to @config['self_url'] + "/"+@team1_slug
+
+    #can't see the link 'edit member rules'
+    expect(@driver.find_elements(:css, ".team-members__edit-button").size).to eq 0
+
+    #can't see the link 'create a new list'
+    expect(@driver.find_elements(:css, ".create-project-title").size).to eq 0
+
+    #go to the project and can't see the icon 'change the status' that the media you don't own
+    wait_for_selector_list(".project-list__link")[0].click
+    wait_for_selector_list(".media__heading")[1].click
+    wait_for_selector(".create-related-media__add-button")
+    expect(@driver.find_elements(:css, ".media-status--editable").size).to eq 0
+  end
 #Permissions section end
+
+#Filter section start
+
+# it "should find medias when searching by keyword", bin2: true do
+#   api_create_team_project_and_link('https://www.facebook.com/permalink.php?story_fbid=10155901893214439&id=54421674438')
+#   @driver.navigate.to @config['self_url']
+#   wait_for_selector_list_size('.medias__item', 1)
+#   create_media("https://twitter.com/TwitterVideo/status/931930009450795009")
+#   wait_for_selector_list_size('.medias__item', 2)
+#   wait_for_selector("//span[contains(text(), '1 - 2 / 2')]",:xpath)
+#   expect(@driver.page_source.include?('on Facebook')).to be(true)
+#   expect(@driver.page_source.include?('weekly @Twitter video recap')).to be(true)
+#   el = wait_for_selector("#search-input")
+#   el.send_keys "video"
+#   @driver.action.send_keys(:enter).perform
+#   wait_for_selector_list_size('.medias__item', 1)
+#   wait_for_selector("//span[contains(text(), '1 / 1')]",:xpath)
+#   expect(@driver.page_source.include?('weekly @Twitter video recap')).to be(true)
+#   expect(@driver.page_source.include?('on Facebook')).to be(false)
+#   wait_for_selector('#search-input').send_keys(:control, 'a', :delete)
+#   wait_for_selector("#search-input").send_keys "meedan"
+#   @driver.action.send_keys(:enter).perform
+#   wait_for_selector_list_size('.medias__item', 1)
+#   wait_for_selector("//span[contains(text(), '1 / 1')]",:xpath)
+#   expect(@driver.page_source.include?('on Facebook')).to be(true)
+#   expect(@driver.page_source.include?('weekly @Twitter video recap')).to be(false)
+# end
+
+#Filter section end
 
 end

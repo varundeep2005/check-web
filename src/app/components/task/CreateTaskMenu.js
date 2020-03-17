@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import FlatButton from 'material-ui/FlatButton';
+import Button from '@material-ui/core/Button';
 import Popover from 'material-ui/Popover';
 import Menu from 'material-ui/Menu';
 import MenuItem from 'material-ui/MenuItem';
@@ -10,11 +10,12 @@ import MdCheckBox from 'react-icons/lib/md/check-box';
 import MdLocationOn from 'react-icons/lib/md/location-on';
 import MdDateRange from 'react-icons/lib/md/date-range';
 import MdGrade from 'react-icons/lib/md/grade';
+import IconImageUpload from '@material-ui/icons/CloudUpload';
 import styled from 'styled-components';
 import config from 'config'; // eslint-disable-line require-path-exists/exists
 import { units, black05 } from '../../styles/js/shared';
 
-const StyledCreateTaskButton = styled(FlatButton)`
+const StyledCreateTaskButton = styled(Button)`
   margin-bottom: ${units(2)} !important;
 
   &:hover {
@@ -54,8 +55,9 @@ class CreateTaskMenu extends React.Component {
         <StyledCreateTaskButton
           className="create-task__add-button"
           onClick={this.handleClick.bind(this)}
-          label={<FormattedMessage id="tasks.addTask" defaultMessage="Add task" />}
-        />
+        >
+          <FormattedMessage id="tasks.addTask" defaultMessage="Add task" />
+        </StyledCreateTaskButton>
 
         <Popover
           open={this.state.menuOpen}
@@ -98,6 +100,12 @@ class CreateTaskMenu extends React.Component {
               onClick={() => this.handleSelectType('datetime')}
               leftIcon={<MdDateRange />}
               primaryText={<FormattedMessage id="tasks.datetime" defaultMessage="Date and time" />}
+            />
+            <MenuItem
+              className="create-task__add-image-upload"
+              onClick={() => this.handleSelectType('image_upload')}
+              leftIcon={<IconImageUpload />}
+              primaryText={<FormattedMessage id="tasks.imageUpload" defaultMessage="Image upload" />}
             />
             {config.appName === 'check' && !this.props.hideTeamwideOption ?
               <MenuItem

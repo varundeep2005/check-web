@@ -51,8 +51,9 @@ const StyledContent = styled.div`
   flex: 1;
   flex-direction: column;
   padding-top: ${gutterMedium};
-  padding-bottom: ${props => (props.inMediaPage ? '0' : gutterMedium)};
+  padding-bottom: ${props => (props.inMediaPage ? '0' : 'gutterMedium')};
   width: 100%;
+  background-color: white;
 `;
 
 const messages = defineMessages({
@@ -162,7 +163,8 @@ class HomeComponent extends Component {
   handleDrawerToggle = () => this.setState({ open: !this.state.open });
 
   loginCallback() {
-    if (this.state.path !== '/check/user/password-change') {
+    if (this.state.path !== '/check/user/password-change' &&
+      this.state.path !== '/check/user/confirmed') {
       window.location.assign(this.state.path);
     } else {
       window.location.assign('/');
@@ -313,7 +315,10 @@ class HomeComponent extends Component {
                   zIndex: '1000',
                 }}
               />
-              <StyledContent inMediaPage={routeSlug === 'media'}>
+              <StyledContent
+                inMediaPage={routeSlug === 'media'}
+                className="content-wrapper"
+              >
                 {children}
               </StyledContent>
             </StyledWrapper>

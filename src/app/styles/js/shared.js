@@ -1,7 +1,7 @@
 import styled, { css, keyframes } from 'styled-components';
-import { CardTitle } from 'material-ui/Card';
+import CardHeader from '@material-ui/core/CardHeader';
 import TextField from 'material-ui/TextField';
-import IconButton from 'material-ui/IconButton';
+import IconButton from '@material-ui/core/IconButton';
 import CheckboxNext from '@material-ui/core/Checkbox';
 import { stripUnit, rgba } from 'polished';
 
@@ -13,7 +13,7 @@ export const black = '#000000';
 export const alertRed = '#d0021b';
 export const checkBlue = '#2e77fc';
 export const highlightBlue = '#f1f6ff';
-export const highlightOrange = '#f8aa6c';
+export const highlightOrange = '#FD730C';
 export const modalBlue = 'rgba(0, 15, 41, .8)';
 export const inProgressYellow = '#efac51';
 export const unstartedRed = '#f04747';
@@ -438,7 +438,7 @@ export const Row = styled.div`
 // feedback welcome! WIP CGB 2017-7-12
 //
 export const StyledMdCardTitle =
-  styled(CardTitle)` > span {
+  styled(CardHeader)` > span {
       font: ${title1} !important;
     }
   `;

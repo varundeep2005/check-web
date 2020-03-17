@@ -179,20 +179,6 @@ shared_examples 'app' do |webdriver_url, browser_capabilities|
       expect(title.text == 'Account Already Confirmed').to be(true)
     end
 
-    it "should create project media", bin1: true do
-      api_create_team_and_project
-      page = ProjectPage.new(config: @config, driver: @driver).load
-      # api_create_team_project_and_link('https://twitter.com/marcouza/status/771009514732650497?t=' + Time.now.to_i.to_s)
-      expect(page.contains_string?('This is a test')).to be(false)
-
-      page.create_media(input: 'https://twitter.com/marcouza/status/771009514732650497?t=' + Time.now.to_i.to_s)
-
-      @driver.navigate.to @config['self_url']
-      wait_for_selector('.medias__item')
-
-      expect(page.contains_string?('This is a test')).to be(true)
-    end
-
     it "should search for image",  bin2: true do
       api_create_team_and_project
       page = ProjectPage.new(config: @config, driver: @driver).load
@@ -391,31 +377,6 @@ shared_examples 'app' do |webdriver_url, browser_capabilities|
       expect(@driver.page_source.include?('Claim')).to be(false)
     end
 
-    # it "should find medias when searching by keyword", bin2: true do
-    #   api_create_team_project_and_link('https://www.facebook.com/permalink.php?story_fbid=10155901893214439&id=54421674438')
-    #   @driver.navigate.to @config['self_url']
-    #   wait_for_selector_list_size('.medias__item', 1)
-    #   create_media("https://twitter.com/TwitterVideo/status/931930009450795009")
-    #   wait_for_selector_list_size('.medias__item', 2)
-    #   wait_for_selector("//span[contains(text(), '1 - 2 / 2')]",:xpath)
-    #   expect(@driver.page_source.include?('on Facebook')).to be(true)
-    #   expect(@driver.page_source.include?('weekly @Twitter video recap')).to be(true)
-    #   el = wait_for_selector("#search-input")
-    #   el.send_keys "video"
-    #   @driver.action.send_keys(:enter).perform
-    #   wait_for_selector_list_size('.medias__item', 1)
-    #   wait_for_selector("//span[contains(text(), '1 / 1')]",:xpath)
-    #   expect(@driver.page_source.include?('weekly @Twitter video recap')).to be(true)
-    #   expect(@driver.page_source.include?('on Facebook')).to be(false)
-    #   wait_for_selector('#search-input').send_keys(:control, 'a', :delete)
-    #   wait_for_selector("#search-input").send_keys "meedan"
-    #   @driver.action.send_keys(:enter).perform
-    #   wait_for_selector_list_size('.medias__item', 1)
-    #   wait_for_selector("//span[contains(text(), '1 / 1')]",:xpath)
-    #   expect(@driver.page_source.include?('on Facebook')).to be(true)
-    #   expect(@driver.page_source.include?('weekly @Twitter video recap')).to be(false)
-    # end
-
     it "should search for reverse images", bin2: true do
       api_create_team_project_and_link_and_redirect_to_media_page 'https://www.instagram.com/p/BRYob0dA1SC/'
       card = wait_for_selector_list(".media-detail").length
@@ -430,42 +391,44 @@ shared_examples 'app' do |webdriver_url, browser_capabilities|
       @driver.switch_to.window(current_window)
     end
 
-    # it "should refresh media", bin1: true do
-    #   page = api_create_team_project_and_link_and_redirect_to_media_page 'http://ca.ios.ba/files/meedan/random.php'
-    #   wait_for_selector(".media-detail")
-    #   title1 = @driver.title
-    #   expect((title1 =~ /Random/).nil?).to be(false)
-    #   el = wait_for_selector('.media-actions__icon')
-    #   el.click
-    #   wait_for_selector(".media-actions__edit")
-    #   @driver.find_element(:css, '.media-actions__refresh').click
-    #   wait_for_selector_none(".media-actions__edit")
-    #   wait_for_text_change(title1,"title", :css, 30)
-    #   title2 = @driver.title
-    #   expect((title2 =~ /Random/).nil?).to be(false)
-    #   expect(title1 == title2).to be(true)
-    # end
+    it "should refresh media", bin1: true do
+      page = api_create_team_project_and_link_and_redirect_to_media_page 'http://ca.ios.ba/files/meedan/random.php'
+      wait_for_selector(".media-detail")
+      title1 = @driver.title
+      expect((title1 =~ /Random/).nil?).to be(false)
+      el = wait_for_selector('.media-actions__icon')
+      el.click
+      wait_for_selector(".media-actions__edit")
+      @driver.find_element(:css, '.media-actions__refresh').click
+      wait_for_selector_none(".media-actions__edit")
+      wait_for_text_change(title1,"title", :css)
+      @wait.until { (@driver.title != title1) }
+      title2 = @driver.title
+      expect((title2 =~ /Random/).nil?).to be(false)
+      expect(title1 != title2).to be(true)
+    end
 
     it "should search and change sort criteria", bin2: true do
       api_create_claim_and_go_to_search_page
       expect((@driver.current_url.to_s.match(/requests/)).nil?).to be(true)
       expect((@driver.current_url.to_s.match(/related/)).nil?).to be(true)
-      expect((@driver.current_url.to_s.match(/created/)).nil?).to be(true)
+      expect((@driver.current_url.to_s.match(/recent_added/)).nil?).to be(true)
       expect((@driver.current_url.to_s.match(/last_seen/)).nil?).to be(true)
-
-      wait_for_selector("#list-header__requests").click
-      wait_for_selector(".medias__item")
-      expect((@driver.current_url.to_s.match(/requests/)).nil?).to be(false)
-      expect((@driver.current_url.to_s.match(/related/)).nil?).to be(true)
-      expect((@driver.current_url.to_s.match(/created/)).nil?).to be(true)
-      expect((@driver.current_url.to_s.match(/last_seen/)).nil?).to be(true)
-      expect(@driver.page_source.include?('My search result')).to be(true)
 
       wait_for_selector("#list-header__related").click
       wait_for_selector(".medias__item")
       expect((@driver.current_url.to_s.match(/requests/)).nil?).to be(true)
       expect((@driver.current_url.to_s.match(/related/)).nil?).to be(false)
-      expect((@driver.current_url.to_s.match(/created/)).nil?).to be(true)
+      expect((@driver.current_url.to_s.match(/recent_added/)).nil?).to be(true)
+      expect((@driver.current_url.to_s.match(/last_seen/)).nil?).to be(true)
+      expect(@driver.page_source.include?('My search result')).to be(true)
+
+      @driver.execute_script("document.getElementsByClassName('ag-body-horizontal-scroll-viewport')[0].scrollLeft = 5000;")
+      wait_for_selector("#list-header__recent_added").click
+      wait_for_selector(".medias__item")
+      expect((@driver.current_url.to_s.match(/requests/)).nil?).to be(true)
+      expect((@driver.current_url.to_s.match(/related/)).nil?).to be(true)
+      expect((@driver.current_url.to_s.match(/recent_added/)).nil?).to be(false)
       expect((@driver.current_url.to_s.match(/last_seen/)).nil?).to be(true)
       expect(@driver.page_source.include?('My search result')).to be(true)
     end
@@ -474,13 +437,13 @@ shared_examples 'app' do |webdriver_url, browser_capabilities|
       api_create_claim_and_go_to_search_page
       expect((@driver.current_url.to_s.match(/ASC|DESC/)).nil?).to be(true)
 
-      wait_for_selector("#list-header__requests").click
+      wait_for_selector("#list-header__related").click
       wait_for_selector(".medias__item")
       expect((@driver.current_url.to_s.match(/DESC/)).nil?).to be(false)
       expect((@driver.current_url.to_s.match(/ASC/)).nil?).to be(true)
       expect(@driver.page_source.include?('My search result')).to be(true)
 
-      wait_for_selector("#list-header__requests").click
+      wait_for_selector("#list-header__related").click
       wait_for_selector(".medias__item")
       expect((@driver.current_url.to_s.match(/DESC/)).nil?).to be(true)
       expect((@driver.current_url.to_s.match(/ASC/)).nil?).to be(false)
@@ -524,23 +487,10 @@ shared_examples 'app' do |webdriver_url, browser_capabilities|
       el = wait_for_selector("#list-header__related")
       expect(el.find_element(:css, "svg.list-header__sort-desc").nil?).to be(false)
 
-      @driver.navigate.to @config['self_url'] + '/' + get_team + '/all-items/%7B"sort"%3A"requests"%2C"sort_type"%3A"DESC"%7D'
-      wait_for_selector("#create-media__add-item")
-      expect(@driver.page_source.include?('My search result')).to be(true)
-      el = wait_for_selector("#list-header__requests")
-      expect(el.find_element(:css, "svg.list-header__sort-desc").nil?).to be(false)
-
       @driver.navigate.to @config['self_url'] + '/' + get_team + '/all-items/%7B"sort"%3A"recent_added"%2C"sort_type"%3A"DESC"%7D'
       wait_for_selector("#create-media__add-item")
       expect(@driver.page_source.include?('My search result')).to be(true)
       el = wait_for_selector("#list-header__recent_added")
-      expect(el.find_element(:css, "svg.list-header__sort-desc").nil?).to be(false)
-
-      @driver.navigate.to @config['self_url'] + '/' + get_team + '/all-items/%7B"sort"%3A"last_seen"%2C"sort_type"%3A"DESC"%7D'
-      wait_for_selector("#create-media__add-item")
-      expect(@driver.page_source.include?('My search result')).to be(true)
-      @driver.execute_script("document.getElementsByClassName('ag-body-horizontal-scroll-viewport')[0].scrollLeft = 5000;")
-      el = wait_for_selector("#list-header__last_seen")
       expect(el.find_element(:css, "svg.list-header__sort-desc").nil?).to be(false)
     end
 
@@ -552,10 +502,10 @@ shared_examples 'app' do |webdriver_url, browser_capabilities|
       el = wait_for_selector("#list-header__related")
       expect(el.find_element(:css, "svg.list-header__sort-desc").nil?).to be(false)
 
-      @driver.navigate.to @config['self_url'] + '/' + get_team + '/all-items/%7B"sort"%3A"requests"%2C"sort_type"%3A"ASC"%7D'
+      @driver.navigate.to @config['self_url'] + '/' + get_team + '/all-items/%7B"sort"%3A"recent_added"%2C"sort_type"%3A"ASC"%7D'
       wait_for_selector("#create-media__add-item")
       expect(@driver.page_source.include?('My search result')).to be(true)
-      el = wait_for_selector("#list-header__requests")
+      el = wait_for_selector("#list-header__recent_added")
       expect(el.find_element(:css, "svg.list-header__sort-asc").nil?).to be(false)
     end
 
@@ -683,22 +633,6 @@ shared_examples 'app' do |webdriver_url, browser_capabilities|
       script = "return window.getComputedStyle(document.getElementsByClassName('source__avatar')[0]).getPropertyValue('background-image')"
       avatar = @driver.execute_script(script)
       expect(avatar.include?('test.png')).to be(true)
-    end
-
-    it "should create claim", bin3: true do
-      api_create_team_and_project
-      page = ProjectPage.new(config: @config, driver: @driver).load
-      wait_for_selector("#search__open-dialog-button")
-      wait_for_selector("#create-media__add-item").click
-      wait_for_selector("#create-media__quote").click
-      wait_for_selector("#create-media-quote-attribution-source-input")
-      @driver.action.send_keys('Test').perform
-      expect((@driver.current_url.to_s =~ /media/).nil?).to be(true)
-      @driver.action.send_keys(:enter).perform
-      wait_for_selector(".medias__item")
-      wait_for_selector(".media__heading").click
-      wait_for_selector(".media-detail")
-      expect((@driver.current_url.to_s =~ /media/).nil?).to be(false)
     end
 
     it "should redirect to last visited project", bin3: true do

@@ -5,9 +5,10 @@ import 'ag-grid-community/dist/styles/ag-grid.css';
 import 'ag-grid-community/dist/styles/ag-theme-material.css';
 import styled from 'styled-components';
 import MediaCell from '../media/MediaCell';
+import MetadataCell from '../media/MetadataCell';
 import MediaUtil from '../media/MediaUtil';
 import ListHeader from './ListHeader';
-import { units } from '../../styles/js/shared';
+import { units, highlightOrange, opaqueBlack54 } from '../../styles/js/shared';
 import { getStatus } from '../../helpers';
 import { teamStatuses } from '../../customHelpers';
 
@@ -20,15 +21,35 @@ const StyledGridContainer = styled.div`
   }
   .ag-cell-value {
     line-height: ${units(12)} !important;
+    width: 100%;
   }
   .ag-header-cell-text {
     text-transform: uppercase;
   }
-  div.ag-cell {
-    padding: 0 ${units(1)};
+  .ag-header-select-all.ag-labeled.ag-checkbox {
+    margin-right: 10px;
   }
+  /* first div of row has no padding left, all other do */
+  div.ag-cell {
+    padding: 0 ${units(1)} 0 0;
+
+    &.ag-cell-value{
+      padding: 0 ${units(1)};
+    }
+  }
+  /* first div of header row has no padding left */
   div.ag-header-cell {
     padding: 0 ${units(1)};
+    &:first-child {
+      padding: 0 ${units(1)} 0 0;
+      &:hover {
+        color: ${opaqueBlack54};
+      }
+    }
+    &:hover {
+      color: ${highlightOrange};
+      background-color: white!important;
+    }
   }
   div.ag-react-container {
     width: 100%;
@@ -74,64 +95,8 @@ const messages = defineMessages({
 class List extends React.Component {
   constructor(props) {
     super(props);
-    const fmtMsg = props.intl.formatMessage;
     this.state = {
-      columnDefs: [
-        {
-          headerName: fmtMsg(messages.item),
-          field: 'title',
-          checkboxSelection: true,
-          headerCheckboxSelection: true,
-          cellRenderer: 'mediaCellRenderer',
-          minWidth: 400,
-        },
-        {
-          headerName: fmtMsg(messages.demand),
-          field: 'demand',
-          minWidth: 96,
-          headerComponentFramework: ListHeader,
-          headerComponentParams: {
-            sort: 'requests',
-          },
-        },
-        {
-          headerName: fmtMsg(messages.share_count),
-          field: 'share_count',
-          minWidth: 96,
-          headerComponentFramework: ListHeader,
-          headerComponentParams: {
-            sort: 'share_count',
-          },
-        },
-        {
-          headerName: fmtMsg(messages.linked_items_count),
-          field: 'linked_items_count',
-          minWidth: 96,
-          headerComponentFramework: ListHeader,
-          headerComponentParams: {
-            sort: 'related',
-          },
-        },
-        { headerName: fmtMsg(messages.type), field: 'type', minWidth: 96 },
-        { headerName: fmtMsg(messages.status), field: 'status', minWidth: 96 },
-        {
-          headerName: fmtMsg(messages.first_seen),
-          field: 'first_seen',
-          minWidth: 96,
-          headerComponentFramework: ListHeader,
-          headerComponentParams: {
-            sort: 'recent_added',
-          },
-        },
-        {
-          headerName: fmtMsg(messages.last_seen),
-          field: 'last_seen',
-          minWidth: 96,
-          headerComponentFramework: ListHeader,
-          headerComponentParams: {
-            sort: 'last_seen',
-          },
-        }],
+      columnDefs: List.getColumnDefs(props),
     };
   }
 
@@ -152,6 +117,108 @@ class List extends React.Component {
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.handleWindowResize);
+  }
+
+  static getColumnDefs(props) {
+    const { team } = props;
+    const fmtMsg = props.intl.formatMessage;
+
+    let smoochBotInstalled = false;
+    if (team && team.team_bot_installations) {
+      team.team_bot_installations.edges.forEach((edge) => {
+        if (edge.node.team_bot.identifier === 'smooch') {
+          smoochBotInstalled = true;
+        }
+      });
+    }
+
+    const colDefs = [
+      {
+        headerName: fmtMsg(messages.item),
+        field: 'title',
+        checkboxSelection: true,
+        headerCheckboxSelection: true,
+        cellRenderer: 'mediaCellRenderer',
+        minWidth: 424,
+      },
+      {
+        headerName: fmtMsg(messages.share_count),
+        field: 'share_count',
+        minWidth: 124,
+        maxWidth: 124,
+        cellRenderer: 'metadataCellRenderer',
+        headerComponentFramework: ListHeader,
+        headerComponentParams: {
+          sort: 'share_count',
+        },
+      },
+      {
+        headerName: fmtMsg(messages.linked_items_count),
+        field: 'linked_items_count',
+        minWidth: 88,
+        maxWidth: 88,
+        cellRenderer: 'metadataCellRenderer',
+        headerComponentFramework: ListHeader,
+        headerComponentParams: {
+          sort: 'related',
+        },
+      },
+      {
+        headerName: fmtMsg(messages.type),
+        field: 'type',
+        minWidth: 72,
+        maxWidth: 72,
+        cellRenderer: 'metadataCellRenderer',
+      },
+      {
+        headerName: fmtMsg(messages.status),
+        field: 'status',
+        minWidth: 96,
+        maxWidth: 112,
+        cellRenderer: 'metadataCellRenderer',
+      },
+      {
+        headerName: fmtMsg(messages.first_seen),
+        field: 'first_seen',
+        minWidth: 96,
+        maxWidth: 112,
+        cellRenderer: 'metadataCellRenderer',
+        headerComponentFramework: ListHeader,
+        headerComponentParams: {
+          sort: 'recent_added',
+        },
+      },
+    ];
+
+    if (smoochBotInstalled) {
+      const requestsCol = {
+        headerName: fmtMsg(messages.demand),
+        field: 'demand',
+        minWidth: 96,
+        maxWidth: 96,
+        cellRenderer: 'metadataCellRenderer',
+        headerComponentFramework: ListHeader,
+        headerComponentParams: {
+          sort: 'requests',
+        },
+      };
+
+      const lastSeenCol = {
+        headerName: fmtMsg(messages.last_seen),
+        field: 'last_seen',
+        minWidth: 96,
+        maxWidth: 112,
+        cellRenderer: 'metadataCellRenderer',
+        headerComponentFramework: ListHeader,
+        headerComponentParams: {
+          sort: 'last_seen',
+        },
+      };
+      colDefs.splice(1, 0, requestsCol);
+      colDefs.push(lastSeenCol);
+    }
+
+    return colDefs;
   }
 
   getRowData() {
@@ -197,6 +264,7 @@ class List extends React.Component {
         media,
         share_count,
         query: i.itemQuery,
+        url: i.mediaUrl,
       };
 
       return row;
@@ -230,7 +298,10 @@ class List extends React.Component {
       <StyledGridContainer className="ag-theme-material">
         <AgGridReact
           columnDefs={this.state.columnDefs}
-          frameworkComponents={{ mediaCellRenderer: MediaCell }}
+          frameworkComponents={{
+            mediaCellRenderer: MediaCell,
+            metadataCellRenderer: MetadataCell,
+          }}
           rowData={this.getRowData()}
           onGridReady={this.handleGridReady}
           onRowClicked={this.handleClickRow}

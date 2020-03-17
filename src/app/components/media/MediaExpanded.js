@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import Relay from 'react-relay/classic';
 import PropTypes from 'prop-types';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { CardTitle, CardText, CardActions } from 'material-ui/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+import CardActions from '@material-ui/core/CardActions';
 import styled from 'styled-components';
 import MediaRoute from '../../relay/MediaRoute';
 import MediaMetadata from './MediaMetadata';
@@ -60,6 +62,14 @@ class MediaExpandedComponent extends Component {
 
   render() {
     const { media } = this.props;
+    let smoochBotInstalled = false;
+    if (media.team && media.team.team_bot_installations) {
+      media.team.team_bot_installations.edges.forEach((edge) => {
+        if (edge.node.team_bot.identifier === 'smooch') {
+          smoochBotInstalled = true;
+        }
+      });
+    }
     media.url = media.media.url;
     media.quote = media.media.quote;
     media.embed_path = media.media.embed_path;
@@ -126,21 +136,25 @@ class MediaExpandedComponent extends Component {
               <FormattedMessage id="mediaExpanded.firstSeen" defaultMessage="First seen: " />
               <TimeBefore date={MediaUtil.createdAt({ published: media.created_at })} />
             </span>
-            <span style={{ margin: `0 ${units(1)}` }}> - </span>
-            <span>
-              <FormattedMessage id="mediaExpanded.lastSeen" defaultMessage="Last seen: " />
-              <TimeBefore date={MediaUtil.createdAt({ published: media.last_seen })} />
-            </span>
-            <span style={{ margin: `0 ${units(1)}` }}> - </span>
-            <span>
-              <FormattedMessage
-                id="mediaExpanded.requests"
-                defaultMessage="{count} requests"
-                values={{
-                  count: media.requests_count,
-                }}
-              />
-            </span>
+            { smoochBotInstalled ?
+              <span>
+                <span style={{ margin: `0 ${units(1)}` }}> - </span>
+                <span>
+                  <FormattedMessage id="mediaExpanded.lastSeen" defaultMessage="Last seen: " />
+                  <TimeBefore date={MediaUtil.createdAt({ published: media.last_seen })} />
+                </span>
+                <span style={{ margin: `0 ${units(1)}` }}> - </span>
+                <span>
+                  <FormattedMessage
+                    id="mediaExpanded.requests"
+                    defaultMessage="{count} requests"
+                    values={{
+                      count: media.requests_count,
+                    }}
+                  />
+                </span>
+              </span> : null
+            }
           </Row>
         </StyledHeaderTextSecondary>
       </div>
@@ -148,11 +162,11 @@ class MediaExpandedComponent extends Component {
 
     return (
       <span>
-        <CardTitle
+        <CardHeader
           style={{ lineHeight: units(4) }}
           title={truncateLength(media.title, 110)}
         />
-        <CardText style={{ padding: `0 ${units(2)}` }}>
+        <CardContent style={{ padding: `0 ${units(2)}` }}>
           {cardHeaderText}
           <FadeIn>
             { hasCustomDescription ?
@@ -161,7 +175,7 @@ class MediaExpandedComponent extends Component {
               </MoreLess> : null }
             {embedCard}
           </FadeIn>
-        </CardText>
+        </CardContent>
         <CardActions style={{ paddingRight: units(0.5) }}>
           <MediaMetadata data={data} {...this.props} media={media} />
         </CardActions>
@@ -260,6 +274,17 @@ const MediaExpandedContainer = Relay.createContainer(MediaExpandedComponent, {
           verification_statuses
           translation_statuses
           get_languages
+          team_bot_installations(first: 10000) {
+            edges {
+              node {
+                id
+                team_bot: bot_user {
+                  id
+                  identifier
+                }
+              }
+            }
+          }
         }
         tags(first: 10000) {
           edges {

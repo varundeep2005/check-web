@@ -35,7 +35,6 @@ import ProfileLink from '../layout/ProfileLink';
 import ParsedText from '../ParsedText';
 import DeleteAnnotationMutation from '../../relay/mutations/DeleteAnnotationMutation';
 import DeleteVersionMutation from '../../relay/mutations/DeleteVersionMutation';
-import UpdateProjectMediaMutation from '../../relay/mutations/UpdateProjectMediaMutation';
 import UpdateTaskMutation from '../../relay/mutations/UpdateTaskMutation';
 import DatetimeTaskResponse from '../task/DatetimeTaskResponse';
 import Can, { can } from '../Can';
@@ -234,6 +233,58 @@ const messages = defineMessages({
     id: 'annotation.menuTooltip',
     defaultMessage: 'Annotation actions',
   },
+  smoochNoMessage: {
+    id: 'annotation.smoochNoMessage',
+    defaultMessage: 'No message was sent with the request',
+  },
+  adultFlag: {
+    id: 'annotation.flagAdult',
+    defaultMessage: 'Adult',
+  },
+  spoofFlag: {
+    id: 'annotation.flagSpoof',
+    defaultMessage: 'Spoof',
+  },
+  medicalFlag: {
+    id: 'annotation.flagMedical',
+    defaultMessage: 'Medical',
+  },
+  violenceFlag: {
+    id: 'annotation.flagViolence',
+    defaultMessage: 'Violence',
+  },
+  racyFlag: {
+    id: 'annotation.flagRacy',
+    defaultMessage: 'Racy',
+  },
+  spamFlag: {
+    id: 'annotation.flagSpam',
+    defaultMessage: 'Spam',
+  },
+  flagLikelihood0: {
+    id: 'annotation.flagLikelihood0',
+    defaultMessage: 'Unknown',
+  },
+  flagLikelihood1: {
+    id: 'annotation.flagLikelihood1',
+    defaultMessage: 'Very unlikely',
+  },
+  flagLikelihood2: {
+    id: 'annotation.flagLikelihood2',
+    defaultMessage: 'Unlikely',
+  },
+  flagLikelihood3: {
+    id: 'annotation.flagLikelihood3',
+    defaultMessage: 'Possible',
+  },
+  flagLikelihood4: {
+    id: 'annotation.flagLikelihood4',
+    defaultMessage: 'Likely',
+  },
+  flagLikelihood5: {
+    id: 'annotation.flagLikelihood5',
+    defaultMessage: 'Very likely',
+  },
 });
 
 // TODO Fix a11y issues
@@ -244,7 +295,6 @@ class Annotation extends Component {
 
     this.state = {
       zoomedCommentImage: false,
-      disableMachineTranslation: false,
     };
   }
 
@@ -292,23 +342,6 @@ class Annotation extends Component {
     const message = getErrorMessage(transaction, fallbackMessage);
     this.context.setMessage(message);
   };
-
-  handleUpdateMachineTranslation() {
-    const onSuccess = () => {
-      this.setState({ disableMachineTranslation: true });
-    };
-
-    if (!this.state.disableMachineTranslation) {
-      Relay.Store.commitUpdate(
-        new UpdateProjectMediaMutation({
-          update_mt: 1,
-          id: this.props.annotated.id,
-        }),
-        { onSuccess, onFailure: this.fail },
-      );
-      this.setState({ disableMachineTranslation: true });
-    }
-  }
 
   handleSuggestion(vid, accept) {
     const onSuccess = () => {};
@@ -420,6 +453,7 @@ class Annotation extends Component {
     const content = object.data;
     let activityType = activity.event_type;
     let contentTemplate = null;
+    let showCard = false;
 
     switch (activityType) {
     case 'create_comment': {
@@ -611,7 +645,30 @@ class Annotation extends Component {
     }
     case 'create_dynamic':
     case 'update_dynamic':
-      if (object.annotation_type === 'verification_status' || object.annotation_type === 'translation_status') {
+      if (object.annotation_type === 'flag') {
+        showCard = true;
+        const { flags } = object.data;
+        const flagsContent = (
+          <ul>
+            { Object.keys(flags).map((flag) => {
+              const likelihood = this.props.intl.formatMessage(messages[`flagLikelihood${flags[flag]}`]);
+              const flagName = this.props.intl.formatMessage(messages[`${flag}Flag`]);
+              return (
+                <li style={{ margin: units(1), listStyle: 'disc' }}>{flagName}: {likelihood}</li>
+              );
+            })}
+          </ul>
+        );
+        contentTemplate = (
+          <div>
+            <FormattedMessage
+              id="annotation.flag"
+              defaultMessage="Classification result:"
+            />
+            {flagsContent}
+          </div>
+        );
+      } else if (object.annotation_type === 'verification_status' || object.annotation_type === 'translation_status') {
         const statusChanges = JSON.parse(activity.object_changes_json);
         if (statusChanges.locked) {
           if (statusChanges.locked[1]) {
@@ -837,45 +894,6 @@ class Annotation extends Component {
         );
       }
 
-      if (object.field_name === 'mt_translations') {
-        const annotation_content = JSON.parse(annotation.content);
-        const { formatted_value } = annotation_content[0];
-        if (!formatted_value.length) {
-          contentTemplate = (
-            <span className="annotation__mt-translations">
-              <button
-                className="annotation__mt-translations"
-                onClick={this.handleUpdateMachineTranslation.bind(this)}
-                disabled={this.state.disableMachineTranslation}
-              >
-                <FormattedMessage
-                  id="annotation.emptyMachineTranslation"
-                  defaultMessage="Add machine translation"
-                />
-              </button>
-            </span>
-          );
-        } else {
-          contentTemplate = (
-            <span className="annotation__mt-translations">
-              <ul className="mt-list">
-                {formatted_value.map(mt => (
-                  <li className="mt__list-item">
-                    <FormattedMessage
-                      id="annotation.machineTranslation"
-                      defaultMessage="Machine translated to {language}{text}"
-                      values={{
-                        language: mt.lang_name,
-                        text: <ParsedText text={mt.text} block />,
-                      }}
-                    />
-                  </li>))}
-              </ul>
-            </span>
-          );
-        }
-      }
-
       if (object.field_name === 'translation_status_status') {
         const statusCode = object.value.toLowerCase().replace(/[ _]/g, '-');
         const status = getStatus(this.props.annotated.translation_statuses, object.value);
@@ -947,8 +965,9 @@ class Annotation extends Component {
         archive_org_response: 'Archive.org',
         keep_backup_response: 'Video Vault',
         perma_cc_response: 'Perma.cc',
+        video_archiver_response: 'Video Archiver',
       };
-      if (Object.keys(archivers).includes(object.field_name) && activityType === 'create_dynamicannotationfield') {
+      if (object.annotation_type === 'archiver' && activityType === 'create_dynamicannotationfield') {
         const archiveContent = JSON.parse(annotation.content);
         const archive = archiveContent.filter(item => item.field_name === object.field_name);
         const archiveResponse = JSON.parse(archive[0].value);
@@ -1071,19 +1090,21 @@ class Annotation extends Component {
         contentTemplate = null;
       }
 
+      if (object.field_name === 'smooch_data' && activityType === 'create_dynamicannotationfield') {
+        showCard = true;
+        let messageText = JSON.parse(object.value).text.trim();
+        if (!messageText) {
+          messageText = this.props.intl.formatMessage(messages.smoochNoMessage);
+        }
+        contentTemplate = (
+          <div className="annotation__card-content">
+            <ParsedText text={messageText} />
+          </div>
+        );
+      }
+
       break;
     }
-    case 'create_flag':
-      contentTemplate = (
-        <span>
-          <FormattedMessage
-            id="annotation.flaggedHeader"
-            defaultMessage="Flagged as {flag} by {author}"
-            values={{ flag: content.flag, author: authorName }}
-          />
-        </span>
-      );
-      break;
     case 'update_embed':
       contentTemplate = (
         <EmbedUpdate
@@ -1192,7 +1213,8 @@ class Annotation extends Component {
       return null;
     }
 
-    const useCardTemplate = activityType === 'create_comment' || activityType === 'screenshot_taken' || activityType === 'bot_response' || activityType === 'task_answer_suggestion';
+    const cardActivities = ['create_comment', 'screenshot_taken', 'bot_response', 'task_answer_suggestion'];
+    const useCardTemplate = (cardActivities.indexOf(activityType) > -1 || showCard);
     const templateClass = `annotation--${useCardTemplate ? 'card' : 'default'}`;
     const typeClass = annotation ? `annotation--${annotation.annotation_type}` : '';
     return (
