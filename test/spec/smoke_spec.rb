@@ -142,7 +142,7 @@ shared_examples 'smoke' do
     page = api_create_team_project_and_link_and_redirect_to_media_page 'http://ca.ios.ba/files/meedan/random.php'
     wait_for_selector('.media-actions__icon').click
     wait_for_selector('.media-actions__lock-status').click
-    wait_for_selector(".media__annotations-column > div > div > button + button + button + button").click
+    wait_for_selector(".media-tab__activity").click
     wait_for_selector('.annotation--verification_status')
     expect(@driver.page_source.include?('Item status locked by')).to be(true)
     wait_for_selector('.media-actions__icon').click
@@ -405,8 +405,8 @@ shared_examples 'smoke' do
     wait_for_selector(".project-list__link").click
     wait_for_selector(".project-actions__icon").click
     wait_for_selector(".project-actions__destroy").click
-    wait_for_selector("#project-actions__confirm-delete").click
-    wait_for_selector("//span[contains(text(), 'Continue')]",:xpath).click
+    wait_for_selector('#confirm-dialog__checkbox').click
+    wait_for_selector('#confirm-dialog__confirm-action-button').click
     wait_for_selector('.message')
     expect(@driver.find_elements(:css, '.project-list__link').length == 0 )
   end
@@ -853,7 +853,7 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?('claim 2')).to be(true)
   end
 
-  it "should restore items from the trash", bin2: true do 
+  it "should restore items from the trash", bin2: true do
     api_create_team_project_and_claim_and_redirect_to_media_page
     wait_for_selector(".media")
     expect(@driver.page_source.include?("Claim")).to be(true)
