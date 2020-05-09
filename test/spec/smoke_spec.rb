@@ -525,8 +525,7 @@ shared_examples 'smoke' do
     wait_for_selector("#create-media-quote-input")
     fill_field('#create-media-quote-input', 'Main Item')
     press_button('#create-media-dialog__submit-button')
-    wait_for_selector_none("#create-media-quote-input")
-    wait_for_selector_list_size(".media-detail", 2)
+    wait_for_selector('.media-condensed__title')
     expect(@driver.page_source.include?('Main Item')).to be(true)
     wait_for_selector(".media-condensed__actions_icon").click
     wait_for_selector('.media-condensed__promote-relationshp').click
