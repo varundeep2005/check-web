@@ -6,6 +6,7 @@ import IconArrowBack from '@material-ui/icons/ArrowBack';
 import IconButton from '@material-ui/core/IconButton';
 import { FormattedMessage } from 'react-intl';
 import ProjectRoute from '../../relay/ProjectRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import { urlFromSearchQuery } from '../search/Search';
 import { Row, Text, HeaderTitle, FadeIn, SlideIn } from '../../styles/js/shared';
 
@@ -117,6 +118,7 @@ const ProjectHeader = (props) => {
     const route = new ProjectRoute({ contextId: props.params.projectId });
     return (<Relay.RootContainer
       Component={ProjectHeaderContainer}
+      renderFailure={renderGenericFailure}
       route={route}
     />);
   } else if (props.params && props.params.mediaId) {

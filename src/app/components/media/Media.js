@@ -4,6 +4,7 @@ import { injectIntl } from 'react-intl';
 import Relay from 'react-relay/classic';
 import CheckContext from '../../CheckContext';
 import MediaRoute from '../../relay/MediaRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import MediaComponent from './MediaComponent';
 import MediasLoading from './MediasLoading';
 
@@ -72,6 +73,7 @@ const ProjectMedia = (props, context) => {
     <Relay.RootContainer
       Component={MediaContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderLoading={() => <MediasLoading count={1} />}
     />
   );

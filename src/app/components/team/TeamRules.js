@@ -20,6 +20,7 @@ import { units, ContentColumn } from '../../styles/js/shared';
 import Message from '../Message';
 import CardHeaderOutside from '../layout/CardHeaderOutside';
 import UpdateTeamMutation from '../../relay/mutations/UpdateTeamMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 
 const messages = defineMessages({
   labelAdd: {
@@ -910,6 +911,7 @@ const TeamRules = (props) => {
     <Relay.RootContainer
       Component={TeamRulesContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <TeamRulesContainer {...data} {...params} />}
       forceFetch
     />

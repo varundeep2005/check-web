@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaRoute from '../../relay/MediaRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import MediasLoading from './MediasLoading';
 import Annotations from '../annotations/Annotations';
 
@@ -254,6 +255,7 @@ const MediaLog = (props) => {
   return (
     <Relay.RootContainer
       Component={MediaLogContainer}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <MediaLogContainer cachedMedia={props.media} {...data} />}
       route={route}
       renderLoading={() => <MediasLoading count={1} />}

@@ -5,6 +5,7 @@ import TeamPublicHeader from './team/TeamPublicHeader';
 import ProjectHeader from './project/ProjectHeader';
 import PublicTeamRoute from '../relay/PublicTeamRoute';
 import teamPublicFragment from '../relay/teamPublicFragment';
+import { renderGenericFailure } from '../relay/GenericRelayClassicError';
 
 import {
   units,
@@ -95,6 +96,7 @@ const Header = (props) => {
       <Relay.RootContainer
         Component={HeaderContainer}
         route={route}
+        renderFailure={renderGenericFailure}
         renderFetched={data => <HeaderContainer {...props} {...data} />}
       />
     );

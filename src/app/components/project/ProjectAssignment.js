@@ -10,6 +10,7 @@ import MultiSelector from '../layout/MultiSelector';
 import ProjectRoute from '../../relay/ProjectRoute';
 import { black54 } from '../../styles/js/shared';
 import UpdateProjectMutation from '../../relay/mutations/UpdateProjectMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import UserAvatars from '../UserAvatars';
 import { getErrorMessage } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
@@ -205,6 +206,7 @@ const ProjectAssignment = (props) => {
     <Relay.RootContainer
       Component={ProjectAssignmentContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <ProjectAssignmentContainer {...props} {...data} />}
     />
   );

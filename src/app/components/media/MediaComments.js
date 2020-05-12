@@ -4,6 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import Relay from 'react-relay/classic';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaRoute from '../../relay/MediaRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import MediasLoading from './MediasLoading';
 import Annotations from '../annotations/Annotations';
 
@@ -226,6 +227,7 @@ const MediaComments = (props) => {
   return (
     <Relay.RootContainer
       Component={MediaCommentsContainer}
+      renderFailure={renderGenericFailure}
       renderFetched={data =>
         <MediaCommentsContainer cachedMedia={props.media} style={props.style} {...data} />}
       route={route}

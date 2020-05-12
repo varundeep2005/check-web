@@ -7,6 +7,7 @@ import 'react-select/dist/react-select.css';
 import Chip from '@material-ui/core/Chip';
 import styled from 'styled-components';
 import TeamRoute from '../../relay/TeamRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import CheckContext from '../../CheckContext';
 import { StyledTagsWrapper, units } from '../../styles/js/shared';
 
@@ -199,6 +200,7 @@ const Attribution = (props, context) => {
     <Relay.RootContainer
       Component={AttributionContainer}
       forceFetch
+      renderFailure={renderGenericFailure}
       renderFetched={data => <AttributionContainer {...props} {...data} />}
       route={route}
     />

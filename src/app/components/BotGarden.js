@@ -7,6 +7,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import { Emojione } from 'react-emoji-render';
 import { Link } from 'react-router';
 import RootRoute from '../relay/RootRoute';
+import { renderGenericFailure } from '../relay/GenericRelayClassicError';
 import { units, ContentColumn, black32 } from '../styles/js/shared';
 
 class BotGardenComponent extends Component {
@@ -82,6 +83,7 @@ const BotGarden = () => {
   return (
     <Relay.RootContainer
       Component={BotGardenContainer}
+      renderFailure={renderGenericFailure}
       route={route}
     />
   );

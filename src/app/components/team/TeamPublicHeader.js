@@ -2,6 +2,7 @@ import React from 'react';
 import Relay from 'react-relay/classic';
 import PublicTeamRoute from '../../relay/PublicTeamRoute';
 import teamPublicFragment from '../../relay/teamPublicFragment';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import TeamHeaderComponent from './TeamHeaderComponent';
 
 const TeamPublicHeaderContainer = Relay.createContainer(TeamHeaderComponent, {
@@ -17,6 +18,7 @@ const TeamPublicHeader = (props) => {
     <Relay.RootContainer
       Component={TeamPublicHeaderContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <TeamPublicHeaderContainer {...props} {...data} />}
     />
   );

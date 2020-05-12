@@ -31,6 +31,7 @@ import { layout, typography, localeAr, removeYellowAutocomplete } from '../style
 import { stringHelper } from '../customHelpers';
 import { mapGlobalMessage } from './MappedMessage';
 import MeRoute from '../relay/MeRoute';
+import { renderGenericFailure } from '../relay/GenericRelayClassicError';
 
 // Global styles
 const GlobalStyle = createGlobalStyle([`
@@ -401,6 +402,7 @@ class Home extends Component {
       <Relay.RootContainer
         Component={HomeContainer}
         route={route}
+        renderFailure={renderGenericFailure}
         renderFetched={data => (
           <HomeContainer
             location={this.props.location}

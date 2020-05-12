@@ -9,6 +9,7 @@ import { can } from '../Can';
 import { withSetFlashMessage } from '../FlashMessage';
 import CreateAnalysisMutation from '../../relay/mutations/CreateAnalysisMutation';
 import UpdateAnalysisMutation from '../../relay/mutations/UpdateAnalysisMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import CheckContext from '../../CheckContext';
 import { stringHelper } from '../../customHelpers';
 
@@ -179,6 +180,7 @@ const MediaAnalysis = (props) => {
   return (
     <Relay.RootContainer
       Component={MediaAnalysisContainer}
+      renderFailure={renderGenericFailure}
       renderFetched={data =>
         <MediaAnalysisContainer cachedMedia={cachedMedia} {...props} {...data} />}
       route={route}

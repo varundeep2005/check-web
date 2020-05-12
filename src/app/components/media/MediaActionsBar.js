@@ -19,6 +19,7 @@ import CreateProjectMediaProjectMutation from '../../relay/mutations/CreateProje
 import UpdateProjectMediaMutation from '../../relay/mutations/UpdateProjectMediaMutation';
 import DeleteProjectMediaProjectMutation from '../../relay/mutations/DeleteProjectMediaProjectMutation';
 import UpdateStatusMutation from '../../relay/mutations/UpdateStatusMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import MoveDialog from './MoveDialog';
 import CheckContext from '../../CheckContext';
 import globalStrings from '../../globalStrings';
@@ -835,6 +836,7 @@ class MediaActionsBar extends React.PureComponent {
     return (
       <Relay.RootContainer
         Component={MediaActionsBarContainer}
+        renderFailure={renderGenericFailure}
         renderFetched={data => <MediaActionsBarContainer {...this.props} {...data} />}
         route={route}
       />

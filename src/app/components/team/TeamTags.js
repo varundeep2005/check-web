@@ -30,6 +30,7 @@ import Message from '../Message';
 import CreateTagTextMutation from '../../relay/mutations/CreateTagTextMutation';
 import UpdateTagTextMutation from '../../relay/mutations/UpdateTagTextMutation';
 import DeleteTagTextMutation from '../../relay/mutations/DeleteTagTextMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import { stringHelper } from '../../customHelpers';
 import globalStrings from '../../globalStrings';
 
@@ -597,6 +598,7 @@ const TeamTags = (props) => {
     <Relay.RootContainer
       Component={TeamTagsContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <TeamTagsContainer {...data} {...params} />}
     />
   );

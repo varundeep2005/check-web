@@ -7,6 +7,7 @@ import { withPusher, pusherShape } from '../../pusher';
 import CreateRelatedMedia from './CreateRelatedMedia';
 import MediaRoute from '../../relay/MediaRoute';
 import mediaFragment from '../../relay/mediaFragment';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import MediaDetail from './MediaDetail';
 import MediasLoading from './MediasLoading';
 import { getFilters } from '../../helpers';
@@ -284,6 +285,7 @@ const MediaRelated = (props) => {
   return (
     <Relay.RootContainer
       Component={MediaRelatedContainer}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <MediaRelatedContainer {...props} {...data} />}
       route={route}
       renderLoading={() => <MediasLoading count={1} />}

@@ -3,6 +3,7 @@ import Relay from 'react-relay/classic';
 import TeamRoute from '../../relay/TeamRoute';
 import TeamComponent from './TeamComponent';
 import teamFragment from '../../relay/teamFragment';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 
 const TeamContainer = Relay.createContainer(TeamComponent, {
   initialVariables: {
@@ -23,6 +24,7 @@ const Team = (props) => {
     <Relay.RootContainer
       Component={TeamContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <TeamContainer {...props} {...data} />}
     />
   );

@@ -17,6 +17,7 @@ import TeamRoute from '../../relay/TeamRoute';
 import { units, title1, ContentColumn, black32 } from '../../styles/js/shared';
 import DeleteTeamBotInstallationMutation from '../../relay/mutations/DeleteTeamBotInstallationMutation';
 import UpdateTeamBotInstallationMutation from '../../relay/mutations/UpdateTeamBotInstallationMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import ConfirmDialog from '../layout/ConfirmDialog';
 
 const messages = defineMessages({
@@ -376,6 +377,7 @@ const TeamBots = (props) => {
     <Relay.RootContainer
       Component={TeamBotsContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <TeamBotsContainer {...data} {...params} />}
     />
   );

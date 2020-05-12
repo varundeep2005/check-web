@@ -1,6 +1,7 @@
 import React from 'react';
 import Relay from 'react-relay/classic';
 import TeamRoute from '../../relay/TeamRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import TeamMembersComponent from './TeamMembersComponent';
 
 const TeamMembersContainer = Relay.createContainer(TeamMembersComponent, {
@@ -76,6 +77,7 @@ const TeamMembers = (props) => {
   const route = new TeamRoute({ teamSlug: props.teamSlug });
   return (<Relay.RootContainer
     Component={TeamMembersContainer}
+    renderFailure={renderGenericFailure}
     route={route}
   />);
 };

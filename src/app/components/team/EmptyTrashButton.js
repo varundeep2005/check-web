@@ -7,6 +7,7 @@ import isEqual from 'lodash.isequal';
 import ConfirmDialog from '../layout/ConfirmDialog';
 import TeamRoute from '../../relay/TeamRoute';
 import UpdateTeamMutation from '../../relay/mutations/UpdateTeamMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import Can from '../Can';
 import { getErrorMessage } from '../../helpers';
 import { withSetFlashMessage } from '../FlashMessage';
@@ -137,6 +138,7 @@ const EmptyTrashButton = (props) => {
     <Relay.RootContainer
       Component={EmptyTrashContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <EmptyTrashContainer {...props} {...data} />}
     />
   );

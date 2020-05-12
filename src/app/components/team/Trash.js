@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 import TeamRoute from '../../relay/TeamRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import CheckContext from '../../CheckContext';
 import Search from '../search/Search';
 
@@ -92,6 +93,7 @@ const Trash = (props) => {
       Component={TrashContainer}
       forceFetch
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <TrashContainer {...props} {...data} />}
     />
   );

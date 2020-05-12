@@ -11,6 +11,7 @@ import Button from '@material-ui/core/Button';
 import UpdateProjectMutation from '../../relay/mutations/UpdateProjectMutation';
 import PageTitle from '../PageTitle';
 import ProjectRoute from '../../relay/ProjectRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import CheckContext from '../../CheckContext';
 import { getErrorMessage } from '../../helpers';
 import { ContentColumn } from '../../styles/js/shared';
@@ -233,6 +234,7 @@ const ProjectEdit = (props) => {
   return (
     <Relay.RootContainer
       Component={ProjectEditContainer}
+      renderFailure={renderGenericFailure}
       route={route}
     />
   );

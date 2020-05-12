@@ -7,6 +7,7 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardActions from '@material-ui/core/CardActions';
 import styled from 'styled-components';
 import MediaRoute from '../../relay/MediaRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import MediaMetadata from './MediaMetadata';
 import MediaUtil from './MediaUtil';
 import MoreLess from '../layout/MoreLess';
@@ -306,6 +307,7 @@ const MediaExpanded = (props) => {
   return (
     <Relay.RootContainer
       Component={MediaExpandedContainer}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <MediaExpandedContainer {...props} {...data} />}
       route={route}
     />

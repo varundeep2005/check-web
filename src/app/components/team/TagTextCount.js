@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Relay from 'react-relay/classic';
 import { FormattedMessage } from 'react-intl';
 import TagTextRoute from '../../relay/TagTextRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 
 class TagTextCountComponent extends Component {
   constructor(props) {
@@ -49,6 +50,7 @@ const TagTextCount = (props) => {
       <Relay.RootContainer
         Component={TagTextCountContainer}
         route={route}
+        renderFailure={renderGenericFailure}
         renderFetched={data => <TagTextCountContainer {...data} />}
       />
     );

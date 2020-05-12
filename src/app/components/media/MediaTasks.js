@@ -7,6 +7,7 @@ import Tasks from '../task/Tasks';
 import { withPusher, pusherShape } from '../../pusher';
 import CreateTask from '../task/CreateTask';
 import MediaRoute from '../../relay/MediaRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import MediasLoading from './MediasLoading';
 import UserUtil from '../user/UserUtil';
 import CheckContext from '../../CheckContext';
@@ -344,6 +345,7 @@ const MediaTasks = (props) => {
   return (
     <Relay.RootContainer
       Component={MediaTasksContainer}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <MediaTasksContainer cachedMedia={media} {...data} />}
       route={route}
       renderLoading={() => <MediasLoading count={1} />}

@@ -3,6 +3,7 @@ import Relay from 'react-relay/classic';
 import UserRoute from '../../relay/UserRoute';
 import UserComponent from './UserComponent';
 import userFragment from '../../relay/userFragment';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 
 const UserContainer = Relay.createContainer(UserComponent, {
   fragments: {
@@ -16,6 +17,7 @@ const User = (props) => {
     <Relay.RootContainer
       Component={UserContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <UserContainer {...props} {...data} />}
     />
   );

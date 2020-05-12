@@ -11,6 +11,7 @@ import MediasLoading from './MediasLoading';
 import Media from './Media';
 import MediaActionsBar from './MediaActionsBar';
 import SearchRoute from '../../relay/SearchRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import { units, black54 } from '../../styles/js/shared';
 
 const messages = defineMessages({
@@ -254,6 +255,7 @@ class MediaSearch extends React.PureComponent {
         <Relay.RootContainer
           Component={MediaSearchContainer}
           route={route}
+          renderFailure={renderGenericFailure}
           renderFetched={
             data => <MediaSearchContainer context={this.context} {...this.props} {...data} />
           }

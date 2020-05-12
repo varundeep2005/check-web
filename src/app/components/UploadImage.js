@@ -6,6 +6,7 @@ import MdHighlightRemove from 'react-icons/lib/md/highlight-remove';
 import styled from 'styled-components';
 import rtlDetect from 'rtl-detect';
 import AboutRoute from '../relay/AboutRoute';
+import { renderGenericFailure } from '../relay/GenericRelayClassicError';
 import { unhumanizeSize } from '../helpers';
 import {
   black38,
@@ -216,6 +217,7 @@ const UploadImage = (props) => {
   return (<Relay.RootContainer
     Component={UploadImageContainer}
     route={route}
+    renderFailure={renderGenericFailure}
     renderFetched={data => <UploadImageContainer {...props} {...data} />}
   />);
 };

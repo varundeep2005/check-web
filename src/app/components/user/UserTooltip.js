@@ -13,6 +13,7 @@ import MediaUtil from '../media/MediaUtil';
 import CheckContext from '../../CheckContext';
 import { nested, truncateLength } from '../../helpers';
 import UserRoute from '../../relay/UserRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import {
   black38,
   black54,
@@ -193,6 +194,7 @@ const UserTooltip = (props) => {
     <Relay.RootContainer
       Component={UserTooltipContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <UserTooltipContainer {...props} {...data} />}
     />
   );

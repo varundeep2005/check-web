@@ -24,6 +24,7 @@ import CheckContext from '../../CheckContext';
 import UpdateProjectMediaMutation from '../../relay/mutations/UpdateProjectMediaMutation';
 import DeleteRelationshipMutation from '../../relay/mutations/DeleteRelationshipMutation';
 import UpdateRelationshipMutation from '../../relay/mutations/UpdateRelationshipMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import { truncateLength, getErrorMessage } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
 import { black87 } from '../../styles/js/shared';
@@ -456,6 +457,7 @@ const MediaCondensed = (props) => {
   return (
     <Relay.RootContainer
       Component={MediaCondensedContainer}
+      renderFailure={renderGenericFailure}
       renderFetched={data =>
         <MediaCondensedContainer cachedMedia={cachedMedia} {...props} {...data} />}
       route={route}

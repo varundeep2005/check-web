@@ -27,6 +27,7 @@ import FilterPopup from '../layout/FilterPopup';
 import TeamSelect from '../team/TeamSelect';
 import MediaUtil from '../media/MediaUtil';
 import UserRoute from '../../relay/UserRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import CheckContext from '../../CheckContext';
 import { units } from '../../styles/js/shared';
 
@@ -284,6 +285,7 @@ const UserAssignments = (props) => {
     <Relay.RootContainer
       Component={UserAssignmentsContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <UserAssignmentsContainer {...data} userId={userId} />}
       forceFetch
     />

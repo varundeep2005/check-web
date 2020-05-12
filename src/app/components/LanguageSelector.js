@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Relay from 'react-relay/classic';
 import AboutRoute from '../relay/AboutRoute';
+import { renderGenericFailure } from '../relay/GenericRelayClassicError';
 import { safelyParseJSON } from '../helpers';
 
 class LanguageSelectorComponent extends Component {
@@ -45,6 +46,7 @@ const LanguageSelector = (props) => {
     <Relay.RootContainer
       Component={LanguageSelectorContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <LanguageSelectorContainer {...props} {...data} />}
     />
   );

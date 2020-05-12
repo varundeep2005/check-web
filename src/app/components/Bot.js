@@ -18,6 +18,7 @@ import Message from './Message';
 import CheckContext from '../CheckContext';
 import { stringHelper } from '../customHelpers';
 import CreateTeamBotInstallationMutation from '../relay/mutations/CreateTeamBotInstallationMutation';
+import { renderGenericFailure } from '../relay/GenericRelayClassicError';
 
 const messages = defineMessages({
   confirmInstall: {
@@ -259,6 +260,7 @@ const Bot = (props) => {
     <Relay.RootContainer
       forceFetch
       Component={BotContainer}
+      renderFailure={renderGenericFailure}
       route={route}
     />
   );

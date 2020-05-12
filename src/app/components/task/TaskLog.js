@@ -7,6 +7,7 @@ import ChatBubble from '@material-ui/icons/ChatBubble';
 import Tooltip from '@material-ui/core/Tooltip';
 import { withPusher, pusherShape } from '../../pusher';
 import TaskRoute from '../../relay/TaskRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import CheckContext from '../../CheckContext';
 import Annotation from '../annotations/Annotation';
 import MediasLoading from '../media/MediasLoading';
@@ -374,6 +375,7 @@ class TaskLog extends Component {
         </div>
         { !this.state.collapsed ? <Relay.RootContainer
           Component={TaskLogContainer}
+          renderFailure={renderGenericFailure}
           renderFetched={data => <TaskLogContainer cachedTask={this.props.task} {...data} />}
           route={route}
           renderLoading={() => <MediasLoading count={1} />}

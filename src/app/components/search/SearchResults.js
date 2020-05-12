@@ -21,6 +21,7 @@ import { black87, headline, units, ContentColumn, Row } from '../../styles/js/sh
 import CheckContext from '../../CheckContext';
 import SearchRoute from '../../relay/SearchRoute';
 import checkSearchResultFragment from '../../relay/checkSearchResultFragment';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 
 // TODO Make this a config
 const pageSize = 20;
@@ -449,6 +450,7 @@ class SearchResults extends React.PureComponent {
       <Relay.RootContainer
         Component={SearchResultsContainer}
         route={resultsRoute}
+        renderFailure={renderGenericFailure}
         renderFetched={data => <SearchResultsContainer {...this.props} {...data} />}
         renderLoading={() => <MediasLoading />}
       />

@@ -10,6 +10,7 @@ import CheckContext from '../../CheckContext';
 import MediasLoading from '../media/MediasLoading';
 import Search from '../search/Search';
 import UpdateUserMutation from '../../relay/mutations/UpdateUserMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 
 class ProjectComponent extends Component {
   componentDidMount() {
@@ -130,6 +131,7 @@ const Project = (props) => {
     <Relay.RootContainer
       Component={ProjectContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <ProjectContainer {...props} {...data} />}
       renderLoading={() => <MediasLoading />}
     />

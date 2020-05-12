@@ -2,6 +2,7 @@ import React from 'react';
 import Relay from 'react-relay/classic';
 import styled from 'styled-components';
 import MeRoute from '../MeRoute';
+import { renderGenericFailure } from '../GenericRelayClassicError';
 import UserMenu from '../../components/user/UserMenu';
 import { Pulse, white, avatarSize } from '../../styles/js/shared';
 
@@ -49,6 +50,7 @@ const UserMenuRelay = (props) => {
       Component={UserMenuContainer}
       route={route}
       renderLoading={() => <StyledAvatarLoader />}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <UserMenuContainer {...props} {...data} />}
     />
   );

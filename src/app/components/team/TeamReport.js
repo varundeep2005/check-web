@@ -13,6 +13,7 @@ import Can from '../Can';
 import TeamRoute from '../../relay/TeamRoute';
 import Message from '../Message';
 import UpdateTeamMutation from '../../relay/mutations/UpdateTeamMutation';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import { stringHelper } from '../../customHelpers';
 
 class TeamReportComponent extends React.Component {
@@ -187,6 +188,7 @@ const TeamReport = (props) => {
     <Relay.RootContainer
       Component={TeamReportContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <TeamReportContainer {...data} {...params} />}
     />
   );

@@ -1,7 +1,6 @@
 import Relay from 'react-relay/classic';
 import { browserHistory } from 'react-router';
 import { defineMessages } from 'react-intl';
-import util from 'util';
 import config from 'config'; // eslint-disable-line require-path-exists/exists
 import { request as requestFunction } from './redux/actions';
 import { mapGlobalMessage } from './components/MappedMessage';
@@ -23,40 +22,34 @@ const messages = defineMessages({
   },
 });
 
-function createRequestError(request, responseStatus, payload) {
-  const errorReason = `Server response had an error status ${responseStatus} and error ${util.inspect(payload)}`;
+function createRequestError(responseStatus, text) {
+  const errorReason = `Server response had an error status ${responseStatus} and error ${text}`;
 
   const error = new Error(errorReason);
-  error.source = payload;
   error.status = responseStatus;
-  error.parsed = true;
+
+  try {
+    const payload = JSON.parse(text);
+    error.source = payload;
+    error.parsed = true;
+  } catch (ex) {
+    // guess it isn't JSON. No matter.
+    error.source = text;
+    error.parsed = false;
+  }
 
   return error;
 }
 
-function generateRandomQueryId() {
-  return `q${parseInt(Math.random() * 1000000, 10)}`;
-}
-
-function parseQueryPayload(request, payload) {
-  if (Object.prototype.hasOwnProperty.call(payload, 'errors')) {
-    const error = createRequestError(request, '200', payload);
-    request.reject(error);
-  } else if (!Object.prototype.hasOwnProperty.call(payload, 'data')) {
-    request.reject(new Error('Server response was missing for query ' +
-          `\`${request.getDebugName()}\`.`));
-  } else {
-    request.resolve({ response: payload.data });
+async function throwOnServerError(response) {
+  if (
+    (response.status >= 200 && response.status < 300) ||
+    response.status === 404 // check-api returns 404; we treat that as okay
+  ) {
+    return;
   }
-}
-
-function throwOnServerError(request, response) {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  }
-  return response.text().then((payload) => {
-    throw createRequestError(request, response.status, payload);
-  });
+  const text = await response.text();
+  throw createRequestError(response.status, text);
 }
 
 let pollStarted = false;
@@ -118,14 +111,9 @@ class CheckNetworkLayer extends Relay.DefaultNetworkLayer {
     return message.defaultMessage;
   }
 
-  _parseQueryResult(result) {
-    if (config.pusherDebug) {
-      // eslint-disable-next-line no-console
-      console.debug('%cSending request to backend ', 'font-weight: bold');
-    }
-    if (result.status === 404 && window.location.pathname !== '/check/not-found') {
-      browserHistory.push('/check/not-found');
-    } else if (result.status === 401 || result.status === 403) {
+  _handleHttpError(result) {
+    if (result.status === 401 || result.status === 403) {
+      // TODO migrate this logic to <GenericRelayClassicError>
       const team = this._init.team();
       if (team !== '') {
         browserHistory.push(`/${team}/join`);
@@ -133,38 +121,6 @@ class CheckNetworkLayer extends Relay.DefaultNetworkLayer {
         browserHistory.push('/check/forbidden');
       }
     }
-  }
-
-  sendQueries(requests) {
-    if (requests.length > 1) {
-      requests.map((request) => {
-        request.randomId = generateRandomQueryId();
-        return request;
-      });
-      return this._sendBatchQuery(requests).then((result) => {
-        this._parseQueryResult(result);
-        return result.json();
-      }).then((response) => {
-        response.forEach((payload) => {
-          const request = requests.find(r => r.randomId === payload.id);
-          if (request) {
-            parseQueryPayload(request, payload.payload);
-          }
-        });
-      }).catch((error) => {
-        requests.forEach(r => r.reject(error));
-      });
-    }
-    return Promise.all(requests.map(request => (
-      this._sendQuery(request).then((result) => {
-        this._parseQueryResult(result);
-        return result.json();
-      }).then((payload) => {
-        parseQueryPayload(request, payload);
-      }).catch((error) => {
-        request.reject(error);
-      })
-    )));
   }
 
   _queryHeaders() {
@@ -186,24 +142,12 @@ class CheckNetworkLayer extends Relay.DefaultNetworkLayer {
     return headers;
   }
 
-  _sendBatchQuery(requests) {
-    return fetch(`${this._uri}/batch`, {
-      ...this._init,
-      body: JSON.stringify(requests.map(request => ({
-        id: request.randomId,
-        query: request.getQueryString(),
-        variables: request.getVariables(),
-        team: encodeURIComponent(this._init.team()),
-      }))),
-      headers: this._queryHeaders(),
-      method: 'POST',
-      credentials: 'include',
-    });
-  }
-
   _sendQuery(request) {
+    if (config.pusherDebug) {
+      // eslint-disable-next-line no-console
+      console.debug('%cSending request to backend ', 'font-weight: bold');
+    }
     return fetch(this._uri, {
-      ...this._init,
       body: JSON.stringify({
         query: request.getQueryString(),
         variables: request.getVariables(),
@@ -276,7 +220,7 @@ class CheckNetworkLayer extends Relay.DefaultNetworkLayer {
           message = this.l(messages.noResponse);
         }
 
-        throw createRequestError(request, 0, JSON.stringify({ error: message }));
+        throw createRequestError(0, JSON.stringify({ error: message }));
       }
     });
   }

@@ -4,6 +4,7 @@ import Relay from 'react-relay/classic';
 import isEqual from 'lodash.isequal';
 import SearchQueryComponent from './SearchQueryComponent';
 import TeamNodeRoute from '../../relay/TeamNodeRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 
 const queryWithoutProjects = Relay.QL`
   fragment on Team {
@@ -77,6 +78,7 @@ class SearchQuery extends React.Component {
       <Relay.RootContainer
         Component={SearchQueryContainer}
         route={queryRoute}
+        renderFailure={renderGenericFailure}
         renderFetched={data => <SearchQueryContainer {...this.props} {...data} />}
       />
     );

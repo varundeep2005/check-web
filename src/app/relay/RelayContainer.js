@@ -2,6 +2,7 @@ import React from 'react';
 import Relay from 'react-relay/classic';
 import CircularProgress from '../components/CircularProgress';
 import MediasLoading from '../components/media/MediasLoading';
+import { renderGenericFailure } from './GenericRelayClassicError';
 
 const RelayContainer = (props) => {
   const params = Object.assign({}, props);
@@ -18,8 +19,9 @@ const RelayContainer = (props) => {
 
   return (
     <Relay.RootContainer
-      {...params}
+      renderFailure={renderGenericFailure}
       renderLoading={() => loaders[type]}
+      {...params}
     />
   );
 };

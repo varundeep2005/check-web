@@ -10,6 +10,7 @@ import BlankState from '../layout/BlankState';
 import CardHeaderOutside from '../layout/CardHeaderOutside';
 import FilterPopup from '../layout/FilterPopup';
 import TeamRoute from '../../relay/TeamRoute';
+import { renderGenericFailure } from '../../relay/GenericRelayClassicError';
 import { ContentColumn, units } from '../../styles/js/shared';
 
 class TeamTasksComponent extends React.Component {
@@ -212,6 +213,7 @@ const TeamTasks = (props) => {
     <Relay.RootContainer
       Component={TeamTasksContainer}
       route={route}
+      renderFailure={renderGenericFailure}
       renderFetched={data => <TeamTasksContainer {...data} {...params} />}
     />
   );
