@@ -10,6 +10,7 @@ rvm:
 cache:
   directories:
     - "/tmp/bundler"
+    - "/tmp/bundler-pender"
 addons:
   postgresql: "9.5"
   hosts:
@@ -24,8 +25,8 @@ before_install:
 - sudo apt-get -qq update
 - sudo apt-get install wget python-setuptools lsof unzip imagemagick ruby ruby-dev libnss3 libnss3-dev xvfb libnss3-1d libexif-dev curl build-essential libssl-dev libappindicator1 fonts-liberation redis-server -y
 # environment
-- export PATH=/tmp/bundler/ruby/2.7.0/bin:$PATH
-- export GEM_PATH=/tmp/bundler/ruby/2.7.0/gems:$GEM_PATH
+- export PATH=/tmp/bundler/ruby/2.7.0/bin:/tmp/bundler-pender/ruby/2.7.0/bin:$PATH
+- export GEM_PATH=/tmp/bundler/ruby/2.7.0/gems:/tmp/bundler-pender/ruby/2.7.0/gems:$GEM_PATH
 - export RUBYOPT="-W0"
 - rvm install ruby-2.7.1
 - rvm --default use 2.7.1
@@ -60,7 +61,8 @@ before_install:
 - git clone https://github.com/meedan/pender.git
 - d=configurator/$APP/travis/pender/; for f in $(find $d -type f); do cp "$f" "pender/${f/$d/}"; done
 - cd pender
-- bundle install --path=/tmp/bundler
+- sudo gem install bundler:1.17.3
+- bundle install --path=/tmp/bundler-pender
 - bundle exec rake db:migrate
 - bundle exec rails runner 'a = ApiKey.create!; a.access_token = "test"; a.save!'
 - bundle exec rails s -p 3005 >/dev/null &
