@@ -23,11 +23,18 @@ function generateRandomQueryId() {
   return `q${parseInt(Math.random() * 1000000, 10)}`;
 }
 
-function parseQueryPayload(request, payload) {
+function parseQueryPayload(request, payload, team) {
   if (Object.prototype.hasOwnProperty.call(payload, 'errors')) {
     if (payload.errors.filter(error => error.code === 3).length
       && window.location.pathname !== '/check/not-found') {
       browserHistory.push('/check/not-found');
+    } else if (payload.errors.filter(error => error.code === 1).length
+      && window.location.pathname !== '/check/forbidden') {
+      if (team !== '') {
+        browserHistory.push(`/${team}/join`);
+      } else if (window.location.pathname !== '/check/forbidden') {
+        browserHistory.push('/check/forbidden');
+      }
     } else {
       const error = createRequestError(request, '200', payload);
       request.reject(error);
@@ -59,11 +66,7 @@ class CheckNetworkLayer extends Relay.DefaultNetworkLayer {
   }
 
   _parseQueryResult(result) {
-    if (config.pusherDebug) {
-      // eslint-disable-next-line no-console
-      console.debug('%cSending request to backend ', 'font-weight: bold');
-    }
-    if (result.status === 401 || result.status === 403) {
+    if (result.status === 401) {
       const team = this._init.team();
       if (team !== '') {
         browserHistory.push(`/${team}/join`);
@@ -74,6 +77,7 @@ class CheckNetworkLayer extends Relay.DefaultNetworkLayer {
   }
 
   sendQueries(requests) {
+    const team = this._init.team();
     if (requests.length > 1) {
       requests.map((request) => {
         request.randomId = generateRandomQueryId();
@@ -86,7 +90,7 @@ class CheckNetworkLayer extends Relay.DefaultNetworkLayer {
         response.forEach((payload) => {
           const request = requests.find(r => r.randomId === payload.id);
           if (request) {
-            parseQueryPayload(request, payload.payload);
+            parseQueryPayload(request, payload.payload, team);
           }
         });
       }).catch((error) => {
@@ -98,7 +102,7 @@ class CheckNetworkLayer extends Relay.DefaultNetworkLayer {
         this._parseQueryResult(result);
         return result.json();
       }).then((payload) => {
-        parseQueryPayload(request, payload);
+        parseQueryPayload(request, payload, team);
       }).catch((error) => {
         request.reject(error);
       })

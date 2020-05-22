@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { defineMessages, injectIntl, intlShape } from 'react-intl';
 import Favicon from 'react-favicon';
 import {
-  MuiThemeProvider as MuiThemeProviderNext,
+  MuiThemeProvider,
   createMuiTheme,
 } from '@material-ui/core/styles';
 import rtlDetect from 'rtl-detect';
@@ -216,7 +216,7 @@ class HomeComponent extends Component {
     const { children, location, intl } = this.props;
     const routeSlug = HomeComponent.routeSlug(children);
 
-    const muiThemeNext = createMuiTheme(muiThemeV1);
+    const muiTheme = createMuiTheme(muiThemeV1);
 
     const routeIsPublic = children && children.props.route.public;
     if (!routeIsPublic && !this.state.token) {
@@ -241,20 +241,20 @@ class HomeComponent extends Component {
       return null;
     }
 
-    const user = this.getContext().currentUser || {};
+    const user = this.props.user || {};
     const loggedIn = !!this.state.token;
     const teamSlugFromUrl = window.location.pathname.match(/^\/([^/]+)/);
-    const teamSlug = (teamSlugFromUrl && teamSlugFromUrl[1] !== 'check' ? teamSlugFromUrl[1] : null);
     const userTeamSlug = ((user.current_team && user.current_team.slug) ?
       user.current_team.slug : null);
-    const inTeamContext = !!(teamSlug || userTeamSlug);
+    const teamSlug = (teamSlugFromUrl && teamSlugFromUrl[1] !== 'check' ? teamSlugFromUrl[1] : null) || userTeamSlug;
+    const inTeamContext = Boolean(teamSlug);
 
     const currentUserIsMember = (() => {
       if (inTeamContext && loggedIn) {
         if (user.is_admin) {
           return true;
         }
-        const teams = JSON.parse(user.teams);
+        const teams = JSON.parse(user.user_teams);
         const team = teams[teamSlug] || {};
         return team.status === 'member';
       }
@@ -267,7 +267,7 @@ class HomeComponent extends Component {
       <React.Fragment>
         <GlobalStyle />
         <MuiPickersUtilsProvider utils={MomentUtils}>
-          <MuiThemeProviderNext theme={muiThemeNext}>
+          <MuiThemeProvider theme={muiTheme}>
             <React.Fragment>
               {config.intercomAppId && user.dbid ?
                 <Intercom
@@ -280,13 +280,13 @@ class HomeComponent extends Component {
               }
               <Favicon url={`/images/logo/${config.appName}.ico`} animated={false} />
               <BrowserSupport />
-              <UserTos user={user} routeIsPublic={routeIsPublic} />
+              <UserTos user={user} />
               { showDrawer ?
                 <DrawerNavigation
                   variant="persistent"
                   docked
                   loggedIn={loggedIn}
-                  teamSlug={teamSlug || userTeamSlug}
+                  teamSlug={teamSlug}
                   inTeamContext={inTeamContext}
                   currentUserIsMember={currentUserIsMember}
                   {...this.props}
@@ -313,7 +313,7 @@ class HomeComponent extends Component {
                 </StyledContent>
               </StyledWrapper>
             </React.Fragment>
-          </MuiThemeProviderNext>
+          </MuiThemeProvider>
         </MuiPickersUtilsProvider>
       </React.Fragment>
     );
