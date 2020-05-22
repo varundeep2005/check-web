@@ -1,0 +1,30 @@
+version: "2.1"
+volumes:
+  redis:
+  minio:
+services:
+  redis:
+    image: redis:5
+    volumes:
+      - "redis:/data"
+  minio:
+    image: minio/minio
+    command: server /data
+    volumes:
+      - "minio:/data"
+    environment:
+      MINIO_ACCESS_KEY: AKIAIOSFODNN7EXAMPLE
+      MINIO_SECRET_KEY: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+  pender:
+    build: .
+    shm_size: 1G
+    ports:
+      - "3005:3005"
+    volumes:
+      - ".:/app"
+    depends_on:
+      - redis
+      - minio
+    environment:
+      RAILS_ENV: development
+      SERVER_PORT: 3005

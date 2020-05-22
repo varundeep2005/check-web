@@ -62,12 +62,10 @@ before_install:
 - git clone https://github.com/meedan/pender.git
 - d=configurator/$APP/travis/pender/; for f in $(find $d -type f); do cp "$f" "pender/${f/$d/}"; done
 - cd pender
-- sudo gem install bundler -v 1.17.3
-- bundle install --path=/tmp/bundler-pender
-- bundle exec rake db:migrate
-- bundle exec rails runner 'a = ApiKey.create!; a.access_token = "test"; a.save!'
-- bundle exec rails s -p 3005 >/dev/null &
+- docker-compose build
+- docker-compose -f ../travis-pender-docker-compose.yml up -d
 - cd -
+- echo 'Waiting for Pender...' && wget -q --waitretry=5 --retry-connrefused -t 20 -T 10 -O - http://localhost:3005
 # xvfb
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
