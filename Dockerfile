@@ -9,12 +9,9 @@ RUN mkdir -p /usr/local/var/run/watchman && touch /usr/local/var/run/watchman/.n
 RUN true \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
-        ruby2.5 \
-        ruby2.5-dev \
         build-essential \
         graphicsmagick \
         tini \
-    && gem install bundler:1.17.1 \
     && rm -rf /var/lib/apt/lists/*
 
 # /app will be "." mounted as a volume mount from the host
@@ -22,6 +19,14 @@ WORKDIR /app
 
 # ruby gems, for integration tests
 # Gemfile.lock files must be updated on a host machine (outside of Docker)
+ENV PATH="/root/.rbenv/bin:/root/.rbenv/shims:${PATH}"
+RUN true \
+    && apt-get install curl libssl-dev libreadline-dev zlib1g-dev \
+         autoconf build-essential libyaml-dev \
+         libreadline-dev libncurses5-dev libffi-dev libgdbm-dev \
+    && curl -fsSL https://github.com/cykerway/rbenv-installer/raw/master/bin/rbenv-installer | bash \
+    && rbenv install 2.7.0 && rbenv global 2.7.0 && rbenv rehash \
+    && gem install bundler
 COPY test/Gemfile test/Gemfile.lock /app/test/
 RUN true \
     && cd /app/test \
