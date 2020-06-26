@@ -16,7 +16,7 @@ const localesRegExp = new RegExp(`/(${locales.join('|')})$`);
 const NODE_ENV = process.env.NODE_ENV || 'production';
 
 const nodeModulesPrefix = path.resolve(__dirname, '../node_modules') + '/';
-const reactIntlLocaleDataPrefix = `${nodeModulesPrefix}react-intl/locale-data/`;
+const intlRelativeTimeFormatPrefix = `${nodeModulesPrefix}@formatjs/intl-relativetimeformat/`;
 
 // This export may be mangled by the caller: either gulpfile.js, or
 // `webpack` command-line parameters.
@@ -38,8 +38,8 @@ module.exports = {
     splitChunks: {
       // do not auto-split.
       // Override with "enforce" (`vendor` chunk below) or comments above
-      // import() directives (`react-intl/locale-data/*.js` and
-      // `localization/translations/*.js`).
+      // import() directives (`@formatjs/intl-relativetimeformat/dist/locale-data/*.js`
+      // and `localization/translations/*.js`).
       minSize: 999999999,
       // do not auto-name chunks.
       // Recommended in Webpack docs so names in dev/prod stay predictable.
@@ -56,7 +56,7 @@ module.exports = {
             return (
               resource
               && resource.startsWith(nodeModulesPrefix)
-              && !resource.startsWith(reactIntlLocaleDataPrefix)
+              && !resource.startsWith(intlRelativeTimeFormatPrefix)
             );
           }
         }
@@ -70,7 +70,7 @@ module.exports = {
     //   schema: path.resolve(__dirname, '../relay.json'),
     //   src: path.resolve(__dirname, '../src/app'),
     // }),
-    new webpack.ContextReplacementPlugin(/react-intl\/locale-data/, localesRegExp),
+    new webpack.ContextReplacementPlugin(/@formatjs\/intl-relativetimeformat\/dist\/locale-data/, localesRegExp),
     new webpack.ContextReplacementPlugin(/localization\/translations/, localesRegExp),
     new CompressionPlugin({
       asset: '[path].gz[query]',

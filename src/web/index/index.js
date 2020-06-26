@@ -87,17 +87,24 @@ const callback = (translations) => {
   );
 };
 
+async function loadIntlPolyfills() {
+  if (!Intl.RelativeTimeFormat) {
+    await Promise.all([
+      import(/* webpackChunkName: "intl-relativetimeformat-polyfill" */ `@formatjs/intl-relativetimeformat/polyfill`),
+      import(/* webpackChunkName: "intl-relativetimeformat-[request]" */ `@formatjs/intl-relativetimeformat/dist/locale-data/${locale}`),
+    ])
+  }
+}
+
 if (locale === 'en') {
   callback({});
 } else {
   Promise.all([
-    import(/* webpackChunkName: "react-intl-[request]" */ `react-intl/locale-data/${locale}`),
     import(/* webpackChunkName: "messages-[request]" */ `../../../localization/translations/${locale}`),
-  ]).then(([localeDataModule, messagesModule]) => {
+    loadIntlPolyfills(),
+  ]).then(([messagesModule]) => {
     // https://medium.com/webpack/webpack-4-import-and-commonjs-d619d626b655
-    const localeData = localeDataModule.default;
     const messages = messagesModule.default;
-    addLocaleData(localeData);
     callback(messages);
   });
 }

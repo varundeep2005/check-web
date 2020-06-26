@@ -9,21 +9,15 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { IntlProvider, intlShape } from 'react-intl';
+import { IntlProvider, createIntl, createIntlCache } from 'react-intl';
 import { mount, shallow } from 'enzyme';
-
-// You can pass your messages to the IntlProvider. Optional: remove if unneeded.
-// const messages = require('../locales/en'); // en.json
-const messages = {}; // en.json
-
-// Create the IntlProvider to retrieve context for wrapping around.
-const intlProvider = new IntlProvider({ locale: 'en', messages }, {});
-const { intl } = intlProvider.getChildContext();
 
 /**
  * When using React-Intl `injectIntl` on components, props.intl is required.
  */
 function nodeWithIntlProp(node) {
+  const cache = createIntlCache();
+  const intl = createIntl({ locale: 'en', messages: {} }, cache);
   return React.cloneElement(node, { intl });
 }
 
@@ -60,23 +54,23 @@ export function getStore() {
   return store;
 }
 
+/**
+ * DEPRECATED. Does lots of things. TODO callers, use mountWithIntlProvider() only.
+ */
 export function mountWithIntl(node) {
-  return mount(nodeWithIntlProp(node), {
-    context: { intl, store },
-    childContextTypes: { intl: intlShape, store: PropTypes.object },
+  return mountWithIntlProvider(node, {}, {
+    context: { store },
+    childContextTypes: { store: PropTypes.object },
   });
 }
 
-export function mountWithIntlProvider(node, intlProviderProps = {}) {
+export function mountWithIntlProvider(node, intlProviderProps = {}, extraProps = {}) {
   return mount(node, {
     wrappingComponent: IntlProvider,
     wrappingComponentProps: {
       locale: 'en',
       ...intlProviderProps,
     },
+    ...extraProps,
   });
-}
-
-export function shallowWithIntl(node) {
-  return shallow(nodeWithIntlProp(node), { context: { intl, store } });
 }
