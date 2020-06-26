@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedRelative } from 'react-intl';
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -11,6 +10,7 @@ import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
 import RulesTableToolbar from './RulesTableToolbar';
 import RulesTableHead from './RulesTableHead';
+import TimeBefore from '../../TimeBefore';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -112,9 +112,7 @@ export default function RulesTable(props) {
                       {name}
                     </TableCell>
                     <TableCell>
-                      <time dateTime={date.toISOString()}>
-                        <FormattedRelative value={date} />
-                      </time>
+                      <TimeBefore date={date} />
                     </TableCell>
                   </TableRow>
                 );

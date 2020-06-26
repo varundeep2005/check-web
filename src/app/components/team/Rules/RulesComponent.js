@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl, intlShape, defineMessages, FormattedMessage } from 'react-intl';
+import { injectIntl, defineMessages, FormattedMessage } from 'react-intl';
 import { makeStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import { graphql, commitMutation } from 'react-relay/compat';
@@ -197,9 +197,7 @@ const RulesComponent = (props) => {
 RulesComponent.propTypes = {
   team: PropTypes.object.isRequired,
   setFlashMessage: PropTypes.func.isRequired,
-  // https://github.com/yannickcr/eslint-plugin-react/issues/1389
-  // eslint-disable-next-line react/no-typos
-  intl: intlShape.isRequired,
+  intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(withSetFlashMessage(RulesComponent));

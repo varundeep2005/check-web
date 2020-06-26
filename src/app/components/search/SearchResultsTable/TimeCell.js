@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedRelative } from 'react-intl';
 import TableCell from '@material-ui/core/TableCell';
 import { makeStyles } from '@material-ui/core/styles';
+import TimeBefore from '../../TimeBefore';
 
 const useStyles = makeStyles({
   root: {
@@ -12,13 +12,10 @@ const useStyles = makeStyles({
 
 export default function TimeCell({ unixTimestampInS }) {
   const classes = useStyles();
-  const date = new Date(unixTimestampInS * 1000);
 
   return (
     <TableCell classes={classes}>
-      <time dateTime={date.toISOString()}>
-        <FormattedRelative value={date} />
-      </time>
+      <TimeBefore date={new Date(unixTimestampInS * 1000)} />
     </TableCell>
   );
 }
