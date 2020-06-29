@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 import Chip from '@material-ui/core/Chip';
@@ -164,7 +164,7 @@ class AttributionComponent extends React.Component {
   }
 }
 
-const AttributionContainer = Relay.createContainer(injectIntl(AttributionComponent), {
+const AttributionContainer = Relay.createContainer(AttributionComponent, {
   fragments: {
     team: () => Relay.QL`
       fragment on Team {

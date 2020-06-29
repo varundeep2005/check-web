@@ -16,7 +16,7 @@ import { getErrorMessage } from '../../helpers';
 import { ContentColumn } from '../../styles/js/shared';
 import { stringHelper } from '../../customHelpers';
 import { withSetFlashMessage } from '../FlashMessage';
-import { FormattedGlobalMessage } from '../MappedMessage';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 
 class ProjectEditComponent extends Component {
   constructor(props) {

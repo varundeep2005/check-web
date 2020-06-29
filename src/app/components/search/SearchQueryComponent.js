@@ -1,6 +1,6 @@
 import React from 'react';
 import classNames from 'classnames';
-import { FormattedMessage, FormattedHTMLMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Dialog from '@material-ui/core/Dialog';
@@ -543,22 +543,64 @@ class SearchQueryComponent extends React.Component {
                 <IconButton onClick={this.handlePopperClick}>
                   <ClearIcon />
                 </IconButton>
-                <FormattedHTMLMessage
-                  id="search.help"
-                  defaultMessage='
-                    <table>
-                      <tbody>
-                        <tr><td>+</td><td>Tree + Leaf</td><td>Items with both Tree AND Leaf</td></tr>
-                        <tr><td>|</td><td>Tree | Leaf</td><td>Items with either Tree OR Leaf</td></tr>
-                        <tr><td>()</td><td>Tree + (Leaf | Branch)</td><td>Items with Tree AND Leaf OR items with Tree AND Branch</td></tr>
-                      </tbody>
-                    </table>
-                    <div>
-                      <a href="https://medium.com/meedan-user-guides/search-on-check-25c752bd8cc1" target="_blank" >
-                        Learn more about search techniques
-                      </a>
-                    </div>'
-                />
+                <table>
+                  <tbody>
+                    <tr>
+                      <th>+</th>
+                      <td>
+                        <FormattedMessage id="search.help.AND.example" defaultMessage="A + B" />
+                      </td>
+                      <td>
+                        <FormattedMessage
+                          id="search.help.AND.meaning"
+                          defaultMessage="Items with both A <em>AND</em> B"
+                          values={{ em: (...chunks) => <em>{chunks}</em> }}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>+</th>
+                      <td>
+                        <FormattedMessage id="search.help.OR.example" defaultMessage="A | B" />
+                      </td>
+                      <td>
+                        <FormattedMessage
+                          id="search.help.OR.meaning"
+                          defaultMessage="Items with either A <em>OR</em> B"
+                          values={{ em: (...chunks) => <em>{chunks}</em> }}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <th>()</th>
+                      <td>
+                        <FormattedMessage
+                          id="search.help.parentheses.example"
+                          defaultMessage="A + (B | C)"
+                        />
+                      </td>
+                      <td>
+                        <FormattedMessage
+                          id="search.help.parentheses.meaning"
+                          defaultMessage="Items with A <em>AND</em> B, <em>OR</em> items with A <em>AND</em> C"
+                          values={{ em: (...chunks) => <em>{chunks}</em> }}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p>
+                  <a
+                    href="https://medium.com/meedan-user-guides/search-on-check-25c752bd8cc1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FormattedMessage
+                      id="search.help.learnMore"
+                      defaultMessage="Learn more about search techniques"
+                    />
+                  </a>
+                </p>
               </Paper>
             </StyledPopper>
           </form>

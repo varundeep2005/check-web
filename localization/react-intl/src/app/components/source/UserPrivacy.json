@@ -1,15 +1,7 @@
 [
   {
-    "id": "UserPrivacy.deleteAccount",
-    "defaultMessage": "Delete Account"
-  },
-  {
     "id": "userPrivacy.deleteAccountConfirmationText",
     "defaultMessage": "Are you sure? This will remove your account and log you out of the app."
-  },
-  {
-    "id": "userPrivacy.ppLink",
-    "defaultMessage": "Privacy Policy"
   },
   {
     "id": "userPrivacy.title",
@@ -17,7 +9,7 @@
   },
   {
     "id": "userPrivacy.description",
-    "defaultMessage": "Please review our {ppLink} to learn how {appName} uses and stores your information."
+    "defaultMessage": "Please review our <pp>Privacy Policy</pp> to learn how {appName} uses and stores your information."
   },
   {
     "id": "userPrivacy.seeInformationText",
@@ -50,5 +42,9 @@
   {
     "id": "userPrivacy.deleteAccountButton",
     "defaultMessage": "Delete my account"
+  },
+  {
+    "id": "UserPrivacy.deleteAccount",
+    "defaultMessage": "Delete Account"
   }
 ]

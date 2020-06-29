@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
-import { FormattedHTMLMessage, FormattedDate } from 'react-intl';
 import { Link } from 'react-router';
 import Avatar from '@material-ui/core/Avatar';
 import LaunchIcon from '@material-ui/icons/Launch';
 import styled from 'styled-components';
 import { LocalizedRole } from './UserUtil';
+import UserJoinedDateAndWorkspaceCount from './UserJoinedDateAndWorkspaceCount';
 import ParsedText from '../ParsedText';
 import SocialIcon from '../SocialIcon';
 import { truncateLength } from '../../helpers';
@@ -123,19 +123,11 @@ function UserTooltipComponent({ teamUser }) {
             </div>
           </div>
 
-          <div className="tooltip__contact-info">
-            <FormattedDate value={createdAt} year="numeric" month="short" day="numeric">
-              {dateString => (
-                <FormattedHTMLMessage
-                  id="userTooltip.dateJoined"
-                  defaultMessage="Joined {date} &bull; {teamsCount, plural, =0 {No workspaces} one {1 workspace} other {# workspaces}}"
-                  values={{
-                    date: dateString,
-                    teamsCount: user.number_of_teams,
-                  }}
-                />
-              )}
-            </FormattedDate>
+          <div>
+            <UserJoinedDateAndWorkspaceCount
+              createdAt={createdAt}
+              nWorkspaces={user.number_of_teams}
+            />
           </div>
           {source.account_sources.edges.map(({ node: { account: { id, url, provider } } }) => (
             <AccountLink key={id} url={url} provider={provider} />

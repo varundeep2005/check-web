@@ -7,7 +7,7 @@ import TextField from '@material-ui/core/TextField';
 import TeamAvatar from './TeamAvatar';
 import Message from '../Message';
 import UploadImage from '../UploadImage';
-import { FormattedGlobalMessage } from '../MappedMessage';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 import { getErrorMessage, validateURL } from '../../helpers';
 import UpdateTeamMutation from '../../relay/mutations/UpdateTeamMutation';
 import {

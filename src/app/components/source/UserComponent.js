@@ -59,7 +59,7 @@ class UserComponent extends React.Component {
               { isEditing ?
                 <UserInfoEdit user={user} /> :
                 <div>
-                  <UserInfo user={user} context={context} />
+                  <UserInfo user={user} isUserSelf={isUserSelf} />
                   <Tabs
                     indicatorColor="primary"
                     textColor="primary"

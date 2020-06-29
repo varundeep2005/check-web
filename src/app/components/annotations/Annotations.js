@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import styled from 'styled-components';
@@ -98,4 +98,4 @@ class Annotations extends React.Component {
   }
 }
 
-export default injectIntl(Annotations);
+export default Annotations;

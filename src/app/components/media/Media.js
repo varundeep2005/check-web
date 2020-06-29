@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import Relay from 'react-relay/classic';
 import CheckContext from '../../CheckContext';
 import MediaRoute from '../../relay/MediaRoute';
@@ -84,4 +83,4 @@ ProjectMedia.contextTypes = {
   store: PropTypes.object,
 };
 
-export default injectIntl(ProjectMedia);
+export default ProjectMedia;

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Relay from 'react-relay/classic';
 import { browserHistory } from 'react-router';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import IconMoreVert from '@material-ui/icons/MoreVert';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
@@ -199,4 +199,4 @@ ProjectActions.contextTypes = {
   store: PropTypes.object,
 };
 
-export default withSetFlashMessage(injectIntl(ProjectActions));
+export default withSetFlashMessage(ProjectActions);

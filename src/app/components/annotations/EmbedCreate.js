@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import ParsedText from '../ParsedText';
 
 const EmbedCreate = (props) => {
@@ -60,4 +60,4 @@ const EmbedCreate = (props) => {
   return null;
 };
 
-export default injectIntl(EmbedCreate);
+export default EmbedCreate;

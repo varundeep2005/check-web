@@ -1,9 +1,9 @@
 import React from 'react';
-import { FormattedHTMLMessage, FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Favicon from 'react-favicon';
 import Typography from '@material-ui/core/Typography';
 import config from 'config'; // eslint-disable-line require-path-exists/exists
-import { mapGlobalMessage } from './MappedMessage';
+import FormattedGlobalMessage from './FormattedGlobalMessage';
 import Message from './Message';
 import FooterRelay from '../relay/containers/FooterRelay';
 import Login from './Login';
@@ -18,7 +18,21 @@ const LoginContainer = props => (
         <Favicon url={`/images/logo/${config.appName}.ico`} animated={false} />
 
         <p style={{ marginTop: 16, textAlign: 'center' }}>
-          <FormattedHTMLMessage id="browser.support.message" defaultMessage='Best viewed with <a href="https://www.google.com/chrome/browser/desktop/">Chrome for Desktop</a>.' />
+          <FormattedMessage
+            id="browser.support.message"
+            defaultMessage="Best viewed with <a>Chrome for Desktop</a>"
+            values={{
+              a: (...chunks) => (
+                <a
+                  href="https://www.google.com/chrome/browser/desktop/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {chunks}
+                </a>
+              ),
+            }}
+          />
         </p>
 
         <Message message={props.message} />
@@ -30,20 +44,49 @@ const LoginContainer = props => (
         <p style={{ textAlign: 'center' }}>
           <FormattedMessage
             id="loginContainer.agreeTerms"
-            defaultMessage="By signing in, you agree to the {appName} {tosLink} and {ppLink}."
+            defaultMessage="By signing in, you agree to the {appName} <tos>Terms of Service</tos> and <pp>Privacy Policy</pp>"
             values={{
-              appName: mapGlobalMessage(props.intl, 'appNameHuman'),
-              tosLink: <a className="login-container__footer-link" target="_blank" rel="noopener noreferrer" href={stringHelper('TOS_URL')}><FormattedMessage id="tos.title" defaultMessage="Terms of Service" /></a>,
-              ppLink: <a className="login-container__footer-link" target="_blank" rel="noopener noreferrer" href={stringHelper('PP_URL')}><FormattedMessage id="privacy.policy.title" defaultMessage="Privacy&nbsp;Policy" /></a>,
+              appName: <FormattedGlobalMessage messageKey="appNameHuman" />,
+              tos: (...chunks) => (
+                <a
+                  className="login-container__footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={stringHelper('TOS_URL')}
+                >
+                  {chunks}
+                </a>
+              ),
+              pp: (...chunks) => (
+                <a
+                  className="login-container__footer-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={stringHelper('PP_URL')}
+                >
+                  {chunks}
+                </a>
+              ),
             }}
           />
         </p>
 
         <p style={{ textAlign: 'center' }}>
-          <FormattedHTMLMessage
+          <FormattedMessage
             id="login.contactSupport"
-            defaultMessage='For support contact <a href="mailto:{supportEmail}">{supportEmail}</a>.'
-            values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
+            defaultMessage="For support contact <a>{supportEmail}</a>"
+            values={{
+              a: (...chunks) => (
+                <a
+                  href={`mailto:${stringHelper('SUPPORT_EMAIL')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {chunks}
+                </a>
+              ),
+              supportEmail: stringHelper('SUPPORT_EMAIL'),
+            }}
           />
         </p>
         <FooterRelay {...props} />
@@ -52,4 +95,4 @@ const LoginContainer = props => (
   </Typography>
 );
 
-export default injectIntl(LoginContainer);
+export default LoginContainer;

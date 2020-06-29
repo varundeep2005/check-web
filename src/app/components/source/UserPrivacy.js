@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Relay from 'react-relay/classic';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
@@ -11,18 +11,10 @@ import UserConnectedAccount from '../user/UserConnectedAccount';
 import { logout } from '../../redux/actions';
 import DeleteCheckUserMutation from '../../relay/mutations/DeleteCheckUserMutation';
 import CheckContext from '../../CheckContext';
-import { mapGlobalMessage } from '../MappedMessage';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 import { getErrorMessage } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
 import { units } from '../../styles/js/shared';
-import globalStrings from '../../globalStrings';
-
-const messages = defineMessages({
-  deleteAccount: {
-    id: 'UserPrivacy.deleteAccount',
-    defaultMessage: 'Delete Account',
-  },
-});
 
 class UserPrivacy extends Component {
   static handleSubmit(subject) {
@@ -59,7 +51,12 @@ class UserPrivacy extends Component {
     const { user } = this.props;
 
     const onFailure = (transaction) => {
-      const fallbackMessage = this.props.intl.formatMessage(globalStrings.unknownError, { supportEmail: stringHelper('SUPPORT_EMAIL') });
+      const fallbackMessage = (
+        <FormattedGlobalMessage
+          messageKey="unknownError"
+          values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
+        />
+      );
       const message = getErrorMessage(transaction, fallbackMessage);
       this.setState({ message });
     };
@@ -114,19 +111,6 @@ class UserPrivacy extends Component {
       />,
     };
 
-    const appName = mapGlobalMessage(this.props.intl, 'appNameHuman');
-
-    const ppLink = (
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        style={linkStyle}
-        href={stringHelper('PP_URL')}
-      >
-        <FormattedMessage id="userPrivacy.ppLink" defaultMessage="Privacy Policy" />
-      </a>
-    );
-
     const { providers } = this.props.user;
     providers.splice(providers.indexOf('google_oauth2'), 1);
 
@@ -138,10 +122,19 @@ class UserPrivacy extends Component {
         <p style={style}>
           <FormattedMessage
             id="userPrivacy.description"
-            defaultMessage="Please review our {ppLink} to learn how {appName} uses and stores your information."
+            defaultMessage="Please review our <pp>Privacy Policy</pp> to learn how {appName} uses and stores your information."
             values={{
-              ppLink,
-              appName,
+              appName: <FormattedGlobalMessage messageKey="appNameHuman" />,
+              pp: (...chunks) => (
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={linkStyle}
+                  href={stringHelper('PP_URL')}
+                >
+                  {chunks}
+                </a>
+              ),
             }}
           />
         </p>
@@ -150,7 +143,7 @@ class UserPrivacy extends Component {
             <FormattedMessage
               id="userPrivacy.seeInformationText"
               defaultMessage="We will send you a file with the content and data you created and generated on {appName}. This can be kept for your records or transferred to another service."
-              values={{ appName }}
+              values={{ appName: <FormattedGlobalMessage messageKey="appNameHuman" /> }}
             />
             <Button
               id="user-privacy__see-info"
@@ -167,7 +160,7 @@ class UserPrivacy extends Component {
             <FormattedMessage
               id="userPrivacy.stopProcessingText"
               defaultMessage="You can request {appName} to stop processing your information under certain conditions."
-              values={{ appName }}
+              values={{ appName: <FormattedGlobalMessage messageKey="appNameHuman" /> }}
             />
             <Button
               id="user-privacy__stop-processing"
@@ -203,7 +196,7 @@ class UserPrivacy extends Component {
             <FormattedMessage
               id="userPrivacy.deleteAccountText"
               defaultMessage="If you delete your account, your personal information will be erased. Comments, annotations, and workspace activity will become pseudonymous and remain on {appName}."
-              values={{ appName }}
+              values={{ appName: <FormattedGlobalMessage messageKey="appNameHuman" /> }}
             />
             <Button
               id="user-privacy__delete-account"
@@ -216,7 +209,9 @@ class UserPrivacy extends Component {
             <ConfirmDialog
               message={this.state.message}
               open={this.state.dialogOpen}
-              title={this.props.intl.formatMessage(messages.deleteAccount)}
+              title={
+                <FormattedMessage id="UserPrivacy.deleteAccount" defaultMessage="Delete Account" />
+              }
               blurb={confirmDialog.blurb}
               handleClose={this.handleCloseDialog.bind(this)}
               handleConfirm={this.handleDeleteAccount.bind(this)}
@@ -232,4 +227,4 @@ UserPrivacy.contextTypes = {
   store: PropTypes.object,
 };
 
-export default injectIntl(UserPrivacy);
+export default UserPrivacy;

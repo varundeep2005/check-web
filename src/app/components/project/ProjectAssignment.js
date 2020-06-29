@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Relay from 'react-relay/classic';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Button from '@material-ui/core/Button';
 import Menu from '@material-ui/core/Menu';
 import IconArrowDropDown from '@material-ui/icons/ArrowDropDown';
@@ -11,10 +11,10 @@ import ProjectRoute from '../../relay/ProjectRoute';
 import { black54 } from '../../styles/js/shared';
 import UpdateProjectMutation from '../../relay/mutations/UpdateProjectMutation';
 import UserAvatars from '../UserAvatars';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 import { getErrorMessage } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
 import { withSetFlashMessage } from '../FlashMessage';
-import globalStrings from '../../globalStrings';
 
 class ProjectAssignmentComponent extends Component {
   state = {
@@ -36,7 +36,12 @@ class ProjectAssignmentComponent extends Component {
 
   handleSelect = (selected) => {
     const onFailure = (transaction) => {
-      const fallbackMessage = this.props.intl.formatMessage(globalStrings.unknownError, { supportEmail: stringHelper('SUPPORT_EMAIL') });
+      const fallbackMessage = (
+        <FormattedGlobalMessage
+          messageKey="unknownError"
+          values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
+        />
+      );
       const message = getErrorMessage(transaction, fallbackMessage);
       this.props.setFlashMessage(message);
     };
@@ -138,12 +143,10 @@ class ProjectAssignmentComponent extends Component {
 }
 
 ProjectAssignmentComponent.propTypes = {
-  intl: PropTypes.object.isRequired,
   setFlashMessage: PropTypes.func.isRequired,
 };
 
-const ConnectedProjectAssignmentComponent =
-  withSetFlashMessage(injectIntl(ProjectAssignmentComponent));
+const ConnectedProjectAssignmentComponent = withSetFlashMessage(ProjectAssignmentComponent);
 
 const ProjectAssignmentContainer = Relay.createContainer(ConnectedProjectAssignmentComponent, {
   initialVariables: {

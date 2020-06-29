@@ -1,9 +1,7 @@
 import React from 'react';
-import {
-  FormattedMessage,
-  defineMessages,
-  injectIntl,
-} from 'react-intl';
+import { FormattedMessage } from 'react-intl';
+import { QueryRenderer, graphql } from 'react-relay/compat';
+import Relay from 'react-relay/classic';
 import { browserHistory, Link } from 'react-router';
 import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
@@ -11,26 +9,14 @@ import CardContent from '@material-ui/core/CardContent';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
+import InputAdornment from '@material-ui/core/InputAdornment';
 import styled from 'styled-components';
 import config from 'config'; // eslint-disable-line require-path-exists/exists
 import {
-  black38,
   caption,
   checkBlue,
-  subheading2,
   units,
 } from '../../styles/js/shared';
-
-const messages = defineMessages({
-  teamSlugHint: {
-    id: 'findTeamCard.teamSlugHint',
-    defaultMessage: 'Workspace URL',
-  },
-  teamNotFound: {
-    id: 'findTeamCard.teamNotFound',
-    defaultMessage: 'Workspace not found!',
-  },
-});
 
 const TeamUrlRow = styled.div`
   align-items: flex-start;
@@ -44,128 +30,131 @@ const TeamUrlRow = styled.div`
   }
 `;
 
-const TeamUrlColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  padding-bottom: 9px;
-`;
+function FindTeamCardComponent({
+  queryTeamSlug, onSubmitTeamSlug, isLoading, isFound,
+}) {
+  // teamSlug: what the user sees
+  const [teamSlug, setTeamSlug] = React.useState(queryTeamSlug);
 
-const TeamUrlDomain = styled.span`
-  font: ${subheading2};
-  color: ${black38};
-`;
+  const handleChangeTeamSlug = React.useCallback((ev) => {
+    setTeamSlug(ev.target.value);
+  }, [setTeamSlug]);
 
-class FindTeamCard extends React.Component {
-  constructor(props) {
-    super(props);
+  const handleSubmit = React.useCallback((ev) => {
+    ev.preventDefault();
+    onSubmitTeamSlug(teamSlug);
+  }, [onSubmitTeamSlug, teamSlug]);
 
-    this.state = {
-      slug: this.props.teamSlug,
-      message: null,
-    };
-  }
+  const isNotFound = !!queryTeamSlug && queryTeamSlug === teamSlug && !isLoading && !isFound;
 
-  componentWillMount() {
-    this.handleQuery();
-  }
-
-  handleQuery = () => {
-    const { team, teamSlug } = this.props;
-
-    if (teamSlug) {
-      if (team && (teamSlug === team.slug)) {
-        browserHistory.push(`/${team.slug}/join`);
-      } else {
-        this.setState({ message: this.props.intl.formatMessage(messages.teamNotFound) });
-      }
-    }
-  };
-
-  handleSlugChange = (e) => {
-    this.setState({ slug: e.target.value, message: null });
-  };
-
-  handleSubmit = (e) => {
-    e.preventDefault();
-    const { slug } = this.state;
-    browserHistory.push(`/check/teams/find/${slug}`);
-  };
-
-  render() {
-    return (
-      <div>
-        <Card className="find-team-card">
-          <CardHeader
-            titleStyle={{ fontSize: '20px', lineHeight: '32px' }}
-            title={
-              <FormattedMessage
-                id="findTeamCard.mainHeading"
-                defaultMessage="Find an existing workspace"
-              />
-            }
-            subtitle={
-              <FormattedMessage
-                id="findTeamCard.blurb"
-                defaultMessage="Request to join an existing workspace by adding its name here, or get started by creating your own."
-              />
-            }
-          />
-          <form className="find-team__form">
-            <CardContent>
-              <TeamUrlRow>
-                <TeamUrlColumn>
-                  <label htmlFor="team-slug-container">
-                    <FormattedMessage
-                      id="findTeamCard.url"
-                      defaultMessage="Workspace URL"
-                    />
-                  </label>
-                  <TeamUrlDomain>
-                    {config.selfHost}/
-                  </TeamUrlDomain>
-                </TeamUrlColumn>
-                <TextField
-                  type="text"
-                  id="team-slug-container"
-                  className="find-team__team-slug-input"
-                  defaultValue={this.props.teamSlug}
-                  onChange={this.handleSlugChange}
-                  placeholder={this.props.intl.formatMessage(messages.teamSlugHint)}
-                  error={this.state.message}
-                  helperText={this.state.message}
-                  autoComplete="off"
-                  fullWidth
-                  margin="normal"
-                />
-              </TeamUrlRow>
-            </CardContent>
-            <CardActions>
-              <Button
-                variant="contained"
-                color="primary"
-                type="submit"
-                className="find-team__submit-button"
-                onClick={this.handleSubmit}
-              >
-                <FormattedMessage
-                  id="findTeamCard.submitButton"
-                  defaultMessage="Find workspace"
-                />
-              </Button>
-            </CardActions>
-          </form>
-        </Card>
-        <div style={{ marginTop: units(2) }}>
-          <Link to="/check/teams/new" className="find-team__toggle-create">
+  return (
+    <div>
+      <Card className="find-team-card">
+        <CardHeader
+          titleStyle={{ fontSize: '20px', lineHeight: '32px' }}
+          title={
             <FormattedMessage
-              id="findTeamCard.createYourOwn"
-              defaultMessage="You can also create your own workspace."
+              id="findTeamCard.mainHeading"
+              defaultMessage="Find an existing workspace"
             />
-          </Link>
-        </div>
+          }
+          subheader={
+            <FormattedMessage
+              id="findTeamCard.blurb"
+              defaultMessage="Request to join an existing workspace by adding its URL here:"
+            />
+          }
+        />
+        <form className="find-team__form" disabled={queryTeamSlug && isLoading}>
+          <CardContent>
+            <TeamUrlRow>
+              <FormattedMessage id="findTeamCard.teamSlugHint" defaultMessage="workspace-url">
+                {teamSlugHint => (
+                  <TextField
+                    type="text"
+                    id="team-slug-container"
+                    className="find-team__team-slug-input"
+                    value={teamSlug}
+                    onChange={handleChangeTeamSlug}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">{config.selfHost}/</InputAdornment>
+                      ),
+                    }}
+                    label={
+                      <FormattedMessage id="findTeamCard.url" defaultMessage="Workspace URL" />
+                    }
+                    placeholder={teamSlugHint}
+                    error={isNotFound}
+                    helperText={isNotFound ? (
+                      <FormattedMessage
+                        id="findTeamCard.teamNotFound"
+                        defaultMessage="Workspace not found!"
+                      />
+                    ) : null}
+                    autoComplete="off"
+                    fullWidth
+                  />
+                )}
+              </FormattedMessage>
+            </TeamUrlRow>
+          </CardContent>
+          <CardActions>
+            <Button
+              variant="contained"
+              color="primary"
+              type="submit"
+              className="find-team__submit-button"
+              onClick={handleSubmit}
+            >
+              <FormattedMessage id="findTeamCard.submitButton" defaultMessage="Find workspace" />
+            </Button>
+          </CardActions>
+        </form>
+      </Card>
+      <div style={{ marginTop: units(2) }}>
+        <Link to="/check/teams/new" className="find-team__toggle-create">
+          <FormattedMessage
+            id="findTeamCard.createYourOwn"
+            defaultMessage="You can also create your own workspace."
+          />
+        </Link>
       </div>
-    );
-  }
+    </div>
+  );
 }
 
-export default injectIntl(FindTeamCard);
+export default function FindTeamCard({ teamSlug }) {
+  const [queryTeamSlug, setQueryTeamSlug] = React.useState(teamSlug || '');
+
+  return (
+    <QueryRenderer
+      environment={Relay.Store}
+      query={queryTeamSlug ? graphql`
+        query FindTeamCardQuery($teamSlug: String!) {
+          find_public_team(slug: $teamSlug) {
+            id  # TODO nix
+            slug
+          }
+        }
+      ` : null}
+      variables={{ teamSlug: queryTeamSlug }}
+      render={({ error, props }) => {
+        if (props && props.find_public_team) {
+          // Start redirecting.
+          browserHistory.push(`/${props.find_public_team.slug}/join`);
+          // We still need to render the component! It'll have `isLoading=false`, `isFound=true`.
+        }
+
+        return (
+          <FindTeamCardComponent
+            queryTeamSlug={queryTeamSlug}
+            onSubmitTeamSlug={setQueryTeamSlug}
+            isLoading={!error && !props}
+            isFound={props && props.find_public_team}
+          />
+        );
+      }}
+    />
+  );
+}

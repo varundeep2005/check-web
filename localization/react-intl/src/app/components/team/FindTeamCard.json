@@ -1,23 +1,23 @@
 [
   {
-    "id": "findTeamCard.teamSlugHint",
-    "defaultMessage": "Workspace URL"
-  },
-  {
-    "id": "findTeamCard.teamNotFound",
-    "defaultMessage": "Workspace not found!"
-  },
-  {
     "id": "findTeamCard.mainHeading",
     "defaultMessage": "Find an existing workspace"
   },
   {
     "id": "findTeamCard.blurb",
-    "defaultMessage": "Request to join an existing workspace by adding its name here, or get started by creating your own."
+    "defaultMessage": "Request to join an existing workspace by adding its URL here:"
+  },
+  {
+    "id": "findTeamCard.teamSlugHint",
+    "defaultMessage": "workspace-url"
   },
   {
     "id": "findTeamCard.url",
     "defaultMessage": "Workspace URL"
+  },
+  {
+    "id": "findTeamCard.teamNotFound",
+    "defaultMessage": "Workspace not found!"
   },
   {
     "id": "findTeamCard.submitButton",

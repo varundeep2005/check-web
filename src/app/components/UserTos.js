@@ -1,15 +1,14 @@
 import React, { Component } from 'react';
 import Relay from 'react-relay/classic';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@material-ui/core/Button';
-import { mapGlobalMessage } from './MappedMessage';
+import FormattedGlobalMessage from './FormattedGlobalMessage';
 import UserTosForm from './UserTosForm';
 import Message from './Message';
-import globalStrings from '../globalStrings';
 import { stringHelper } from '../customHelpers';
 import AboutRoute from '../relay/AboutRoute';
 import RelayContainer from '../relay/RelayContainer';
@@ -35,9 +34,11 @@ class UserTosComponent extends Component {
   handleSubmit() {
     const onFailure = () => {
       this.setState({
-        message: this.props.intl.formatMessage(
-          globalStrings.unknownError,
-          { supportEmail: stringHelper('SUPPORT_EMAIL') },
+        message: (
+          <FormattedGlobalMessage
+            messageKey="unknownError"
+            values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
+          />
         ),
       });
     };
@@ -82,17 +83,6 @@ class UserTosComponent extends Component {
       textDecoration: 'underline',
     };
 
-    const communityGuidelinesLink = (
-      <a
-        target="_blank"
-        rel="noopener noreferrer"
-        style={linkStyle}
-        href="https://meedan.com/en/community_guidelines/"
-      >
-        <FormattedMessage id="userTos.commGuidelinesLink" defaultMessage="Community Guidelines" />
-      </a>
-    );
-
     return (
       <React.Fragment>
         <DialogContent>
@@ -110,10 +100,19 @@ class UserTosComponent extends Component {
             <p>
               <FormattedMessage
                 id="userTos.commGuidelines"
-                defaultMessage="We ask that you also read our {communityGuidelinesLink} for using {appName}."
+                defaultMessage="We ask that you also read our <cg>Community Guidelines</cg> for using {appName}."
                 values={{
-                  communityGuidelinesLink,
-                  appName: mapGlobalMessage(this.props.intl, 'appNameHuman'),
+                  appName: <FormattedGlobalMessage messageKey="appNameHuman" />,
+                  cg: (...chunks) => (
+                    <a
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={linkStyle}
+                      href="https://meedan.com/en/community_guidelines/"
+                    >
+                      {chunks}
+                    </a>
+                  ),
                 }}
               />
             </p> : null }
@@ -131,7 +130,7 @@ UserTosComponent.propTypes = {
   about: PropTypes.object.isRequired,
 };
 
-const UserTosContainer = Relay.createContainer(injectIntl(UserTosComponent), {
+const UserTosContainer = Relay.createContainer(UserTosComponent, {
   fragments: {
     about: () => Relay.QL`
       fragment on About {

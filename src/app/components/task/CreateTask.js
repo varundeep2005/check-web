@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { injectIntl } from 'react-intl';
 import Relay from 'react-relay/classic';
 import { browserHistory } from 'react-router';
 import PropTypes from 'prop-types';
@@ -8,9 +7,9 @@ import CreateTaskMutation from '../../relay/mutations/CreateTaskMutation';
 import CheckContext from '../../CheckContext';
 import CreateTaskMenu from './CreateTaskMenu';
 import EditTaskDialog from './EditTaskDialog';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 import { getErrorMessage } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
-import globalStrings from '../../globalStrings';
 
 class CreateTask extends Component {
   constructor(props) {
@@ -56,7 +55,12 @@ class CreateTask extends Component {
     } = task;
 
     const onFailure = (transaction) => {
-      const fallbackMessage = this.props.intl.formatMessage(globalStrings.unknownError, { supportEmail: stringHelper('SUPPORT_EMAIL') });
+      const fallbackMessage = (
+        <FormattedGlobalMessage
+          messageKey="unknownError"
+          values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
+        />
+      );
       const message = getErrorMessage(transaction, fallbackMessage);
       this.setState({ message });
     };
@@ -124,4 +128,4 @@ CreateTask.contextTypes = {
   store: PropTypes.object,
 };
 
-export default injectIntl(CreateTask);
+export default CreateTask;

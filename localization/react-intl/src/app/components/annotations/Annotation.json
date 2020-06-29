@@ -141,7 +141,7 @@
   },
   {
     "id": "annotation.archiverSuccess",
-    "defaultMessage": "In case this item goes offline, you can <a href=\"{link}\" target=\"_blank\" rel=\"noopener noreferrer\">access a backup at {name}</a>."
+    "defaultMessage": "In case this item goes offline, you can <a>access a backup at {name}</a>."
   },
   {
     "id": "annotation.archiverError",

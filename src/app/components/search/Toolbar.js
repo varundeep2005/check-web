@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import styled from 'styled-components';
 import isEqual from 'lodash.isequal';
 import CreateProjectMedia from '../media/CreateMedia';
@@ -73,4 +72,4 @@ Toolbar.propTypes = {
   page: PropTypes.oneOf(['trash']), // FIXME find a cleaner way to render Trash differently
 };
 
-export default injectIntl(Toolbar);
+export default Toolbar;

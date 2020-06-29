@@ -1,17 +1,10 @@
 import React from 'react';
-import { defineMessages, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Relay from 'react-relay/classic';
 import CreateTaskMenu from '../task/CreateTaskMenu';
 import EditTaskDialog from '../task/EditTaskDialog';
 import CreateTeamTaskMutation from '../../relay/mutations/CreateTeamTaskMutation';
 import { getErrorMessage } from '../../helpers';
-
-const messages = defineMessages({
-  error: {
-    id: 'createTeamTask.error',
-    defaultMessage: 'Failed to create default task',
-  },
-});
 
 class CreateTeamTask extends React.Component {
   constructor(props) {
@@ -47,7 +40,12 @@ class CreateTeamTask extends React.Component {
     };
 
     const onFailure = (transaction) => {
-      const fallbackMessage = this.props.intl.formatMessage(messages.error);
+      const fallbackMessage = (
+        <FormattedMessage
+          id="createTeamTask.error"
+          defaultMessage="Failed to create default task"
+        />
+      );
       const message = getErrorMessage(transaction, fallbackMessage);
       this.setState({ message });
     };
@@ -80,4 +78,4 @@ class CreateTeamTask extends React.Component {
   }
 }
 
-export default injectIntl(CreateTeamTask);
+export default CreateTeamTask;

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Button from '@material-ui/core/Button';
 import styled from 'styled-components';
 import CreateRelatedMediaDialog from './CreateRelatedMediaDialog';
@@ -9,7 +9,7 @@ import Can from '../Can';
 import CheckContext from '../../CheckContext';
 import { getErrorMessage } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
-import globalStrings from '../../globalStrings';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 import { black05 } from '../../styles/js/shared';
 import CreateProjectMediaMutation from '../../relay/mutations/CreateProjectMediaMutation';
 import UpdateProjectMediaMutation from '../../relay/mutations/UpdateProjectMediaMutation';
@@ -41,7 +41,12 @@ class CreateRelatedMedia extends Component {
 
   handleSubmit = (value) => {
     const onFailure = (transaction) => {
-      const fallbackMessage = this.props.intl.formatMessage(globalStrings.unknownError, { supportEmail: stringHelper('SUPPORT_EMAIL') });
+      const fallbackMessage = (
+        <FormattedGlobalMessage
+          messageKey="unknownError"
+          values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
+        />
+      );
       const message = getErrorMessage(transaction, fallbackMessage);
       this.setState({ message, isSubmitting: false, dialogOpen: true });
     };
@@ -72,7 +77,12 @@ class CreateRelatedMedia extends Component {
 
   handleSubmitExisting = (obj) => {
     const onFailure = (transaction) => {
-      const fallbackMessage = this.props.intl.formatMessage(globalStrings.unknownError, { supportEmail: stringHelper('SUPPORT_EMAIL') });
+      const fallbackMessage = (
+        <FormattedGlobalMessage
+          messageKey="unknownError"
+          values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
+        />
+      );
       const message = getErrorMessage(transaction, fallbackMessage);
       this.setState({ message, isSubmitting: false, dialogOpen: true });
     };
@@ -138,4 +148,4 @@ CreateRelatedMedia.contextTypes = {
   store: PropTypes.object,
 };
 
-export default injectIntl(CreateRelatedMedia);
+export default CreateRelatedMedia;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import styled from 'styled-components';
 import {
   units,
@@ -65,4 +65,4 @@ const ClaimReview = (props) => {
   );
 };
 
-export default injectIntl(ClaimReview);
+export default ClaimReview;

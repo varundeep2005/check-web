@@ -180,8 +180,8 @@ class BulkActions extends React.Component {
     this.setState({ dstProj });
   }
 
-  handleSelectDestProjectForAdd(dstProjForAdd) {
-    this.setState({ dstProjForAdd });
+  handleSelectDestProjectForAdd(dstProjectForAdd) {
+    this.setState({ dstProjectForAdd });
   }
 
   render() {

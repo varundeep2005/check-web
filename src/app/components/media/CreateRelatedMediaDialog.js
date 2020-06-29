@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -10,7 +10,7 @@ import styled from 'styled-components';
 import AutoCompleteMediaItem from './AutoCompleteMediaItem';
 import CreateMediaInput from './CreateMediaInput';
 import Message from '../Message';
-import globalStrings from '../../globalStrings';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 import { units } from '../../styles/js/shared';
 
 const StyledAutoCompleteWrapper = styled.div`
@@ -94,7 +94,7 @@ class CreateRelatedMediaDialog extends React.Component {
         </DialogContent>
         <DialogActions>
           <Button id="create-media-dialog__dismiss-button" onClick={this.props.onDismiss}>
-            {this.props.intl.formatMessage(globalStrings.cancel)}
+            <FormattedGlobalMessage messageKey="cancel" />
           </Button>
           { mode === 'new' &&
             <Button
@@ -103,7 +103,7 @@ class CreateRelatedMediaDialog extends React.Component {
               color="primary"
               form={formId}
             >
-              <FormattedMessage {...globalStrings.submit} />
+              <FormattedGlobalMessage messageKey="submit" />
             </Button>
           }
           { mode === 'existing' &&
@@ -113,7 +113,7 @@ class CreateRelatedMediaDialog extends React.Component {
               onClick={this.handleSubmitExisting}
               disabled={this.submitExistingDisabled()}
             >
-              <FormattedMessage {...globalStrings.submit} />
+              <FormattedGlobalMessage messageKey="submit" />
             </Button>
           }
         </DialogActions>
@@ -122,4 +122,4 @@ class CreateRelatedMediaDialog extends React.Component {
   }
 }
 
-export default injectIntl(CreateRelatedMediaDialog);
+export default CreateRelatedMediaDialog;

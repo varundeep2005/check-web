@@ -1,17 +1,17 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Button from '@material-ui/core/Button';
 import isEqual from 'lodash.isequal';
 import ConfirmDialog from '../layout/ConfirmDialog';
 import TeamRoute from '../../relay/TeamRoute';
 import UpdateTeamMutation from '../../relay/mutations/UpdateTeamMutation';
 import Can from '../Can';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 import { getErrorMessage } from '../../helpers';
 import { withSetFlashMessage } from '../FlashMessage';
 import { stringHelper } from '../../customHelpers';
-import globalStrings from '../../globalStrings';
 
 class EmptyTrashComponent extends Component {
   constructor(props) {
@@ -46,7 +46,12 @@ class EmptyTrashComponent extends Component {
       this.setState({ emptyTrashDisabled: true });
 
       const onFailure = (transaction) => {
-        const fallbackMessage = this.props.intl.formatMessage(globalStrings.unknownError, { supportEmail: stringHelper('SUPPORT_EMAIL') });
+        const fallbackMessage = (
+          <FormattedGlobalMessage
+            messageKey="unknownError"
+            values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
+          />
+        );
         const message = getErrorMessage(transaction, fallbackMessage);
         this.setState({ emptyTrashDisabled: false });
         this.props.setFlashMessage(message);
@@ -142,4 +147,4 @@ const EmptyTrashButton = (props) => {
   );
 };
 
-export default withSetFlashMessage(injectIntl(EmptyTrashButton));
+export default withSetFlashMessage(EmptyTrashButton);

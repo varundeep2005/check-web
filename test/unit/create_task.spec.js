@@ -9,7 +9,7 @@ describe('<CreateTask />', () => {
   
   it('Hides component when media is archived (Trash)', () => {
     const createTask = mountWithIntl(<CreateTask media={media_archived} />);
-    expect(createTask.html()).toEqual('');
+    expect(createTask.html()).toBeNull();
   });
   
   it('Render component when media is not archived (not in the trash)', () => {

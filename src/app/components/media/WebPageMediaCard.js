@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import deepEqual from 'deep-equal';
 import styled from 'styled-components';
 import AspectRatio from '../layout/AspectRatio';
@@ -87,4 +87,4 @@ class WebPageMediaCard extends Component {
   }
 }
 
-export default injectIntl(WebPageMediaCard);
+export default WebPageMediaCard;

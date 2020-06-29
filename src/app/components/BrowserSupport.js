@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import styled from 'styled-components';
 import IconButton from '@material-ui/core/IconButton';
 import ClearIcon from '@material-ui/icons/Clear';
-import { mapGlobalMessage } from './MappedMessage';
+import FormattedGlobalMessage from './FormattedGlobalMessage';
 
 import {
   ContentColumn,
@@ -63,7 +63,15 @@ class BrowserSupport extends Component {
               <ClearIcon />
             </IconButton>
             <div>
-              <FormattedMessage id="browserSupport.message" defaultMessage="{appName} is optimized for Google Chrome on desktop." values={{ appName: mapGlobalMessage(this.props.intl, 'appNameHuman') }} />
+              <FormattedGlobalMessage messageKey="appNameHuman">
+                {appName => (
+                  <FormattedMessage
+                    id="browserSupport.message"
+                    defaultMessage="{appName} is optimized for Google Chrome on desktop."
+                    values={{ appName }}
+                  />
+                )}
+              </FormattedGlobalMessage>
             </div>
           </ContentColumn>
         </Message>
@@ -73,4 +81,4 @@ class BrowserSupport extends Component {
   }
 }
 
-export default injectIntl(BrowserSupport);
+export default BrowserSupport;

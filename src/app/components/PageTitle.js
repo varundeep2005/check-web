@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Helmet } from 'react-helmet';
-import { FormattedGlobalMessage } from './MappedMessage';
+import FormattedGlobalMessage from './FormattedGlobalMessage';
 import { emojify } from '../helpers';
 
 const StringOrFormattedMessage = PropTypes.oneOfType([

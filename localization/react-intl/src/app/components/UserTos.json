@@ -8,11 +8,7 @@
     "defaultMessage": "Save"
   },
   {
-    "id": "userTos.commGuidelinesLink",
-    "defaultMessage": "Community Guidelines"
-  },
-  {
     "id": "userTos.commGuidelines",
-    "defaultMessage": "We ask that you also read our {communityGuidelinesLink} for using {appName}."
+    "defaultMessage": "We ask that you also read our <cg>Community Guidelines</cg> for using {appName}."
   }
 ]

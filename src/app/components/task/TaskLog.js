@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { injectIntl, defineMessages } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
 import styled from 'styled-components';
@@ -86,13 +86,6 @@ const StyledTaskLog = styled.div`
 `;
 
 /* eslint react/no-multi-comp: 0 */
-
-const messages = defineMessages({
-  bubbleTooltip: {
-    id: 'taskLog.bubbleTooltip',
-    defaultMessage: 'Toggle log',
-  },
-});
 
 class TaskLogComponent extends Component {
   static scrollToAnnotation() {
@@ -361,7 +354,10 @@ class TaskLog extends Component {
     return (
       <StyledTaskLog>
         <div className="task__log-top">
-          <Tooltip title={this.props.intl.formatMessage(messages.bubbleTooltip)}>
+          <Tooltip title={
+            <FormattedMessage id="taskLog.bubbleTooltip" defaultMessage="Toggle log" />
+          }
+          >
             <span
               className="task__log-icon"
               onClick={this.toggle.bind(this)}
@@ -397,4 +393,4 @@ TaskLog.contextTypes = {
   store: PropTypes.object,
 };
 
-export default injectIntl(TaskLog);
+export default TaskLog;

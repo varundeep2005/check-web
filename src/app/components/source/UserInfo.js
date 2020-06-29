@@ -1,11 +1,14 @@
 import React from 'react';
-import { FormattedHTMLMessage, injectIntl } from 'react-intl';
-import { browserHistory } from 'react-router';
-import IconEdit from '@material-ui/icons/Edit';
+import EditIcon from '@material-ui/icons/Edit';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
 import AccountChips from './AccountChips';
 import Can from '../Can';
 import ParsedText from '../ParsedText';
 import { parseStringUnixTimestamp, truncateLength } from '../../helpers';
+import UserJoinedDateAndWorkspaceCount from '../user/UserJoinedDateAndWorkspaceCount';
+import EditUserLink from '../user/EditUserLink';
+import FormattedGlobalMessage from '../FormattedGlobalMessage';
 import SourcePicture from './SourcePicture';
 import {
   StyledContactInfo,
@@ -15,11 +18,7 @@ import {
   StyledName,
   StyledDescription,
 } from '../../styles/js/HeaderCard';
-import {
-  Row,
-  SmallerStyledIconButton,
-} from '../../styles/js/shared';
-import globalStrings from '../../globalStrings';
+import { Row } from '../../styles/js/shared';
 
 const UserInfo = (props) => {
   if (props.user.source === null) return null;
@@ -41,19 +40,16 @@ const UserInfo = (props) => {
             <Row>
               {props.user.name}
               <Can permissions={props.user.permissions} permission="update User">
-                <SmallerStyledIconButton
-                  className="source__edit-source-button"
-                  onClick={() => {
-                    if (props.user.dbid === props.context.currentUser.dbid) {
-                      browserHistory.push('/check/me/edit');
-                    } else {
-                      browserHistory.push(`/check/user/${props.user.dbid}/edit`);
-                    }
-                  }}
-                  tooltip={props.intl.formatMessage(globalStrings.edit)}
-                >
-                  <IconEdit />
-                </SmallerStyledIconButton>
+                <Tooltip title={<FormattedGlobalMessage messageKey="edit" />}>
+                  <IconButton
+                    className="source__edit-source-button"
+                    component={EditUserLink}
+                    userDbid={props.user.dbid}
+                    isUserSelf={props.isUserSelf}
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
               </Can>
             </Row>
           </StyledName>
@@ -69,16 +65,9 @@ const UserInfo = (props) => {
         />
 
         <StyledContactInfo>
-          <FormattedHTMLMessage
-            id="UserInfo.dateJoined"
-            defaultMessage="Joined {date} &bull; {teamsCount, plural, one {1 workspace} other {# workspaces}}"
-            values={{
-              date: props.intl.formatDate(
-                parseStringUnixTimestamp(props.user.source.created_at),
-                { year: 'numeric', month: 'short', day: '2-digit' },
-              ),
-              teamsCount: props.user.team_users.edges.length || 0,
-            }}
+          <UserJoinedDateAndWorkspaceCount
+            createdAt={parseStringUnixTimestamp(props.user.source.created_at)}
+            nWorkspaces={props.user.team_users.edges.length}
           />
         </StyledContactInfo>
       </StyledBigColumn>
@@ -86,4 +75,4 @@ const UserInfo = (props) => {
   );
 };
 
-export default injectIntl(UserInfo);
+export default UserInfo;

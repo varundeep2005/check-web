@@ -14,7 +14,7 @@ import Message from './Message';
 import UploadImage from './UploadImage';
 import UserTosForm from './UserTosForm';
 import { login, request } from '../redux/actions';
-import { FormattedGlobalMessage } from './MappedMessage';
+import FormattedGlobalMessage from './FormattedGlobalMessage';
 import { stringHelper } from '../customHelpers';
 import { getErrorObjects } from '../helpers';
 import CheckError from '../CheckError';

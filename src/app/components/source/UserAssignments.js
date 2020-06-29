@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
-import { injectIntl, FormattedMessage, defineMessages } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import List from '@material-ui/core/List';
@@ -26,13 +26,6 @@ import MediaTitle from '../media/MediaTitle';
 import UserRoute from '../../relay/UserRoute';
 import CheckContext from '../../CheckContext';
 import { units, AlignOpposite } from '../../styles/js/shared';
-
-const messages = defineMessages({
-  filterByTeam: {
-    id: 'userAssignments.filterByTeam',
-    defaultMessage: 'Filter by workspace',
-  },
-});
 
 const icons = {
   free_text: <ShortTextIcon />,
@@ -148,7 +141,12 @@ class UserAssignmentsComponent extends Component {
         <AlignOpposite>
           <FilterPopup
             label={filterLabel}
-            tooltip={this.props.intl.formatMessage(messages.filterByTeam)}
+            tooltip={
+              <FormattedMessage
+                id="userAssignments.filterByTeam"
+                defaultMessage="Filter by workspace"
+              />
+            }
           >
             <TeamSelect
               teams={user.teams.edges}
@@ -219,7 +217,7 @@ UserAssignmentsComponent.contextTypes = {
   store: PropTypes.object,
 };
 
-const UserAssignmentsContainer = Relay.createContainer(injectIntl(UserAssignmentsComponent), {
+const UserAssignmentsContainer = Relay.createContainer(UserAssignmentsComponent, {
   initialVariables: {
     userId: null,
     teamId: null,

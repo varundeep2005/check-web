@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, FormattedHTMLMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import Relay from 'react-relay/classic';
 import RCTooltip from 'rc-tooltip';
 import styled from 'styled-components';
@@ -868,17 +868,20 @@ class Annotation extends Component {
         if (archiveLink) {
           contentTemplate = (
             <span className="annotation__keep">
-              <FormattedHTMLMessage
+              <FormattedMessage
                 id="annotation.archiverSuccess"
-                defaultMessage='In case this item goes offline, you can <a href="{link}" target="_blank" rel="noopener noreferrer">access a backup at {name}</a>.'
-                values={{ link: archiveLink, name: archiveName }}
+                defaultMessage="In case this item goes offline, you can <a>access a backup at {name}</a>."
+                values={{
+                  a: (...chunks) => <a href={archiveLink} target="_blank" rel="noopener noreferrer">{chunks}</a>,
+                  name: archiveName,
+                }}
               />
             </span>
           );
         } else if (archiveResponse.error || archiveStatus >= 400) {
           contentTemplate = (
             <span className="annotation__keep">
-              <FormattedHTMLMessage
+              <FormattedMessage
                 id="annotation.archiverError"
                 defaultMessage='Sorry, the following error occurred while archiving the item to {name}: "{message}". Please refresh the item to try again and contact {supportEmail} if the condition persists.'
                 values={{ name: archiveName, message: archiveResponse.error.message, supportEmail: stringHelper('SUPPORT_EMAIL') }}
@@ -888,7 +891,7 @@ class Annotation extends Component {
         } else {
           contentTemplate = (
             <span className="annotation__keep">
-              <FormattedHTMLMessage
+              <FormattedMessage
                 id="annotation.archiverWait"
                 defaultMessage="This item is being archived at {name}. The archive link will be displayed here when it's ready."
                 values={{ name: archiveName }}
@@ -915,7 +918,7 @@ class Annotation extends Component {
         if (penderResponse.error) {
           contentTemplate = (
             <span className="annotation__pender-archive">
-              <FormattedHTMLMessage
+              <FormattedMessage
                 id="annotation.penderArchiveResponseError"
                 defaultMessage="Sorry, an error occurred while taking a screenshot of the item. Please refresh the item to try again and contact {supportEmail} if the condition persists."
                 values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
@@ -928,7 +931,7 @@ class Annotation extends Component {
           contentTemplate = (
             <div>
               <div className="annotation__card-content annotation__pender-archive">
-                <FormattedHTMLMessage
+                <FormattedMessage
                   id="annotation.penderArchiveResponse"
                   defaultMessage="Keep has taken a screenshot of this URL."
                 />
@@ -960,7 +963,7 @@ class Annotation extends Component {
         } else {
           contentTemplate = (
             <span className="annotation__pender-archive">
-              <FormattedHTMLMessage
+              <FormattedMessage
                 id="annotation.penderArchiveWait"
                 defaultMessage="The screenshot of this item is being taken by Keep. Come back in a few minutes to see it."
               />

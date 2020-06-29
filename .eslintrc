@@ -60,5 +60,11 @@
 
         // TODO Consider standardizing on camelCase
         "camelcase": "off",
+
+        // From material-ui's eslintrc: allow named-function callbacks, for the pattern:
+        // const LinkyThing = React.forwardRef(function LinkyThing(props, ref) { ... });
+        // (Without the named function, there's no `LinkyThing.displayName`.)
+        // https://github.com/yannickcr/eslint-plugin-react/issues/2528
+        "prefer-arrow-callback": ["error", { allowNamedFunctions: true }],
     }
 }
