@@ -64,7 +64,7 @@ class BulkActions extends React.Component {
           teamSearchId: this.props.team.search_id,
           count: this.props.count,
           dstProject: null,
-          dstProjectForAdd: null,
+          dstProjectForAdd: this.state.dstProjectForAdd,
           srcProject: null,
           srcProjectForRemove: null,
         }),
