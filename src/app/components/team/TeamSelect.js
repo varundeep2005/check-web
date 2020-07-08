@@ -14,9 +14,7 @@ const TeamSelect = (props) => {
 
     return (
       <Row>
-        <TeamAvatar
-          team={team}
-        />
+        <TeamAvatar src={team.avatar} />
         <OffsetBothSides>
           <HeaderTitle>
             {name}
@@ -38,7 +36,7 @@ const TeamSelect = (props) => {
         {
           props.teams.map(t => (
             <MenuItem className={`team-${t.node.slug}`} key={t.node.slug} value={t.node.dbid}>
-              <TeamAvatar team={t.node} />
+              <TeamAvatar src={t.node.avatar} />
               <OffsetBothSides>
                 {t.node.name}
               </OffsetBothSides>

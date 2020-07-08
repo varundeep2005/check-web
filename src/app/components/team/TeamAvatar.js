@@ -1,26 +1,40 @@
 import React from 'react';
-import styled from 'styled-components';
-import {
-  avatarSize,
-  avatarStyle,
-  separationGray,
-} from '../../styles/js/shared';
+import PropTypes from 'prop-types';
+import Avatar from '@material-ui/core/Avatar';
+import { makeStyles } from '@material-ui/core/styles';
+import { separationGray, white } from '../../styles/js/shared';
 
-const StyledAvatarDiv = styled.div`
-  ${avatarStyle}
-  width: ${props => (props.size ? props.size : avatarSize)};
-  height: ${props => (props.size ? props.size : avatarSize)};
-  border-radius: 5px;
-  border: 2px solid ${separationGray};
-  position: relative;
-`;
+const HugeSize = 9;
+const NormalSize = 5;
 
-const TeamAvatar = (props) => {
-  const { style, ...other } = props;
+const useStyles = makeStyles(theme => ({
+  root: ({ huge }) => ({
+    background: white,
+    border: `2px solid ${separationGray}`,
+    width: theme.spacing(huge ? HugeSize : NormalSize),
+    height: theme.spacing(huge ? HugeSize : NormalSize),
+  }),
+}));
+
+export default function TeamAvatar(props) {
+  const { src, huge, ...other } = props;
+  const classes = useStyles({ huge });
 
   return (
-    <StyledAvatarDiv {...other} style={style || { backgroundImage: `url(${props.team.avatar})` }} />
+    <Avatar
+      classes={classes}
+      variant="rounded"
+      src={src}
+      {...other}
+    >
+      <div />
+    </Avatar>
   );
+}
+TeamAvatar.defaultProps = {
+  huge: false,
 };
-
-export default TeamAvatar;
+TeamAvatar.propTypes = {
+  src: PropTypes.string.isRequired,
+  huge: PropTypes.bool, // false (default) => 5-unit size. true => 9-unit size
+};

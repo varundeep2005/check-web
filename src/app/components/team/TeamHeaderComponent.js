@@ -27,7 +27,7 @@ export default function TeamHeaderComponent(props) {
   return (
     <div className={classes.root}>
       <div className={classes.avatarWrapper}>
-        <TeamAvatar team={team} />
+        <TeamAvatar src={team.avatar} />
       </div>
       {hideTeamName ? null : (
         <HeaderTitle>{team.name}</HeaderTitle>

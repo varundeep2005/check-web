@@ -18,11 +18,7 @@ import {
   StyledDescription,
   StyledContactInfo,
 } from '../../styles/js/HeaderCard';
-import {
-  units,
-  Row,
-  SmallerStyledIconButton,
-} from '../../styles/js/shared';
+import { Row, SmallerStyledIconButton } from '../../styles/js/shared';
 
 const TeamInfo = (props) => {
   const { team } = props;
@@ -79,10 +75,7 @@ const TeamInfo = (props) => {
   return (
     <StyledTwoColumns>
       <StyledSmallColumn>
-        <TeamAvatar
-          size={units(9)}
-          team={team}
-        />
+        <TeamAvatar huge src={team.avatar} />
       </StyledSmallColumn>
       <StyledBigColumn>
         <div className="team__primary-info">

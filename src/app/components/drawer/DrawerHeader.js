@@ -8,12 +8,7 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import { makeStyles } from '@material-ui/core/styles';
 import TeamAvatar from '../team/TeamAvatar';
 import { stringHelper } from '../../customHelpers';
-import {
-  black87,
-  subheading1,
-  units,
-  Text,
-} from '../../styles/js/shared';
+import { black87, subheading1, Text } from '../../styles/js/shared';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -29,6 +24,8 @@ const useStyles = makeStyles(theme => ({
   },
   logo: {
     flex: '0 0 auto',
+    width: theme.spacing(5.5),
+    height: theme.spacing(5.5),
     marginRight: theme.spacing(1),
   },
   name: {
@@ -62,7 +59,7 @@ const DrawerHeader = ({ team, loggedIn, currentUserIsMember }) => {
         className={`team-header__drawer-team-link ${classes.logoAndName}`}
         to={`/${team.slug}/`}
       >
-        <TeamAvatar className={classes.logo} size={units(5.5)} team={team} />
+        <TeamAvatar className={classes.logo} src={team.avatar} />
         <Text ellipsis className={classes.name}>
           {team.name}
         </Text>

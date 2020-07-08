@@ -17,7 +17,6 @@ import {
   StyledBigColumn,
   StyledAvatarEditButton,
 } from '../../styles/js/HeaderCard';
-import { units } from '../../styles/js/shared';
 import { stringHelper } from '../../customHelpers';
 
 class TeamInfoEdit extends React.Component {
@@ -142,11 +141,7 @@ class TeamInfoEdit extends React.Component {
         <Message message={this.state.message} />
         <StyledTwoColumns>
           <StyledSmallColumn>
-            <TeamAvatar
-              style={{ backgroundImage: `url(${avatarPreview || team.avatar})` }}
-              size={units(9)}
-              team={team}
-            />
+            <TeamAvatar huge src={avatarPreview || team.avatar} />
             {!this.state.editProfileImg ?
               <StyledAvatarEditButton className="team__edit-avatar-button">
                 <Button
