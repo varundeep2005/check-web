@@ -280,7 +280,6 @@ class HomeComponent extends Component {
             <Main>
               <Header
                 loggedIn={loggedIn}
-                pageType={routeSlug}
                 inTeamContext={inTeamContext}
                 currentUserIsMember={currentUserIsMember}
                 {...this.props}
