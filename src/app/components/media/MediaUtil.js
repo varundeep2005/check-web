@@ -1,6 +1,8 @@
 const MediaUtil = {
-  authorName(media, data) {
-    return data.author_name || media.domain;
+  authorName(media) {
+    return media && media.metadata
+      ? media.metadata.author_name
+      : media.domain;
   },
 };
 

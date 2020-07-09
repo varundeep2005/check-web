@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import MediaSearchRedirect from './MediaSearchRedirect';
 
@@ -12,13 +12,18 @@ import MediaSearchRedirect from './MediaSearchRedirect';
  * to unmount the component if any of its props are going to change.
  */
 export default function NextOrPreviousButton({
-  children, className, disabled, tooltipTitle, buildSiblingUrl, listQuery, listIndex,
+  children, className, disabled, tooltipTitle, buildSiblingUrl, listQuery, listIndex, edge,
 }) {
   const [loading, setLoading] = React.useState(false);
   const handleClick = React.useCallback(() => setLoading(true), [setLoading]);
 
   return (
-    <Button disabled={disabled || loading} className={className} onClick={handleClick}>
+    <IconButton
+      disabled={disabled || loading}
+      className={className}
+      onClick={handleClick}
+      edge={edge}
+    >
       {loading ? (
         <MediaSearchRedirect
           buildSiblingUrl={buildSiblingUrl}
@@ -30,16 +35,18 @@ export default function NextOrPreviousButton({
           {children}
         </Tooltip>
       )}
-    </Button>
+    </IconButton>
   );
 }
 NextOrPreviousButton.defaultProps = {
   className: null,
   disabled: false,
+  edge: false,
 };
 NextOrPreviousButton.propTypes = {
   buildSiblingUrl: PropTypes.func.isRequired, // func(dbid, listIndex) => location
   disabled: PropTypes.bool,
+  edge: PropTypes.oneOf([false, 'start', 'end']), // default false
   className: PropTypes.string,
   children: PropTypes.node.isRequired,
   tooltipTitle: PropTypes.node.isRequired, // <FormattedMessage>

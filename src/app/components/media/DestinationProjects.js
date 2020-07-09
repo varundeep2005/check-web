@@ -4,11 +4,6 @@ import { createFragmentContainer, graphql } from 'react-relay/compat';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import TextField from '@material-ui/core/TextField';
 import { FormattedMessage } from 'react-intl';
-// Import mutations so we can include them in query fragments
-// eslint-disable-next-line no-unused-vars
-import BulkUpdateProjectMediaMutation from '../../relay/mutations/BulkUpdateProjectMediaMutation';
-// eslint-disable-next-line no-unused-vars
-import UpdateProjectMediaMutation from '../../relay/mutations/UpdateProjectMediaMutation';
 
 function DestinationProjects({
   team, excludeProjectDbids, value, onChange,
@@ -65,14 +60,10 @@ export default createFragmentContainer(DestinationProjects, graphql`
       edges {
         node {
           id
-          dbid
+          dbid  # here, UpdateProjectMediaMutation and BulkUpdateProjectMediaMutation
+          search_id  # UpdateProjectMediaMutation and BulkUpdateProjectMediaMutation
+          medias_count  # UpdateProjectMediaMutation and BulkUpdateProjectMediaMutation
           title
-          ...UpdateProjectMediaMutation_srcProj
-          ...UpdateProjectMediaMutation_dstProj
-          ...BulkUpdateProjectMediaMutation_dstProject
-          ...BulkUpdateProjectMediaMutation_dstProjectForAdd
-          ...BulkUpdateProjectMediaMutation_srcProject
-          ...BulkUpdateProjectMediaMutation_srcProjectForRemove
         }
       }
     }

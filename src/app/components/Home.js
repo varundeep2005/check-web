@@ -9,7 +9,6 @@ import Intercom from 'react-intercom';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import MomentUtils from '@date-io/moment';
 import config from 'config'; // eslint-disable-line require-path-exists/exists
-import Header from './Header';
 import LoginContainer from './LoginContainer';
 import BrowserSupport from './BrowserSupport';
 import CheckContext from '../CheckContext';
@@ -267,8 +266,9 @@ class HomeComponent extends Component {
           <Favicon url={`/images/logo/${config.appName}.ico`} animated={false} />
           <BrowserSupport />
           <UserTos user={user} />
-          <Wrapper className={bemClass('home', routeSlug, `--${routeSlug}`)}>
-            {showDrawer ? (
+          <FlashMessage />
+          {showDrawer ? (
+            <Wrapper className={bemClass('home', routeSlug, `--${routeSlug}`)}>
               <DrawerNavigation
                 loggedIn={loggedIn}
                 teamSlug={teamSlug}
@@ -276,23 +276,13 @@ class HomeComponent extends Component {
                 currentUserIsMember={currentUserIsMember}
                 {...this.props}
               />
-            ) : null}
-            <Main>
-              <Header
-                loggedIn={loggedIn}
-                inTeamContext={inTeamContext}
-                currentUserIsMember={currentUserIsMember}
-                {...this.props}
-              />
-              <FlashMessage />
-              <StyledContent
-                inMediaPage={routeSlug === 'media'}
-                className="content-wrapper"
-              >
-                {children}
-              </StyledContent>
-            </Main>
-          </Wrapper>
+              <Main>
+                <StyledContent>
+                  {children}
+                </StyledContent>
+              </Main>
+            </Wrapper>
+          ) : children}
         </MuiPickersUtilsProvider>
       </React.Fragment>
     );

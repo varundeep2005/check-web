@@ -201,7 +201,6 @@ MediaRelatedComponent.propTypes = {
 
 const MediaRelatedContainer = Relay.createContainer(withPusher(MediaRelatedComponent), {
   initialVariables: {
-    contextId: null,
     filters: getFilters(),
   },
   fragments: {

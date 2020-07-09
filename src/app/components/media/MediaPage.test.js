@@ -2,7 +2,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import MediaPage from './MediaPage';
-import MediaPageLayout from './MediaPageLayout';
+import MediaPageQueryRenderer from './MediaPageQueryRenderer';
 
 describe('<MediaPage />', () => {
   describe('URL helpers', () => {
@@ -16,7 +16,7 @@ describe('<MediaPage />', () => {
             listIndex: 3,
           },
         }}
-      />).find(MediaPageLayout).props();
+      />).find(MediaPageQueryRenderer).props();
       expect(childProps.listUrl)
         .toEqual(`/a-team/trash/${encodeURIComponent('{"key1":"value1","key2":"value2"}')}`);
       // listQuery has no offset (listIndex is the offset)
@@ -37,7 +37,7 @@ describe('<MediaPage />', () => {
             listIndex: 3,
           },
         }}
-      />).find(MediaPageLayout).props();
+      />).find(MediaPageQueryRenderer).props();
       expect(childProps.listUrl)
         .toEqual(`/a-team/project/1/${encodeURIComponent('{"key1":"value1","key2":"value2"}')}`);
       // listQuery has no offset (listIndex is the offset)
@@ -51,7 +51,7 @@ describe('<MediaPage />', () => {
       const childProps = shallow(<MediaPage
         routeParams={{ team: 'a-team', mediaId: '2' }}
         location={{ query: {} }}
-      />).find(MediaPageLayout).props();
+      />).find(MediaPageQueryRenderer).props();
       expect(childProps.listUrl).toEqual('/a-team/all-items');
       expect(childProps.listQuery).toEqual({});
       expect(childProps.listIndex).toBeNull();
@@ -62,7 +62,7 @@ describe('<MediaPage />', () => {
       const childProps = shallow(<MediaPage
         routeParams={{ team: 'a-team', projectId: '1', mediaId: '2' }}
         location={{ query: {} }}
-      />).find(MediaPageLayout).props();
+      />).find(MediaPageQueryRenderer).props();
       expect(childProps.listUrl).toEqual('/a-team/project/1');
       expect(childProps.listQuery).toEqual({ projects: [1] });
       expect(childProps.listIndex).toBeNull();
@@ -73,7 +73,7 @@ describe('<MediaPage />', () => {
       const childProps = shallow(<MediaPage
         routeParams={{ team: 'a-team', mediaId: '2' }}
         location={{ query: { listIndex: '3' } }}
-      />).find(MediaPageLayout).props();
+      />).find(MediaPageQueryRenderer).props();
       expect(childProps.listUrl).toEqual('/a-team/all-items');
       expect(childProps.listQuery).toEqual({});
       expect(childProps.listIndex).toEqual(3);
@@ -84,7 +84,7 @@ describe('<MediaPage />', () => {
       const childProps = shallow(<MediaPage
         routeParams={{ team: 'a-team', projectId: '1', mediaId: '2' }}
         location={{ query: { listIndex: '3' } }}
-      />).find(MediaPageLayout).props();
+      />).find(MediaPageQueryRenderer).props();
       expect(childProps.listUrl).toEqual('/a-team/project/1');
       expect(childProps.listQuery).toEqual({ projects: [1] });
       expect(childProps.listIndex).toEqual(3);

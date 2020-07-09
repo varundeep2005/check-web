@@ -10,10 +10,6 @@ class ProjectPage < Page
     @config['self_url']
   end
 
-  def project_title
-    element('.project-header__title').text
-  end
-
   def create_media(options = {})
     wait_for_selector(".project-actions")
     wait_for_selector("#create-media__add-item").click

@@ -157,7 +157,7 @@ class MediaTasksComponent extends Component {
   }
 
   render() {
-    const media = Object.assign(this.props.cachedMedia, this.props.media);
+    const media = { ...this.props.cachedMedia, ...this.props.media };
     const currentUserRole = UserUtil.myRole(
       this.getContext().currentUser,
       this.getContext().team.slug,

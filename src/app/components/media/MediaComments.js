@@ -62,7 +62,7 @@ class MediaCommentsComponent extends Component {
   }
 
   render() {
-    const media = Object.assign(this.props.cachedMedia, this.props.media);
+    const media = { ...this.props.cachedMedia, ...this.props.media };
 
     return (
       <div id="media__comments" style={this.props.style}>

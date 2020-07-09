@@ -10,7 +10,11 @@ class DeleteProjectMediaProjectMutation extends Relay.Mutation {
   getFatQuery() {
     return Relay.QL`
       fragment on DestroyProjectMediaProjectPayload {
-        check_search_project { id, number_of_results, medias },
+        check_search_project {
+          id
+          number_of_results
+          medias
+        }
         project {
           id
           dbid
@@ -21,22 +25,34 @@ class DeleteProjectMediaProjectMutation extends Relay.Mutation {
             slug
           }
         }
+        project_media {
+          project_ids
+        }
       }
     `;
   }
 
   getOptimisticResponse() {
+    const { project, project_media: projectMedia } = this.props;
+
     return {
-      deletedId: this.props.project_media.id,
+      deletedId: projectMedia.id,
       project: {
-        id: this.props.project.id,
-        medias_count: this.props.project.medias_count - 1,
+        id: project.id,
+        medias_count: project.medias_count - 1,
       },
+      projectMedia: {
+        id: projectMedia.id,
+        project_ids: projectMedia.project_ids.filter(i => i !== projectMedia.id),
+      }
     };
   }
 
   getVariables() {
-    return { id: this.props.id };
+    return {
+      project_id: this.props.project.dbid,
+      project_media_id: this.props.projectMedia.dbid,
+    };
   }
 
   getConfigs() {
@@ -57,6 +73,19 @@ class DeleteProjectMediaProjectMutation extends Relay.Mutation {
         deletedIDFieldName: 'deletedId',
       },
     ];
+  }
+
+  static fragments = {
+    project: Relay.QL`
+      id
+      dbid
+      media_counts
+    `,
+    projectMedia: Relay.QL`
+      id
+      dbid
+      project_ids
+    `,
   }
 }
 

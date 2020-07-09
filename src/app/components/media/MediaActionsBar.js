@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import Relay from 'react-relay/classic';
 import { FormattedMessage } from 'react-intl';
 import { browserHistory, Link } from 'react-router';
@@ -12,7 +13,6 @@ import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
 import IconReport from '@material-ui/icons/Receipt';
 import MediaStatus from './MediaStatus';
-import MediaRoute from '../../relay/MediaRoute';
 import MediaActions from './MediaActions';
 import Attribution from '../task/Attribution';
 import CreateProjectMediaProjectMutation from '../../relay/mutations/CreateProjectMediaProjectMutation';
@@ -73,16 +73,11 @@ class MediaActionsBarComponent extends Component {
   }
 
   getDescription() {
-    return (typeof this.state.description === 'string') ? this.state.description : this.props.media.description;
+    return (typeof this.state.description === 'string') ? this.state.description : this.props.projectMedia.description;
   }
 
   getTitle() {
-    return (typeof this.state.title === 'string') ? this.state.title : this.props.media.title;
-  }
-
-  currentProject() {
-    const { project_media_project: projectMediaProject } = this.props.media;
-    return projectMediaProject ? projectMediaProject.project : null;
+    return (typeof this.state.title === 'string') ? this.state.title : this.props.projectMedia.title;
   }
 
   handleAddToList = () => {
@@ -90,6 +85,7 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleAddItemToList() {
+    const { team } = this.props;
     const onSuccess = (response) => {
       const { project } = response.createProjectMediaProject;
       const message = (
@@ -98,7 +94,7 @@ class MediaActionsBarComponent extends Component {
           defaultMessage="Added to list {listName}"
           values={{
             listName: (
-              <Link to={`/${project.team.slug}/project/${project.dbid}`}>
+              <Link to={`/${team.slug}/project/${project.dbid}`}>
                 {project.title}
               </Link>
             ),
@@ -108,13 +104,10 @@ class MediaActionsBarComponent extends Component {
       this.props.setFlashMessage(message);
     };
 
-    const context = this.getContext();
-
     Relay.Store.commitUpdate(
       new CreateProjectMediaProjectMutation({
         project: this.state.dstProj,
-        project_media: this.props.media,
-        context,
+        project_media: this.props.projectMedia,
       }),
       { onSuccess, onFailure: this.fail },
     );
@@ -138,15 +131,14 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleMoveProjectMedia() {
-    const { media } = this.props;
+    const { team, projectMedia } = this.props;
     const { dstProj: { dbid: projectId } } = this.state;
 
     const onFailure = (transaction) => {
       this.fail(transaction);
     };
 
-    const path = `/${media.team.slug}/project/${projectId}`;
-    const context = this.getContext();
+    const path = `/${team.slug}/project/${projectId}`;
     this.props.setFlashMessage((
       <FormattedMessage
         id="mediaActionsBar.movingItem"
@@ -160,11 +152,9 @@ class MediaActionsBarComponent extends Component {
 
     Relay.Store.commitUpdate(
       new UpdateProjectMediaProjectMutation({
-        id: media.project_media_project.id,
-        project_id: projectId,
-        srcProj: this.currentProject(),
-        dstProj: this.state.dstProj,
-        context,
+        projectMedia: this.props.projectMedia,
+        previousProject: this.props.project,
+        project: this.state.dstProj,
       }),
       { onSuccess, onFailure },
     );
@@ -173,9 +163,7 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleRemoveFromList = () => {
-    const context = this.getContext();
-    const { media } = this.props;
-    const { project_media_project: projectMediaProject } = media;
+    const { team, project, projectMedia } = this.props;
 
     const onSuccess = () => {
       const message = (
@@ -185,24 +173,23 @@ class MediaActionsBarComponent extends Component {
         />
       );
       this.props.setFlashMessage(message);
-      const path = `/${media.team.slug}/media/${media.dbid}`;
+      const path = `/${team.slug}/media/${projectMedia.dbid}`;
       browserHistory.push(path);
     };
 
     Relay.Store.commitUpdate(
       new DeleteProjectMediaProjectMutation({
-        id: projectMediaProject.id,
-        project: projectMediaProject.project,
-        project_media: media,
-        context,
+        project,
+        projectMedia,
       }),
       { onSuccess, onFailure: this.fail },
     );
   }
 
   canSubmit = () => {
+    const { projectMedia } = this.props;
     const { title, description } = this.state;
-    const permissions = JSON.parse(this.props.media.permissions);
+    const permissions = JSON.parse(projectMedia.permissions);
     return (permissions['update Dynamic'] !== false && (typeof title === 'string' || typeof description === 'string'));
   };
 
@@ -214,18 +201,20 @@ class MediaActionsBarComponent extends Component {
     this.setState({ description: e.target.value });
   }
 
-  handleSave(media, event) {
-    if (event) {
-      event.preventDefault();
+  handleSave = (ev) => {
+    if (ev) {
+      ev.preventDefault();
     }
+
+    const { projectMedia } = this.props;
 
     const embed = {
       title: this.getTitle().trim(),
       description: this.getDescription().trim(),
     };
 
-    if (embed.title === '' && media.media.embed_path) {
-      embed.title = media.media.embed_path.split('/').pop().replace('embed_', '');
+    if (embed.title === '' && projectMedia.media.embed_path) {
+      embed.title = projectMedia.media.embed_path.split('/').pop().replace('embed_', '');
     }
 
     const onFailure = (transaction) => {
@@ -243,9 +232,9 @@ class MediaActionsBarComponent extends Component {
     if (this.canSubmit()) {
       Relay.Store.commitUpdate(
         new UpdateProjectMediaMutation({
-          media,
+          media: projectMedia,
           metadata: JSON.stringify(embed),
-          id: media.id,
+          id: projectMedia.id,
           srcProj: null,
           dstProj: null,
         }),
@@ -257,6 +246,7 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleSendToTrash() {
+    const { team, projectMedia, project } = this;
     const onSuccess = (response) => {
       const pm = response.updateProjectMedia.project_media;
       const message = (
@@ -265,7 +255,7 @@ class MediaActionsBarComponent extends Component {
           defaultMessage="Sent to {trash}"
           values={{
             trash: (
-              <Link to={`/${pm.team.slug}/trash`}>
+              <Link to={`/${team.slug}/trash`}>
                 <FormattedMessage id="mediaDetail.trash" defaultMessage="Trash" />
               </Link>
             ),
@@ -283,12 +273,12 @@ class MediaActionsBarComponent extends Component {
     Relay.Store.commitUpdate(
       new UpdateProjectMediaMutation({
         archived: 1,
-        check_search_team: this.props.media.team.search,
-        check_search_project: this.props.media.project ? this.props.media.project.search : null,
-        check_search_trash: this.props.media.team.check_search_trash,
-        media: this.props.media,
+        check_search_team: team.search,
+        check_search_project: project ? project.search : null,
+        check_search_trash: team.check_search_trash,
+        media: projectMedia,
         context,
-        id: this.props.media.id,
+        id: projectMedia.id,
         srcProj: null,
         dstProj: null,
       }),
@@ -323,10 +313,11 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleRefresh() {
+    const { projectMedia } = this.props;
     Relay.Store.commitUpdate(
       new UpdateProjectMediaMutation({
         refresh_media: 1,
-        id: this.props.media.id,
+        id: projectMedia.id,
         srcProj: null,
         dstProj: null,
       }),
@@ -335,14 +326,14 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleStatusLock() {
-    const { media } = this.props;
+    const { projectMedia } = this.props;
 
     const statusAttr = {
       parent_type: 'project_media',
-      annotated: media,
+      annotated: projectMedia,
       annotation: {
-        status_id: media.last_status_obj.id,
-        locked: !media.last_status_obj.locked,
+        status_id: projectMedia.last_status_obj.id,
+        locked: !projectMedia.last_status_obj.locked,
       },
     };
 
@@ -357,7 +348,7 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleAssignProjectMedia() {
-    const { media } = this.props;
+    const { projectMedia } = this.props;
 
     const onSuccess = () => {
       const message = (
@@ -369,13 +360,13 @@ class MediaActionsBarComponent extends Component {
       this.props.setFlashMessage(message);
     };
 
-    const status_id = media.last_status_obj ? media.last_status_obj.id : '';
+    const status_id = projectMedia.last_status_obj ? projectMedia.last_status_obj.id : '';
 
-    const assignment = document.getElementById(`attribution-media-${media.dbid}`).value;
+    const assignment = document.getElementById(`attribution-media-${projectMedia.dbid}`).value;
 
     const statusAttr = {
       parent_type: 'project_media',
-      annotated: media,
+      annotated: projectMedia,
       annotation: {
         status_id,
         assigned_to_ids: assignment,
@@ -391,30 +382,24 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleRestore() {
-    const onSuccess = () => {
+    const { projectMedia, team, project } = this.props;
+
+    const onSuccess = (response) => {
       const message = (
-        <FormattedMessage
-          id="mediaActionsBar.movedBack"
-          defaultMessage="Restored from trash"
-        />
+        <FormattedMessage id="mediaActionsBar.movedBack" defaultMessage="Restored from trash" />
       );
       this.props.setFlashMessage(message);
     };
 
-    const context = this.getContext();
-    if (context.team && !context.team.public_team) {
-      context.team.public_team = Object.assign({}, context.team);
-    }
-
     Relay.Store.commitUpdate(
       new UpdateProjectMediaMutation({
-        id: this.props.media.id,
-        media: this.props.media,
+        id: projectMedia.id,
+        media: projectMedia,
         archived: 0,
-        check_search_team: this.props.media.team.search,
-        check_search_project: this.currentProject() ? this.currentProject().search : null,
-        check_search_trash: this.props.media.team.check_search_trash,
-        context,
+        check_search_team: media.team.search,
+        // FIXME update _all_ projects, not just the current one
+        check_search_project: project ? project.search : null,
+        check_search_trash: team.check_search_trash,
         srcProj: null,
         dstProj: null,
       }),
@@ -423,11 +408,13 @@ class MediaActionsBarComponent extends Component {
   }
 
   render() {
-    const { classes, media } = this.props;
-    const { project_media_project: projectMediaProject } = media;
+    const {
+      classes, projectMedia, project, team,
+    } = this.props;
 
     const addToListDialogActions = [
       <Button
+        key="cancel"
         color="primary"
         onClick={this.handleCloseDialogs.bind(this)}
       >
@@ -437,6 +424,7 @@ class MediaActionsBarComponent extends Component {
         />
       </Button>,
       <Button
+        key="add"
         color="primary"
         className="media-actions-bar__add-button"
         onClick={this.handleAddItemToList.bind(this)}
@@ -448,6 +436,7 @@ class MediaActionsBarComponent extends Component {
 
     const moveDialogActions = [
       <Button
+        key="cancel"
         color="primary"
         onClick={this.handleCloseDialogs.bind(this)}
       >
@@ -457,6 +446,7 @@ class MediaActionsBarComponent extends Component {
         />
       </Button>,
       <Button
+        key="move"
         color="primary"
         className="media-actions-bar__move-button"
         onClick={this.handleMoveProjectMedia.bind(this)}
@@ -466,27 +456,21 @@ class MediaActionsBarComponent extends Component {
       </Button>,
     ];
 
-    let smoochBotInstalled = false;
-    if (media.team && media.team.team_bot_installations) {
-      media.team.team_bot_installations.edges.forEach((edge) => {
-        if (edge.node.team_bot.identifier === 'smooch') {
-          smoochBotInstalled = true;
-        }
-      });
-    }
+    const smoochBotInstalled = team.team_bot_installations.edges
+      .some(({ node }) => node.team_bot.identifier === 'smooch');
     let isChild = false;
     let isParent = false;
-    if (media.relationship) {
-      if (media.relationship.target_id === media.dbid) {
+    if (projectMedia.relationship) {
+      if (projectMedia.relationship.target_id === projectMedia.dbid) {
         isChild = true;
-      } else if (media.relationship.source_id === media.dbid) {
+      } else if (projectMedia.relationship.source_id === projectMedia.dbid) {
         isParent = true;
       }
     }
     const readonlyStatus = smoochBotInstalled && isChild && !isParent;
-    const published = (media.dynamic_annotation_report_design && media.dynamic_annotation_report_design.data && media.dynamic_annotation_report_design.data.state === 'published');
+    const published = (projectMedia.dynamic_annotation_report_design && projectMedia.dynamic_annotation_report_design.data && projectMedia.dynamic_annotation_report_design.data.state === 'published');
 
-    const assignments = media.last_status_obj.assignments.edges;
+    const assignments = projectMedia.last_status_obj.assignments.edges;
 
     const assignDialogActions = [
       <Button
@@ -516,7 +500,7 @@ class MediaActionsBarComponent extends Component {
           <FormattedMessage id="mediaDetail.editReport" defaultMessage="Edit" />
         </DialogTitle>
         <DialogContent>
-          <form onSubmit={this.handleSave.bind(this, media)} name="edit-media-form">
+          <form onSubmit={this.handleSave} name="edit-media-form">
             <TextField
               id="media-detail__title-input"
               label={<FormattedMessage id="mediaDetail.mediaTitle" defaultMessage="Title" />}
@@ -551,7 +535,7 @@ class MediaActionsBarComponent extends Component {
               />
             </Button>
             <Button
-              onClick={this.handleSave.bind(this, media)}
+              onClick={this.handleSave}
               className="media-detail__save-edits"
               disabled={!this.canSubmit()}
               color="primary"
@@ -568,7 +552,7 @@ class MediaActionsBarComponent extends Component {
 
     return (
       <div className={classes.root}>
-        { !media.archived ?
+        { !projectMedia.archived ?
           <div>
             <Button
               id="media-actions-bar__add-to"
@@ -597,7 +581,7 @@ class MediaActionsBarComponent extends Component {
                 />
               </Button> : null }
 
-            { projectMediaProject ?
+            { project ?
               <Button
                 id="media-actions-bar__remove-from-list"
                 variant="outlined"
@@ -630,8 +614,13 @@ class MediaActionsBarComponent extends Component {
           }}
         >
           <MediaStatus
-            media={media}
-            readonly={media.archived || media.last_status_obj.locked || readonlyStatus || published}
+            media={projectMedia}
+            readonly={
+              projectMedia.archived
+              || projectMedia.last_status_obj.locked
+              || readonlyStatus
+              || published
+            }
           />
 
           <MediaActions
@@ -639,7 +628,7 @@ class MediaActionsBarComponent extends Component {
               height: 36,
               marginTop: -5,
             }}
-            media={media}
+            media={projectMedia}
             handleEdit={this.handleEdit.bind(this)}
             handleRefresh={this.handleRefresh.bind(this)}
             handleSendToTrash={this.handleSendToTrash.bind(this)}
@@ -655,8 +644,8 @@ class MediaActionsBarComponent extends Component {
           actions={addToListDialogActions}
           open={this.state.openAddToListDialog}
           onClose={this.handleCloseDialogs.bind(this)}
-          team={media.team}
-          excludeProjectDbids={media.project_ids}
+          team={team}
+          excludeProjectDbids={projectMedia.project_ids}
           value={this.state.dstProj}
           onChange={this.handleSelectDestProject.bind(this)}
           title={
@@ -671,8 +660,8 @@ class MediaActionsBarComponent extends Component {
           actions={moveDialogActions}
           open={this.state.openMoveDialog}
           onClose={this.handleCloseDialogs.bind(this)}
-          excludeProjectDbids={media.project_ids}
-          team={media.team}
+          excludeProjectDbids={projectMedia.project_ids}
+          team={team}
           value={this.state.dstProj}
           onChange={this.handleSelectDestProject.bind(this)}
           title={
@@ -699,7 +688,7 @@ class MediaActionsBarComponent extends Component {
             <Attribution
               multi
               selectedUsers={assignments}
-              id={`media-${media.dbid}`}
+              id={`media-${projectMedia.dbid}`}
             />
           </DialogContent>
           <DialogActions>
@@ -722,129 +711,107 @@ MediaActionsBarComponent.contextTypes = {
 const ConnectedMediaActionsBarComponent =
   withStyles(Styles)(withSetFlashMessage(MediaActionsBarComponent));
 
-const MediaActionsBarContainer = Relay.createContainer(ConnectedMediaActionsBarComponent, {
-  initialVariables: {
-    contextId: null,
-    projectId: 0,
-  },
-  fragments: {
-    media: () => Relay.QL`
-      fragment on ProjectMedia {
+export default createFragmentContainer(ConnectedMediaActionsBarComponent, {
+  team: graphql`
+    fragment MediaActionsBar_team on Team {
+      ...MoveDialog_team
+      id
+      dbid  # here, and UpdateProjectMediaProjectMutation_projectMedia
+      slug
+      medias_count
+      trash_count
+      public_team {
         id
-        dbid
-        project_ids
-        title
-        demand
-        description
-        permissions
-        metadata
-        overridden
-        url
-        quote
-        archived
-        dynamic_annotation_report_design {
-          id
-          data
-        }
-        project_media_project(project_id: $projectId){
-          id
-          project {
+      }
+      search {
+        id
+        number_of_results
+      }
+      check_search_trash {
+        id
+        number_of_results
+      }
+      team_bot_installations(first: 10000) {
+        edges {
+          node {
             id
-            dbid
-            title
-            search_id
-            search { id, number_of_results }
-            medias_count
-          }
-        }
-        media {
-          url
-          embed_path
-          metadata
-        }
-        targets_by_users(first: 50) {
-          edges {
-            node {
+            team_bot: bot_user {
               id
-              dbid
-              last_status
-            }
-          }
-        }
-        last_status
-        last_status_obj {
-          id
-          dbid
-          locked
-          content
-          assignments(first: 10000) {
-            edges {
-              node {
-                id
-                dbid
-                name
-              }
-            }
-          }
-        }
-        relationship {
-          id
-          dbid
-          target_id
-          source_id
-        }
-        team {
-          ${MoveDialog.getFragment('team')}
-          id
-          dbid
-          slug
-          verification_statuses
-          medias_count
-          trash_count
-          public_team {
-            id
-          }
-          search {
-            id
-            number_of_results
-          }
-          check_search_trash {
-            id
-            number_of_results
-          }
-          team_bot_installations(first: 10000) {
-            edges {
-              node {
-                id
-                team_bot: bot_user {
-                  id
-                  identifier
-                }
-              }
+              identifier
             }
           }
         }
       }
-    `,
-  },
+    }
+  `,
+  project: graphql`
+    fragment MediaActionsBar_project on Project {
+      id
+      dbid  # here, and UpdateProjectMediaProjectMutation_previousProject
+      search_id  # UpdateProjectMediaProjectMutation_previousProject
+      medias_count  # UpdateProjectMediaProjectMutation_previousProject
+      title
+      search {
+        id
+        number_of_results
+      }
+    }
+  `,
+  projectMedia: graphql`
+    fragment MediaActionsBar_projectMedia on ProjectMedia {
+      id
+      dbid
+      project_ids
+      title
+      demand
+      description
+      permissions
+      verification_statuses
+      metadata
+      overridden
+      url
+      quote
+      archived
+      dynamic_annotation_report_design {
+        id
+        data
+      }
+      media {
+        url
+        embed_path
+        metadata
+      }
+      targets_by_users(first: 50) {
+        edges {
+          node {
+            id
+            dbid
+            last_status
+          }
+        }
+      }
+      last_status
+      last_status_obj {
+        id
+        dbid
+        locked
+        content
+        assignments(first: 10000) {
+          edges {
+            node {
+              id
+              dbid
+              name
+            }
+          }
+        }
+      }
+      relationship {
+        id
+        dbid
+        target_id
+        source_id
+      }
+    }
+  `,
 });
-
-// eslint-disable-next-line react/no-multi-comp
-class MediaActionsBar extends React.PureComponent {
-  render() {
-    const { projectId, projectMediaId } = this.props;
-    const ids = `${projectMediaId},${projectId}`;
-    const projectIdValue = projectId == null ? 0 : projectId;
-    const route = new MediaRoute({ ids, projectId: projectIdValue });
-
-    return (
-      <Relay.RootContainer
-        Component={MediaActionsBarContainer}
-        renderFetched={data => <MediaActionsBarContainer {...this.props} {...data} />}
-        route={route}
-      />
-    );
-  }
-}
-
-export default MediaActionsBar;

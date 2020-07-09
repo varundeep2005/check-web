@@ -98,7 +98,8 @@ export default function MediaSearchRedirect({ buildSiblingUrl, listQuery, listIn
           }
           return <BrokenLink />;
         }
-        return <CircularProgress />;
+        // size="1.5rem" -- same size as the <IconButton> that surrounds it
+        return <CircularProgress size="1.5rem" />;
       }}
     />
   );

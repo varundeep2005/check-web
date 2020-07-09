@@ -57,7 +57,7 @@ class MediaLogComponent extends Component {
   }
 
   render() {
-    const media = Object.assign(this.props.cachedMedia, this.props.media);
+    const media = { ...this.props.cachedMedia, ...this.props.media };
 
     return (
       <Annotations

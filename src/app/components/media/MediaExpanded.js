@@ -19,7 +19,6 @@ import ImageMediaCard from './ImageMediaCard';
 import VideoMediaCard from './VideoMediaCard';
 import PenderCard from '../PenderCard';
 import { parseStringUnixTimestamp, truncateLength, getCurrentProjectId } from '../../helpers';
-import CheckContext from '../../CheckContext';
 import { withPusher, pusherShape } from '../../pusher';
 import {
   FadeIn,
@@ -27,12 +26,13 @@ import {
   Row,
 } from '../../styles/js/shared';
 
-function mediaHasCustomDescription(media, data) {
+function mediaHasCustomDescription(media) {
+  const data = media.metadata;
   const description = data && data.description && data.description.trim();
   return description && (
-    (media && media.overridden && media.overridden.description) || // Link type report
-    (media.quote && (description !== media.quote)) || // Quote type report
-    (media.embed_path && description)); // Image type report
+    (media.overridden && media.overridden.description) || // Link type report
+    (media.media.quote && (description !== media.media.quote)) || // Quote type report
+    (media.media.embed_path && description)); // Image type report
 }
 
 const StyledHeaderTextSecondary = styled.div`
@@ -53,26 +53,11 @@ class MediaExpandedComponent extends Component {
   }
 
   componentDidMount() {
-    this.setContext();
     this.subscribe();
-  }
-
-  componentDidUpdate() {
-    this.setContext();
   }
 
   componentWillUnmount() {
     this.unsubscribe();
-  }
-
-  getContext() {
-    return new CheckContext(this).getContextStore();
-  }
-
-  setContext() {
-    const context = new CheckContext(this);
-    const { team, project } = this.props.media;
-    context.setContextStore({ team, project });
   }
 
   subscribe() {
@@ -110,25 +95,21 @@ class MediaExpandedComponent extends Component {
         }
       });
     }
-    media.url = media.media.url;
-    media.quote = media.media.quote;
-    media.embed_path = media.media.embed_path;
-    const data = typeof media.metadata === 'string' ? JSON.parse(media.metadata) : media.metadata;
     const isImage = media.media.type === 'UploadedImage';
     const isVideo = media.media.type === 'UploadedVideo';
     const isQuote = media.media.type === 'Claim';
-    const isWebPage = media.media.url && data.provider === 'page';
-    const authorName = MediaUtil.authorName(media, data);
-    const authorUsername = data.username;
-    const isPender = media.media.url && data.provider !== 'page';
+    const isWebPage = media.media.url && media.metadata.provider === 'page';
+    const authorName = MediaUtil.authorName(media);
+    const authorUsername = media.metadata.username;
+    const isPender = media.media.url && media.metadata.provider !== 'page';
     const isYoutube = media.media.url && media.domain === 'youtube.com';
     const randomNumber = Math.floor(Math.random() * 1000000);
     const { mediaUrl, mediaQuery } = this.props;
-    const hasCustomDescription = mediaHasCustomDescription(media, data);
+    const hasCustomDescription = mediaHasCustomDescription(media);
 
     const embedCard = (() => {
       if (isImage) {
-        return <ImageMediaCard imagePath={media.embed_path} />;
+        return <ImageMediaCard imagePath={media.media.embed_path} />;
       } else if (isVideo) {
         return (
           <div ref={this.props.playerRef}>
@@ -144,7 +125,7 @@ class MediaExpandedComponent extends Component {
         return (
           <div ref={this.props.playerRef}>
             <VideoMediaCard
-              videoPath={media.url}
+              videoPath={media.media.url}
               {...{
                 playing, start, end, gaps, scrubTo, seekTo, onPlayerReady, setPlayerState,
               }}
@@ -154,17 +135,17 @@ class MediaExpandedComponent extends Component {
       } else if (isQuote) {
         return (
           <QuoteMediaCard
-            quote={media.quote}
+            quote={media.media.quote}
             languageCode={media.language_code}
           />
         );
-      } else if (isWebPage || !data.html) {
+      } else if (isWebPage || !media.metadata.html) {
         return (
           <WebPageMediaCard
             media={media}
             mediaUrl={mediaUrl}
             mediaQuery={mediaQuery}
-            data={data}
+            data={media.metadata}
             authorName={authorName}
             authorUserName={authorUsername}
           />
@@ -172,10 +153,10 @@ class MediaExpandedComponent extends Component {
       } else if (isPender) {
         return (
           <PenderCard
-            url={media.url}
+            url={media.media.url}
             fallback={null}
             domId={`pender-card-${randomNumber}`}
-            mediaVersion={this.state.mediaVersion || data.refreshes_count}
+            mediaVersion={this.state.mediaVersion || media.metadata.refreshes_count}
           />
         );
       }
@@ -234,7 +215,7 @@ class MediaExpandedComponent extends Component {
           </FadeIn>
         </CardContent>
         <CardActions style={{ paddingRight: units(0.5) }}>
-          <MediaMetadata data={data} {...this.props} media={media} />
+          <MediaMetadata data={media.metadata} {...this.props} media={media} />
         </CardActions>
       </span>
     );
@@ -251,9 +232,6 @@ MediaExpandedComponent.propTypes = {
 };
 
 const MediaExpandedContainer = Relay.createContainer(withPusher(MediaExpandedComponent), {
-  initialVariables: {
-    contextId: null,
-  },
   fragments: {
     media: () => Relay.QL`
       fragment on ProjectMedia {

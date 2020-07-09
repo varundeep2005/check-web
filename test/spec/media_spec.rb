@@ -202,7 +202,7 @@ shared_examples 'media' do |type|
     page.load unless page.nil?
     wait_for_selector(".medias__item")
     wait_for_selector('.media__heading a').click
-    wait_for_selector('.media-search__actions-bar')
+    wait_for_selector('.media-search__current-item')
 
     # First item
     expect(@driver.page_source.include?('1 of 3')).to be(true)
@@ -214,7 +214,7 @@ shared_examples 'media' do |type|
 
     # Second item
     wait_for_selector('.media-search__next-item').click
-    wait_for_selector('.media-search__actions-bar')
+    wait_for_selector('.media-search__current-item')
     expect(@driver.page_source.include?('1 of 3')).to be(false)
     expect(@driver.page_source.include?('2 of 3')).to be(true)
     expect(@driver.page_source.include?('3 of 3')).to be(false)
@@ -224,7 +224,7 @@ shared_examples 'media' do |type|
 
     # Third item
     wait_for_selector('.media-search__next-item').click
-    wait_for_selector('.media-search__actions-bar')
+    wait_for_selector('.media-search__current-item')
 
     expect(@driver.page_source.include?('1 of 3')).to be(false)
     expect(@driver.page_source.include?('2 of 3')).to be(false)
@@ -235,7 +235,7 @@ shared_examples 'media' do |type|
 
     # Second item
     wait_for_selector('.media-search__previous-item').click
-    wait_for_selector('.media-search__actions-bar')
+    wait_for_selector('.media-search__current-item')
     expect(@driver.page_source.include?('1 of 3')).to be(false)
     expect(@driver.page_source.include?('2 of 3')).to be(true)
     expect(@driver.page_source.include?('3 of 3')).to be(false)
@@ -245,7 +245,7 @@ shared_examples 'media' do |type|
 
     # First item
     wait_for_selector('.media-search__previous-item').click
-    wait_for_selector('.media-search__actions-bar')
+    wait_for_selector('.media-search__current-item')
     expect(@driver.page_source.include?('1 of 3')).to be(true)
     expect(@driver.page_source.include?('2 of 3')).to be(false)
     expect(@driver.page_source.include?('3 of 3')).to be(false)
