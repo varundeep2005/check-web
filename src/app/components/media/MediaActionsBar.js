@@ -30,18 +30,11 @@ import { getErrorMessage } from '../../helpers';
 const Styles = theme => ({
   root: {
     display: 'flex',
-    width: '100%',
-    height: 64,
+    flex: '1 1 auto', // take full width on smaller screens
+    height: theme.spacing(8),
     alignItems: 'center',
-    padding: '0 16px',
+    padding: theme.spacing(0, 2),
     justifyContent: 'space-between',
-    [theme.breakpoints.up(1500)]: {
-      top: 0,
-      right: 0,
-      width: '50%',
-      position: 'absolute',
-      zIndex: 2,
-    },
   },
   spacedButton: {
     marginRight: theme.spacing(1),

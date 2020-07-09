@@ -2,36 +2,34 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { createFragmentContainer, graphql } from 'react-relay/compat';
-import styled from 'styled-components';
 import Media from './Media';
-import MediaActionsBar from './MediaActionsBar';
 import MediaPageHeader from './MediaPageHeader';
 
-const StyledTopBar = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-
-  .media-search__actions-bar {
-    width: 50%;
-    position: absolute;
-    height: 64px;
-    right: 0;
-    top: 0;
-    display: flex;
-    align-items: center;
-    z-index: 2;
-    padding: 0 16px;
-    justify-content: space-between;
-  }
-
-  @media (max-width: 1500px) {
-    .media-search__actions-bar {
-      width: 100%;
-      position: static;
-      margin-top: -28px;
-    }
-  }
-`;
+// const StyledTopBar = styled.div`
+//   display: flex;
+//   flex-wrap: wrap;
+//
+//   .media-search__actions-bar {
+//     width: 50%;
+//     position: absolute;
+//     height: 64px;
+//     right: 0;
+//     top: 0;
+//     display: flex;
+//     align-items: center;
+//     z-index: 2;
+//     padding: 0 16px;
+//     justify-content: space-between;
+//   }
+//
+//   @media (max-width: 1500px) {
+//     .media-search__actions-bar {
+//       width: 100%;
+//       position: static;
+//       margin-top: -28px;
+//     }
+//   }
+// `;
 
 function ListTitle({ project, isTrash }) {
   if (project) {
@@ -61,16 +59,11 @@ function MediaPageLayout({
         buildSiblingUrl={buildSiblingUrl}
         listQuery={listQuery}
         listIndex={listIndex}
+        team={team}
+        project={project}
+        projectMedia={projectMedia}
         search={search}
       />
-      <StyledTopBar className="media-search__actions-bar">
-        <MediaActionsBar
-          key={`${listUrl}-${projectMedia.dbid}` /* TODO test MediaActionsBar is sane, then nix key */}
-          team={team}
-          project={project}
-          projectMedia={projectMedia}
-        />
-      </StyledTopBar>
       <Media team={team} project={project} media={projectMedia} />
     </React.Fragment>
   );
@@ -102,7 +95,7 @@ export default createFragmentContainer(MediaPageLayout, {
     fragment MediaPageLayout_team on Team {
       id
       ...Media_team
-      ...MediaActionsBar_team
+      ...MediaPageHeader_team
     }
   `,
   project: graphql`
@@ -110,7 +103,7 @@ export default createFragmentContainer(MediaPageLayout, {
       id
       title
       ...Media_project
-      ...MediaActionsBar_project
+      ...MediaPageHeader_project
     }
   `,
   projectMedia: graphql`
@@ -119,7 +112,7 @@ export default createFragmentContainer(MediaPageLayout, {
       dbid
       archived
       ...Media_media
-      ...MediaActionsBar_projectMedia
+      ...MediaPageHeader_projectMedia
     }
   `,
   search: graphql`
