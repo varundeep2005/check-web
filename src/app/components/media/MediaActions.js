@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { browserHistory } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import IconMoreVert from '@material-ui/icons/MoreVert';
 import IconButton from '@material-ui/core/IconButton';
@@ -12,28 +11,21 @@ import { getCurrentProjectId } from '../../helpers';
 class MediaActions extends Component {
   state = {
     anchorEl: null,
-  };
+  }
 
   handleOpenMenu = (e) => {
     this.setState({ anchorEl: e.currentTarget });
-  };
+  }
 
   handleCloseMenu = () => {
     this.setState({ anchorEl: null });
-  };
+  }
 
   handleActionAndClose = (callback) => {
     this.handleCloseMenu();
     if (callback) {
       callback();
     }
-  };
-
-  handleEmbed() {
-    const { media } = this.props;
-    const projectId = getCurrentProjectId(media.project_ids);
-    const projectPart = projectId ? `/project/${projectId}` : '';
-    browserHistory.push(`/${media.team.slug}${projectPart}/media/${media.dbid}/embed`);
   }
 
   render() {
