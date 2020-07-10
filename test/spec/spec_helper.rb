@@ -1,4 +1,3 @@
-require 'httparty'
 require 'rspec/retry'
 
 RSpec.configure do |config|
