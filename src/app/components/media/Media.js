@@ -1,8 +1,8 @@
-import { createFragmentContainer, graphql } from 'react-relay/compat';
+import { createRefetchContainer, graphql } from 'react-relay/compat';
 import MediaComponent from './MediaComponent'; // TODO put MediaComponent in this file
 import MediaTitle from './MediaTitle'; // eslint-disable-line no-unused-vars
 
-export default createFragmentContainer(MediaComponent, {
+export default createRefetchContainer(MediaComponent, {
   team: graphql`
     fragment Media_team on Team {
       id
@@ -120,4 +120,21 @@ export default createFragmentContainer(MediaComponent, {
       }
     }
   `,
-});
+}, graphql`
+  query MediaRefetchQuery(
+    $teamSlug: String!,
+    $projectDbid: String!,
+    $withProject: Boolean!,
+    $projectMediaDbid: String!
+  ) {
+    team(slug: $teamSlug) {
+      ...Media_team
+    }
+    project(id: $projectDbid) @include(if: $withProject) {
+      ...Media_project
+    }
+    project_media(ids: $projectMediaDbid) {
+      ...Media_media
+    }
+  }
+`);

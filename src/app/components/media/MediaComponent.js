@@ -152,6 +152,18 @@ class MediaComponent extends Component {
     this.setPlayerRect();
   }
 
+  refetch = () => {
+    const {
+      team, project, media, relay,
+    } = this.props;
+    relay.refetch({
+      teamSlug: team.slug,
+      projectDbid: project ? project.dbid : '',
+      withProject: Boolean(project),
+      projectMediaDbid: media.dbid,
+    });
+  }
+
   subscribe() {
     const { pusher, clientSessionId, media } = this.props;
     pusher.subscribe(media.pusher_channel).bind('relationship_change', 'MediaComponent', (data, run) => {
@@ -162,12 +174,12 @@ class MediaComponent extends Component {
         relationship.target_id === media.dbid)
       ) {
         if (run) {
-          this.props.relay.forceFetch();
+          this.refetch();
           return true;
         }
         return {
           id: `media-${media.dbid}`,
-          callback: this.props.relay.forceFetch,
+          callback: this.refetch,
         };
       }
       return false;
@@ -177,12 +189,12 @@ class MediaComponent extends Component {
       const annotation = JSON.parse(data.message);
       if (annotation.annotated_id === media.dbid && clientSessionId !== data.actor_session_id) {
         if (run) {
-          this.props.relay.forceFetch();
+          this.refetch();
           return true;
         }
         return {
           id: `media-${media.dbid}`,
-          callback: this.props.relay.forceFetch,
+          callback: this.refetch,
         };
       }
       return false;
