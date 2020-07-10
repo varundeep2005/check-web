@@ -617,17 +617,13 @@ class MediaActionsBarComponent extends Component {
           />
 
           <MediaActions
-            style={{
-              height: 36,
-              marginTop: -5,
-            }}
             media={projectMedia}
-            handleEdit={this.handleEdit.bind(this)}
-            handleRefresh={this.handleRefresh.bind(this)}
-            handleSendToTrash={this.handleSendToTrash.bind(this)}
-            handleRestore={this.handleRestore.bind(this)}
-            handleAssign={this.handleAssign.bind(this)}
-            handleStatusLock={this.handleStatusLock.bind(this)}
+            onAssign={this.handleAssign.bind(this)}
+            onEdit={this.handleEdit.bind(this)}
+            onRefresh={this.handleRefresh.bind(this)}
+            onRestore={this.handleRestore.bind(this)}
+            onSendToTrash={this.handleSendToTrash.bind(this)}
+            onStatusLock={this.handleStatusLock.bind(this)}
           />
         </div>
 

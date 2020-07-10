@@ -28,18 +28,6 @@
     "defaultMessage": "Restore from trash"
   },
   {
-    "id": "mediaActions.move",
-    "defaultMessage": "Move"
-  },
-  {
-    "id": "mediaActions.addToList",
-    "defaultMessage": "Add to list"
-  },
-  {
-    "id": "mediaActions.removeFromList",
-    "defaultMessage": "Remove from list"
-  },
-  {
     "id": "mediaActions.tooltip",
     "defaultMessage": "Item actions"
   }
