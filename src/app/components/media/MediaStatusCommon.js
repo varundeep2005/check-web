@@ -9,8 +9,7 @@ import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import LockIcon from '@material-ui/icons/Lock';
 import styled from 'styled-components';
 import { can } from '../Can';
-import CheckContext from '../../CheckContext';
-import { getStatus, getErrorMessage, bemClass, getCurrentProjectId } from '../../helpers';
+import { getStatus, getErrorMessage, bemClass } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
 import { withSetFlashMessage } from '../FlashMessage';
 
@@ -35,21 +34,13 @@ class MediaStatusCommon extends Component {
     this.setState({ anchorEl: null });
   };
 
-  handleEdit() {
-    const { media } = this.props;
-    const projectId = getCurrentProjectId(media.project_ids);
-    const projectPart = projectId ? `/project/${projectId}` : '';
-    browserHistory.push(`/${media.team.slug}${projectPart}/media/${media.dbid}/embed`);
-  }
-
   handleStatusClick = (clickedStatus) => {
     const { media } = this.props;
-    const store = new CheckContext(this).getContextStore();
 
     this.setState({ anchorEl: null });
 
     if (clickedStatus !== media.last_status) {
-      this.props.setStatus(this, store, media, clickedStatus, this.props.parentComponent, null);
+      this.props.setStatus(this, media, clickedStatus);
     }
   };
 
@@ -117,10 +108,6 @@ class MediaStatusCommon extends Component {
 
 MediaStatusCommon.propTypes = {
   setFlashMessage: PropTypes.func.isRequired,
-};
-
-MediaStatusCommon.contextTypes = {
-  store: PropTypes.object,
 };
 
 export default withSetFlashMessage(MediaStatusCommon);

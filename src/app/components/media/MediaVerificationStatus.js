@@ -5,13 +5,11 @@ import UpdateStatusMutation from '../../relay/mutations/UpdateStatusMutation';
 import MediaStatusCommon from './MediaStatusCommon';
 
 class MediaStatus extends Component {
-  setStatus(context, store, media, status) {
+  setStatus = (context, media, status) => {
     const status_id = media.last_status_obj ? media.last_status_obj.id : '';
     const status_attr = {
       parent_type: 'project_media',
       annotated: media,
-      annotator: store.currentUser,
-      context: store,
       annotation: {
         status,
         annotated_type: 'ProjectMedia',
@@ -45,11 +43,7 @@ class MediaStatus extends Component {
   }
 
   render() {
-    return (<MediaStatusCommon
-      {...this.props}
-      parentComponent={this}
-      setStatus={this.setStatus.bind(this)}
-    />);
+    return <MediaStatusCommon {...this.props} setStatus={this.setStatus} />;
   }
 }
 
