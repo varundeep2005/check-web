@@ -153,9 +153,9 @@ class MediaMetadata extends React.Component {
 MediaMetadata.propTypes = {
   media: PropTypes.shape({
     media: PropTypes.shape({
-      type: PropTypes.string,
+      type: PropTypes.string.isRequired,
       metadata: PropTypes.shape({
-        provider: PropTypes.string.isRequired,
+        provider: PropTypes.string, // or null
       }).isRequired,
     }).isRequired,
   }).isRequired,
