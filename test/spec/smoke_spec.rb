@@ -109,28 +109,28 @@ shared_examples 'smoke' do
     #from Twitter
     expect(@driver.page_source.include?('Happy birthday Mick')).to be(false)
     create_media("https://twitter.com/TheWho/status/890135323216367616")
-    wait_for_selector_list_size('.media__heading',2)
+    wait_for_selector_list_size('.media__heading a',2)
     wait_for_selector("//h4[contains(text(), 'Happy')]", :xpath)
     expect(@driver.page_source.include?('Happy birthday Mick')).to be(true)
 
     #from Youtube commented until #8390 is fixed
     # expect(@driver.page_source.include?("How To Check An")).to be(false)
     # create_media("https://www.youtube.com/watch?v=ykLgjhBnik0")
-    # wait_for_selector_list_size('.media__heading',3)
+    # wait_for_selector_list_size('.media__heading a',3)
     # wait_for_selector("//h4[contains(text(), 'How')]", :xpath)
     # expect(@driver.page_source.include?("How To Check An")).to be(true)
 
     #from Instagram
     expect(@driver.page_source.include?('#wEDnesday')).to be(false)
     create_media("https://www.instagram.com/p/BRYob0dA1SC/")
-    wait_for_selector_list_size('.media__heading',3)
+    wait_for_selector_list_size('.media__heading a',3)
     wait_for_selector("//h4[contains(text(), 'We get')]", :xpath)
     expect(@driver.page_source.include?('#wEDnesday')).to be(true)
 
     #from Tiktok
     expect(@driver.page_source.include?('Who agrees with this')).to be(false)
     create_media("https://www.tiktok.com/@scout2015/video/6771039287917038854")
-    wait_for_selector_list_size('.media__heading',4)
+    wait_for_selector_list_size('.media__heading a',4)
     wait_for_selector("//h4[contains(text(), 'Who agrees')]", :xpath)
     expect(@driver.page_source.include?('Who agrees with this')).to be(true)
   end
@@ -228,7 +228,7 @@ shared_examples 'smoke' do
     wait_for_selector(".project-list__item-trash").click #Go to the trash page
     wait_for_selector("//span[contains(text(), 'Trash')]", :xpath)
     wait_for_selector(".medias__item")
-    wait_for_selector(".media__heading").click
+    wait_for_selector(".media__heading a").click
     wait_for_selector(".media-actions__icon")
     wait_for_selector(".project-header__back-button").click
     wait_for_selector("#media-bulk-actions")
@@ -236,7 +236,7 @@ shared_examples 'smoke' do
     #item created from "all items" page
     wait_for_selector('a[href$="/all-items"]').click
     create_media("claim 2")
-    wait_for_selector(".media__heading").click
+    wait_for_selector(".media__heading a").click
     wait_for_selector("#media-detail__report-designer")
     wait_for_selector(".project-header__back-button").click
     wait_for_selector("#create-media__add-item")
@@ -678,25 +678,24 @@ shared_examples 'smoke' do
   it "should create a related image, delete the main item and verify that the both items were deleted" , bin1: true do
     api_create_team_project_and_claim_and_redirect_to_media_page
     wait_for_selector(".media-detail")
-    #add a related image
+    # add a related image
     wait_for_selector('.create-related-media__add-button').click
     wait_for_selector('#create-media__image').click
     wait_for_selector('input[type=file]').send_keys(File.join(File.dirname(__FILE__), 'test.png'))
     wait_for_selector('#create-media-dialog__submit-button').click
-    #verify that the image was created
+    # verify that the image was created
     wait_for_selector(".media-related__secondary-item")
-    cards = wait_for_selector_list(".card").length
+    cards = wait_for_selector_list_size(".card", 2).length
     expect(cards == 2).to be(true)
     wait_for_selector('.media-actions__icon').click
-    wait_for_selector('.media-actions__edit')
-    #delet the main item
+    # delete the main item
     wait_for_selector(".media-actions__send-to-trash").click
     wait_for_selector(".message").click
     wait_for_selector_none(".message")
     wait_for_selector('.project-header__back-button').click
     @driver.navigate.refresh
     wait_for_selector('#create-media__add-item')
-    #verify that both items were deleted
+    # verify that both items were deleted
     wait_for_selector_list_size(".medias__item", 0)
     expect(@driver.page_source.include?('Add a link or text')).to be(true)
   end
@@ -906,22 +905,22 @@ shared_examples 'smoke' do
     wait_for_selector(".drawer__create-project-button").click
     wait_for_selector('.create-project-form input[name="title"]').send_keys("project 2")
     @driver.action.send_keys(:enter).perform
-    wait_for_selector_none(".media__heading", :css, 5)
+    wait_for_selector_none(".media__heading")
     wait_for_selector(".project-list__link", index: 0).click
     expect(@driver.page_source.include?('Add a link or text')).to be(true)
     wait_for_selector(".project-list__link", index: 1).click
     wait_for_selector("#media-bulk-actions__actions")
-    wait_for_selector(".media__heading").click
+    wait_for_selector(".media__heading a").click
     wait_for_selector("#media-actions-bar__move-to").click
     wait_for_selector("input[name=project-title]").send_keys('Project')
     @driver.action.send_keys(:enter).perform
     wait_for_selector('.media-actions-bar__move-button').click
     wait_for_selector_none("input[name=project-title]")  # wait for dialog to disappear
     wait_for_selector("#search-input")
-    wait_for_selector(".media__heading")
+    wait_for_selector(".media__heading a")
     expect(@driver.page_source.include?('My search result')).to be(true)
     wait_for_selector(".project-list__link", index: 1).click
-    wait_for_selector_none(".media__heading", :css, 5)
+    wait_for_selector_none(".media__heading")
     expect(@driver.page_source.include?('My search result')).to be(false)
   end
 
@@ -935,7 +934,7 @@ shared_examples 'smoke' do
     wait_for_selector(".project-list__link", index: 0).click
     expect(@driver.page_source.include?('Add a link or text')).to be(true)
     wait_for_selector(".project-list__link", index: 1).click
-    wait_for_selector(".media__heading").click
+    wait_for_selector(".media__heading a").click
     wait_for_selector("#media-actions-bar__add-to").click
     wait_for_selector("input[name=project-title]").send_keys('Project')
     @driver.action.send_keys(:enter).perform
@@ -944,7 +943,7 @@ shared_examples 'smoke' do
     wait_for_selector(".message").click
     wait_for_selector(".project-header__back-button").click
     wait_for_selector(".project-list__link", index: 0).click
-    wait_for_selector(".media__heading")
+    wait_for_selector(".media__heading a")
     expect(@driver.page_source.include?('My search result')).to be(true)
   end
 
@@ -995,7 +994,7 @@ shared_examples 'smoke' do
     wait_for_selector(".project-header__back-button").click
     expect(@driver.find_elements(:css, '.medias__item').length == 0 )
     wait_for_selector(".project-list__item-trash").click #Go to the trash page
-    wait_for_selector(".media__heading")
+    wait_for_selector(".media__heading a")
     wait_for_selector("body input[type='checkbox']:not(:checked)").click
     wait_for_selector("#media-bulk-actions__actions").click
     wait_for_selector(".message")
@@ -1019,7 +1018,7 @@ shared_examples 'smoke' do
   #   #create media from all items and send it to trash
   #   wait_for_selector(".project-list__link-all").click
   #   create_media("media from all items")
-  #   wait_for_selector(".media__heading").click
+  #   wait_for_selector(".media__heading a").click
   #   wait_for_selector(".create-related-media__add-button")
   #   wait_for_selector(".media-actions__icon").click
   #   wait_for_selector(".media-actions__send-to-trash").click
@@ -1030,8 +1029,8 @@ shared_examples 'smoke' do
   #   expect(@driver.find_elements(:css, '.medias__item').length == 0 )
   #   #Go to the trash page and restore the item
   #   wait_for_selector(".project-list__item-trash").click
-  #   wait_for_selector_list_size(".media__heading",2)
-  #   wait_for_selector(".media__heading").click
+  #   wait_for_selector_list_size(".media__heading a",2)
+  #   wait_for_selector(".media__heading a").click
   #   wait_for_selector(".media-status")
   #   wait_for_selector(".media-actions__icon").click
   #   wait_for_selector("#media-actions__restore").click
@@ -1039,11 +1038,11 @@ shared_examples 'smoke' do
   #   wait_for_selector(".create-related-media__add-button")
   #   wait_for_selector(".projects__list")
   #   wait_for_selector(".project-list__link-all").click
-  #   wait_for_selector(".media__heading" )
+  #   wait_for_selector(".media__heading a" )
   #   expect(@driver.page_source.include?("media from all items")).to be(true)
   #   # Go to the trash page and restore the another item
   #   wait_for_selector(".project-list__item-trash").click
-  #   wait_for_selector(".media__heading").click
+  #   wait_for_selector(".media__heading a").click
   #   wait_for_selector(".media-status")
   #   wait_for_selector(".media-actions__icon").click
   #   wait_for_selector("#media-actions__restore").click
@@ -1051,7 +1050,7 @@ shared_examples 'smoke' do
   #   wait_for_selector(".message").click
   #   wait_for_selector(".projects__list")
   #   wait_for_selector(".project-list__link").click
-  #   wait_for_selector(".media__heading")
+  #   wait_for_selector(".media__heading a")
   #   expect(@driver.page_source.include?("Claim")).to be(true)
   # end
 
@@ -1271,7 +1270,7 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?('new item')).to be(true)
 
     #see the icon 'change the status' that the media you don't own
-    wait_for_selector_list(".media__heading a")[1].click
+    wait_for_selector(".media__heading a", index: 1).click
     wait_for_selector(".create-related-media__add-button")
     expect(@driver.find_elements(:css, ".media-status button").size).to eq 1
 
@@ -1430,11 +1429,11 @@ shared_examples 'smoke' do
     expect(@driver.page_source.include?('My search result')).to be(true)
     create_media("media 2")
     create_media("media 3")
-    wait_for_selector_list(".media__heading a")[0].click
+    wait_for_selector(".media__heading a").click
     change_the_status_to(".media-status__menu-item--false", false)
     wait_for_selector(".project-header__back-button").click
     wait_for_selector("#search-input")
-    wait_for_selector_list(".media__heading a")[1].click
+    wait_for_selector(".media__heading a", index: 1).click
     wait_for_selector(".media__annotations-column")
     change_the_status_to(".media-status__menu-item--verified", false)
     wait_for_selector(".project-header__back-button").click
@@ -1485,7 +1484,7 @@ shared_examples 'smoke' do
   it "should filter item by status on trash page", bin2: true do
     api_create_claim_and_go_to_search_page
     wait_for_selector("#search-input")
-    wait_for_selector(".media__heading").click
+    wait_for_selector(".media__heading a").click
     wait_for_selector(".media")
     expect(@driver.page_source.include?('My search result')).to be(true)
     wait_for_selector(".media-actions__icon").click
@@ -1494,7 +1493,7 @@ shared_examples 'smoke' do
     wait_for_selector(".project-header__back-button").click
     expect(@driver.find_elements(:css, '.medias__item').length == 0 )
     wait_for_selector(".project-list__item-trash").click #Go to the trash page
-    wait_for_selector(".media__heading")
+    wait_for_selector(".media__heading a")
     #user filter option
     wait_for_selector("#search__open-dialog-button").click
     wait_for_selector("#search-query__cancel-button")

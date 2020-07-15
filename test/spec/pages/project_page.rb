@@ -18,7 +18,7 @@ class ProjectPage < Page
     wait_for_selector('#create-media-dialog__submit-button').click
     wait_for_selector_none("#create-media-input")
     wait_for_selector("#media-bulk-actions")
-    wait_for_selector(".media__heading").click
+    wait_for_selector(".media__heading a").click
     wait_for_selector('.media-detail')
     MediaPage.new(config: @config, driver: @driver)
   end
