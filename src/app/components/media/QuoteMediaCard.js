@@ -21,9 +21,12 @@ const QuoteMediaCard = ({ quote, languageCode }) => (
     </StyledQuoteText>
   </div>
 );
+QuoteMediaCard.defaultProps = {
+  languageCode: 'en', // to make isRtlLang() work
+};
 QuoteMediaCard.propTypes = {
   quote: PropTypes.string.isRequired,
-  languageCode: PropTypes.string.isRequired,
+  languageCode: PropTypes.string, // or null
 };
 
 export default QuoteMediaCard;
