@@ -7,7 +7,7 @@ import styled from 'styled-components';
 import CreateRelatedMediaDialog from './CreateRelatedMediaDialog';
 import Can from '../Can';
 import CheckContext from '../../CheckContext';
-import { getErrorMessage, getCurrentProject } from '../../helpers';
+import { getErrorMessage } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
 import globalStrings from '../../globalStrings';
 import { black05 } from '../../styles/js/shared';
@@ -40,6 +40,7 @@ class CreateRelatedMedia extends Component {
   };
 
   handleSubmit = (value) => {
+    const { project } = this.props; // may be null
     const onFailure = (transaction) => {
       const fallbackMessage = this.props.intl.formatMessage(globalStrings.unknownError, { supportEmail: stringHelper('SUPPORT_EMAIL') });
       const message = getErrorMessage(transaction, fallbackMessage);
@@ -56,7 +57,7 @@ class CreateRelatedMedia extends Component {
       new CreateProjectMediaMutation({
         ...value,
         context,
-        project: getCurrentProject(this.props.media.projects),
+        project,
         team: this.props.media.team,
         related: this.props.media,
         related_to_id: this.props.media.dbid,
@@ -71,6 +72,8 @@ class CreateRelatedMedia extends Component {
   };
 
   handleSubmitExisting = (obj) => {
+    const { project } = this.props;
+
     const onFailure = (transaction) => {
       const fallbackMessage = this.props.intl.formatMessage(globalStrings.unknownError, { supportEmail: stringHelper('SUPPORT_EMAIL') });
       const message = getErrorMessage(transaction, fallbackMessage);
@@ -88,7 +91,7 @@ class CreateRelatedMedia extends Component {
         obj,
         context,
         id: obj.id,
-        project: getCurrentProject(this.props.media.projects),
+        project,
         related_to: this.props.media,
         related_to_id: this.props.media.dbid,
         relationships_target_id: this.props.media.relationships.target_id,

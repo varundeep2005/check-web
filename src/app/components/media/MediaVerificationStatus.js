@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import Relay from 'react-relay/classic';
 import CreateStatusMutation from '../../relay/mutations/CreateStatusMutation';
 import UpdateStatusMutation from '../../relay/mutations/UpdateStatusMutation';
 import MediaStatusCommon from './MediaStatusCommon';
 
-class MediaStatus extends Component {
+// FIXME move <MediaStatusCommon> into this file
+class MediaVerificationStatus extends Component {
   setStatus = (context, media, status) => {
     const status_id = media.last_status_obj ? media.last_status_obj.id : '';
     const status_attr = {
@@ -47,4 +49,19 @@ class MediaStatus extends Component {
   }
 }
 
-export default MediaStatus;
+export { MediaVerificationStatus }; // DELETEME: use default export in ReportDesignerTopBar
+export default createFragmentContainer(MediaVerificationStatus, {
+  team: graphql`
+    fragment MediaVerificationStatus_team on Team {
+      id
+      verification_statuses
+    }
+  `,
+  media: graphql`
+    fragment MediaVerificationStatus_media on ProjectMedia {
+      id
+      last_status
+      permissions
+    }
+  `,
+});

@@ -14,7 +14,7 @@ import config from 'config'; // eslint-disable-line require-path-exists/exists
 import ReportDesignerCopyToClipboard from './ReportDesignerCopyToClipboard';
 import ReportDesignerConfirmableButton from './ReportDesignerConfirmableButton';
 import ReportDesignerEditButton from './ReportDesignerEditButton';
-import MediaStatus from '../MediaStatus';
+import { MediaVerificationStatus } from '../MediaVerificationStatus';
 import { completedGreen, inProgressYellow } from '../../../styles/js/shared';
 
 const useStyles = makeStyles(() => ({
@@ -206,8 +206,9 @@ const ReportDesignerTopBar = (props) => {
                 props.onStateChange('pause', 'paused');
               }}
             /> : null }
-          <MediaStatus
+          <MediaVerificationStatus
             media={media}
+            team={media.team}
             readonly={readOnly || state === 'published'}
             callback={props.onStatusChange}
           />

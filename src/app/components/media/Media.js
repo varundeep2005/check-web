@@ -1,11 +1,13 @@
 import { createRefetchContainer, graphql } from 'react-relay/compat';
 import MediaComponent from './MediaComponent'; // TODO put MediaComponent in this file
 import MediaTitle from './MediaTitle'; // eslint-disable-line no-unused-vars
+import MediaActionsBar from './MediaActionsBar'; // eslint-disable-line no-unused-vars
 
 export default createRefetchContainer(MediaComponent, {
   team: graphql`
     fragment Media_team on Team {
       id
+      ...MediaActionsBar_team
       dbid
       slug
       name
@@ -32,6 +34,7 @@ export default createRefetchContainer(MediaComponent, {
     fragment Media_media on ProjectMedia {
       id
       ...MediaTitle_projectMedia
+      ...MediaActionsBar_projectMedia
       dbid
       title
       metadata

@@ -12,7 +12,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import TextField from '@material-ui/core/TextField';
 import { withStyles } from '@material-ui/core/styles';
 import IconReport from '@material-ui/icons/Receipt';
-import MediaStatus from './MediaStatus';
+import MediaVerificationStatus from './MediaVerificationStatus';
 import MediaActions from './MediaActions';
 import Attribution from '../task/Attribution';
 import CreateProjectMediaProjectMutation from '../../relay/mutations/CreateProjectMediaProjectMutation';
@@ -124,7 +124,7 @@ class MediaActionsBarComponent extends Component {
   }
 
   handleMoveProjectMedia() {
-    const { team, projectMedia } = this.props;
+    const { team, project, projectMedia } = this.props;
     const { dstProj: { dbid: projectId } } = this.state;
 
     const onFailure = (transaction) => {
@@ -145,8 +145,8 @@ class MediaActionsBarComponent extends Component {
 
     Relay.Store.commitUpdate(
       new UpdateProjectMediaProjectMutation({
-        projectMedia: this.props.projectMedia,
-        previousProject: this.props.project,
+        projectMedia,
+        previousProject: project,
         project: this.state.dstProj,
       }),
       { onSuccess, onFailure },
@@ -240,8 +240,7 @@ class MediaActionsBarComponent extends Component {
 
   handleSendToTrash() {
     const { team, projectMedia, project } = this;
-    const onSuccess = (response) => {
-      const pm = response.updateProjectMedia.project_media;
+    const onSuccess = () => {
       const message = (
         <FormattedMessage
           id="mediaActionsBar.movedToTrash"
@@ -377,7 +376,7 @@ class MediaActionsBarComponent extends Component {
   handleRestore() {
     const { projectMedia, team, project } = this.props;
 
-    const onSuccess = (response) => {
+    const onSuccess = () => {
       const message = (
         <FormattedMessage id="mediaActionsBar.movedBack" defaultMessage="Restored from trash" />
       );
@@ -389,7 +388,7 @@ class MediaActionsBarComponent extends Component {
         id: projectMedia.id,
         media: projectMedia,
         archived: 0,
-        check_search_team: media.team.search,
+        check_search_team: team.search,
         // FIXME update _all_ projects, not just the current one
         check_search_project: project ? project.search : null,
         check_search_trash: team.check_search_trash,
@@ -560,7 +559,7 @@ class MediaActionsBarComponent extends Component {
               />
             </Button>
 
-            { projectMediaProject ?
+            { project ?
               <Button
                 id="media-actions-bar__move-to"
                 variant="contained"
@@ -606,8 +605,9 @@ class MediaActionsBarComponent extends Component {
             display: 'flex',
           }}
         >
-          <MediaStatus
+          <MediaVerificationStatus
             media={projectMedia}
+            team={team}
             readonly={
               projectMedia.archived
               || projectMedia.last_status_obj.locked
@@ -704,6 +704,7 @@ export default createFragmentContainer(ConnectedMediaActionsBarComponent, {
   team: graphql`
     fragment MediaActionsBar_team on Team {
       ...MoveDialog_team
+      ...MediaVerificationStatus_team
       id
       dbid  # here, and UpdateProjectMediaProjectMutation_projectMedia
       slug
@@ -749,13 +750,13 @@ export default createFragmentContainer(ConnectedMediaActionsBarComponent, {
   projectMedia: graphql`
     fragment MediaActionsBar_projectMedia on ProjectMedia {
       id
+      ...MediaVerificationStatus_media
       dbid
       project_ids
       title
       demand
       description
       permissions
-      verification_statuses
       metadata
       overridden
       url

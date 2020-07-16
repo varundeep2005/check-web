@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
-import { browserHistory } from 'react-router';
 import Button from '@material-ui/core/Button';
 import Popover from '@material-ui/core/Popover';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -18,6 +17,7 @@ const StyledMediaStatus = styled.div`
   align-items: center;
 `;
 
+// FIXME: move all this code into <MediaVerificationStatus>
 class MediaStatusCommon extends Component {
   static currentStatusToClass(status) {
     if (status === '') return '';
@@ -62,9 +62,9 @@ class MediaStatusCommon extends Component {
   }
 
   render() {
-    const { media } = this.props;
-    const { statuses } = media.team.verification_statuses;
-    const currentStatus = getStatus(media.team.verification_statuses, media.last_status);
+    const { team, media } = this.props;
+    const { statuses } = team.verification_statuses;
+    const currentStatus = getStatus(team.verification_statuses, media.last_status);
 
     return (
       <StyledMediaStatus className="media-status">
@@ -108,6 +108,9 @@ class MediaStatusCommon extends Component {
 
 MediaStatusCommon.propTypes = {
   setFlashMessage: PropTypes.func.isRequired,
+  team: PropTypes.shape({
+    verification_statuses: PropTypes.object.isRequired,
+  }).isRequired,
 };
 
 export default withSetFlashMessage(MediaStatusCommon);

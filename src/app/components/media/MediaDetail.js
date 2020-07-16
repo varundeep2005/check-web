@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Card from '@material-ui/core/Card';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaExpanded from './MediaExpanded';
@@ -46,6 +47,8 @@ class MediaDetail extends React.Component {
       end,
       gaps,
       media,
+      project,
+      team,
       onPlayerReady,
       onTimelineCommentOpen,
       onVideoAnnoToggle,
@@ -59,22 +62,15 @@ class MediaDetail extends React.Component {
     } = this.props;
 
     // Build the item URL
-
-    const path = this.props.location
-      ? this.props.location.pathname
-      : window.location.pathname;
-    let projectId = media.project_ids.pop();
-    if (/project\/([0-9]+)/.test(path)) {
-      projectId = path.match(/project\/([0-9]+)/).pop();
+    let projectDbid = project ? project.dbid : media.project_ids[0];
+    if (!projectDbid && annotated && annotatedType === 'Project') {
+      projectDbid = annotated.dbid;
     }
-    if (!projectId && annotated && annotatedType === 'Project') {
-      projectId = annotated.dbid;
-    }
-    let mediaUrl = projectId && media.team && media.dbid > 0
-      ? `/${media.team.slug}/project/${projectId}/media/${media.dbid}`
-      : null;
-    if (!mediaUrl && media.team && media.dbid > 0) {
-      mediaUrl = `/${media.team.slug}/media/${media.dbid}`;
+    let mediaUrl = null;
+    if (media.dbid) {
+      mediaUrl = projectDbid
+        ? `/${team.slug}/project/${projectDbid}/media/${media.dbid}`
+        : `/${team.slug}/media/${media.dbid}`;
     }
 
     return (
@@ -114,6 +110,8 @@ MediaDetail.propTypes = {
   // https://github.com/yannickcr/eslint-plugin-react/issues/1389
   // eslint-disable-next-line react/no-typos
   pusher: pusherShape.isRequired,
+  project: PropTypes.object.isRequired,
+  team: PropTypes.object.isRequired,
 };
 
 export default withPusher(MediaDetail);

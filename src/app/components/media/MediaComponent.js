@@ -209,7 +209,7 @@ class MediaComponent extends Component {
   handleTabChange = (e, value) => this.setState({ showTab: value });
 
   render() {
-    const { media, team } = this.props;
+    const { media, project, team } = this.props;
 
     const {
       playerState: {
@@ -243,6 +243,8 @@ class MediaComponent extends Component {
               hideBorder
               hideRelated
               media={media}
+              project={project}
+              team={team}
               onPlayerReady={this.setPlayerRect}
               onReady={this.handleMediaDetailReady}
               onTimelineCommentOpen={this.onTimelineCommentOpen}
@@ -254,9 +256,7 @@ class MediaComponent extends Component {
               }}
             />
             {this.props.extras}
-            <MediaRelated
-              media={media}
-            />
+            <MediaRelated media={media} project={project} team={team} />
           </Column>
           <Column className="media__annotations-column">
             <Tabs

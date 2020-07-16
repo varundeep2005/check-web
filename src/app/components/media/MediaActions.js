@@ -6,7 +6,6 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import { can } from '../Can';
-import { getCurrentProjectId } from '../../helpers';
 
 class MediaActions extends Component {
   state = {

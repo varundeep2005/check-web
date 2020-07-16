@@ -25,9 +25,11 @@ class DeleteProjectMediaProjectMutation extends Relay.Mutation {
             slug
           }
         }
-        project_media {
-          project_ids
-        }
+        # FIXME uncomment after https://mantis.meedan.com/view.php?id=8492
+        # project_media {
+        #   id
+        #   project_ids
+        # }
       }
     `;
   }
@@ -41,10 +43,11 @@ class DeleteProjectMediaProjectMutation extends Relay.Mutation {
         id: project.id,
         medias_count: project.medias_count - 1,
       },
-      projectMedia: {
-        id: projectMedia.id,
-        project_ids: projectMedia.project_ids.filter(i => i !== projectMedia.id),
-      }
+      // FIXME uncomment after https://mantis.meedan.com/view.php?id=8492
+      // project_media: {
+      //   id: projectMedia.id,
+      //   project_ids: projectMedia.project_ids.filter(i => i !== projectMedia.id),
+      // },
     };
   }
 
@@ -62,6 +65,8 @@ class DeleteProjectMediaProjectMutation extends Relay.Mutation {
         fieldIDs: {
           check_search_project: this.props.project.search_id,
           project: this.props.project.id,
+          // FIXME uncomment after https://mantis.meedan.com/view.php?id=8492
+          // project_media: this.props.projectMedia.id,
         },
       },
       {
@@ -76,15 +81,19 @@ class DeleteProjectMediaProjectMutation extends Relay.Mutation {
   }
 
   static fragments = {
-    project: Relay.QL`
-      id
-      dbid
-      media_counts
+    project: () => Relay.QL`
+      fragment on Project {
+        id
+        dbid
+        medias_count
+      }
     `,
-    projectMedia: Relay.QL`
-      id
-      dbid
-      project_ids
+    projectMedia: () => Relay.QL`
+      fragment on ProjectMedia {
+        id
+        dbid
+        project_ids
+      }
     `,
   }
 }

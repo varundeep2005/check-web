@@ -9,7 +9,7 @@ import MediaRoute from '../../relay/MediaRoute';
 import mediaFragment from '../../relay/mediaFragment';
 import MediaDetail from './MediaDetail';
 import MediasLoading from './MediasLoading';
-import { getFilters, getCurrentProjectId } from '../../helpers';
+import { getFilters } from '../../helpers';
 import {
   FlexRow,
   black54,
@@ -88,6 +88,7 @@ class MediaRelatedComponent extends Component {
 
   render() {
     const filters = getFilters();
+    const { project } = this.props;
     const { dbid } = this.props.media;
 
     const medias = [];
@@ -133,6 +134,7 @@ class MediaRelatedComponent extends Component {
             </StyledHeaderRow>
             <MediaDetail
               media={primaryItem}
+              team={primaryItem.team}
               condensed
               currentRelatedMedia={this.props.media}
               parentComponent={this}
@@ -150,7 +152,11 @@ class MediaRelatedComponent extends Component {
               />
             </h2>
           </FlexRow>
-          <CreateRelatedMedia style={{ marginLeft: 'auto' }} media={this.props.media} />
+          <CreateRelatedMedia
+            style={{ marginLeft: 'auto' }}
+            media={this.props.media}
+            project={project}
+          />
         </StyledHeaderRow>
 
         { (this.props.showNumbers && medias.length > 0) ?
@@ -176,6 +182,10 @@ class MediaRelatedComponent extends Component {
                   <li key={item.node.id} className="medias__item media-related__secondary-item" style={{ paddingBottom: units(1) }}>
                     {<MediaDetail
                       media={item.node}
+                      project={
+                        project && item.node.project_ids.includes(project.dbid) ? project : null
+                      }
+                      team={item.node.team}
                       condensed
                       currentRelatedMedia={this.props.media}
                       parentComponent={this}
@@ -212,18 +222,7 @@ const MediaRelatedContainer = Relay.createContainer(withPusher(MediaRelatedCompo
         archived
         permissions
         pusher_channel
-        projects(first: 10000) {
-          edges {
-            node {
-              id
-              dbid
-              title
-              search_id
-              search { id, number_of_results }
-              medias_count
-            }
-          }
-        }
+        project_ids
         media {
           quote
         }
@@ -280,9 +279,7 @@ const MediaRelatedContainer = Relay.createContainer(withPusher(MediaRelatedCompo
 });
 
 const MediaRelated = (props) => {
-  const projectId = getCurrentProjectId(props.media.project_ids);
-  const ids = `${props.media.dbid},${projectId}`;
-  const route = new MediaRoute({ ids });
+  const route = new MediaRoute({ ids: String(props.media.dbid) });
 
   return (
     <Relay.RootContainer
