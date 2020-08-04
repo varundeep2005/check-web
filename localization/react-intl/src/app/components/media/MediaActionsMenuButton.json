@@ -8,14 +8,6 @@
     "defaultMessage": "Assignment"
   },
   {
-    "id": "mediaActions.unlockStatus",
-    "defaultMessage": "Unlock status"
-  },
-  {
-    "id": "mediaActions.lockStatus",
-    "defaultMessage": "Lock status"
-  },
-  {
     "id": "mediaActions.sendToTrash",
     "defaultMessage": "Send to trash"
   },

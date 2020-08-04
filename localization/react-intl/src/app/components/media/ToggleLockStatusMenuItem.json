@@ -1,0 +1,10 @@
+[
+  {
+    "id": "mediaActions.unlockStatus",
+    "defaultMessage": "Unlock status"
+  },
+  {
+    "id": "mediaActions.lockStatus",
+    "defaultMessage": "Lock status"
+  }
+]

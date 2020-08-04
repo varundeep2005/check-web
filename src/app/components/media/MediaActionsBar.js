@@ -333,7 +333,6 @@ class MediaActionsBarComponent extends Component {
             handleSendToTrash={this.handleSendToTrash.bind(this)}
             handleRestore={this.handleRestore.bind(this)}
             handleAssign={this.handleAssign.bind(this)}
-            handleStatusLock={this.handleStatusLock.bind(this)}
           />
         </div>
 

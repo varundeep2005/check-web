@@ -4,11 +4,9 @@ import { FormattedMessage } from 'react-intl';
 import { commitMutation, createFragmentContainer, graphql } from 'react-relay/compat';
 import Relay from 'react-relay/classic';
 import MenuItem from '@material-ui/core/MenuItem';
-import GenericUnknownErrorMessage from '../GenericUnknownErrorMessage';
-import { FlashMessageSetterContext } from '../FlashMessage';
-import { getErrorMessageForRelayModernProblem } from '../../helpers';
+import useGenericCommitMutationHandlers from '../../relay/useGenericCommitMutationHandlers';
 
-function commitRefreshMediaMenuItem({ projectMedia, onSuccess, onFailure }) {
+function commitRefreshMediaMenuItem({ projectMedia, onCompleted, onError }) {
   return commitMutation(Relay.Store, {
     mutation: graphql`
       mutation RefreshMediaMenuItemMutation($input: UpdateProjectMediaInput!) {
@@ -25,30 +23,17 @@ function commitRefreshMediaMenuItem({ projectMedia, onSuccess, onFailure }) {
         refresh_media: 1,
       },
     },
-    onError: onFailure,
-    onCompleted: ({ data, errors }) => {
-      if (errors) {
-        return onFailure(errors);
-      }
-      return onSuccess(data);
-    },
+    onCompleted,
+    onError,
   });
 }
 
-function RefreshMediaMenuItem({ projectMedia }) {
-  const setFlashMessage = React.useContext(FlashMessageSetterContext);
+function RefreshMediaMenuItem({ projectMedia, onClick }) {
+  const { onCompleted, onError } = useGenericCommitMutationHandlers();
   const handleClick = React.useCallback(() => {
-    commitRefreshMediaMenuItem({
-      projectMedia,
-      onSuccess: () => {},
-      onFailure: (errors) => {
-        console.error(errors); // eslint-disable-line no-console
-        setFlashMessage((
-          getErrorMessageForRelayModernProblem(errors) || <GenericUnknownErrorMessage />
-        ));
-      },
-    });
-  }, [projectMedia, setFlashMessage]);
+    commitRefreshMediaMenuItem({ projectMedia, onCompleted, onError });
+    onClick();
+  }, [projectMedia, onClick, onCompleted, onError]);
 
   return (
     <MenuItem className="media-actions__refresh" onClick={handleClick}>
@@ -60,6 +45,7 @@ RefreshMediaMenuItem.propTypes = {
   projectMedia: PropTypes.shape({
     id: PropTypes.string.isRequired,
   }).isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 export default createFragmentContainer(RefreshMediaMenuItem, {

@@ -8,6 +8,7 @@ import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import EditTitleAndDescriptionDialog from './EditTitleAndDescriptionDialog';
 import RefreshMediaMenuItem from './RefreshMediaMenuItem';
+import ToggleLockStatusMenuItem from './ToggleLockStatusMenuItem';
 import { can } from '../Can';
 
 class MediaActionsMenuButton extends React.PureComponent {
@@ -16,9 +17,6 @@ class MediaActionsMenuButton extends React.PureComponent {
       id: PropTypes.string.isRequired,
       permissions: PropTypes.string.isRequired,
       archived: PropTypes.bool.isRequired,
-      last_status_obj: PropTypes.shape({
-        locked: PropTypes.bool.isRequired,
-      }).isRequired,
       media: PropTypes.shape({
         url: PropTypes.string,
       }).isRequired,
@@ -26,7 +24,6 @@ class MediaActionsMenuButton extends React.PureComponent {
     handleSendToTrash: PropTypes.func.isRequired,
     handleRestore: PropTypes.func.isRequired,
     handleAssign: PropTypes.func.isRequired,
-    handleStatusLock: PropTypes.func.isRequired,
   };
 
   state = {
@@ -63,7 +60,6 @@ class MediaActionsMenuButton extends React.PureComponent {
       handleSendToTrash,
       handleRestore,
       handleAssign,
-      handleStatusLock,
     } = this.props;
     const {
       isEditTitleAndDescriptionDialogOpen,
@@ -86,7 +82,13 @@ class MediaActionsMenuButton extends React.PureComponent {
       && !projectMedia.archived
       && projectMedia.media.url
     ) {
-      menuItems.push(<RefreshMediaMenuItem projectMedia={projectMedia} />);
+      menuItems.push((
+        <RefreshMediaMenuItem
+          key="refresh"
+          projectMedia={projectMedia}
+          onClick={this.handleCloseMenu}
+        />
+      ));
     }
 
     if (can(projectMedia.permissions, 'update Status') && !projectMedia.archived) {
@@ -102,16 +104,11 @@ class MediaActionsMenuButton extends React.PureComponent {
 
     if (can(projectMedia.permissions, 'lock Annotation') && !projectMedia.archived) {
       menuItems.push((
-        <MenuItem
-          key="mediaActions.lockStatus"
-          className="media-actions__lock-status"
-          onClick={() => this.handleActionAndClose(handleStatusLock)}
-        >
-          {projectMedia.last_status_obj.locked
-            ? <FormattedMessage id="mediaActions.unlockStatus" defaultMessage="Unlock status" />
-            : <FormattedMessage id="mediaActions.lockStatus" defaultMessage="Lock status" />
-          }
-        </MenuItem>
+        <ToggleLockStatusMenuItem
+          key="lock-status"
+          projectMedia={projectMedia}
+          onClick={this.handleCloseMenu}
+        />
       ));
     }
 
@@ -175,11 +172,9 @@ export default createFragmentContainer(MediaActionsMenuButton, {
       media {
         url
       }
-      last_status_obj {
-        locked
-      }
       ...EditTitleAndDescriptionDialog_projectMedia
       ...RefreshMediaMenuItem_projectMedia
+      ...ToggleLockStatusMenuItem_projectMedia
     }
   `,
 });
