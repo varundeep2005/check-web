@@ -6,8 +6,8 @@ import IconMoreVert from '@material-ui/icons/MoreVert';
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import EditTitleAndDescriptionDialog from './EditTitleAndDescriptionDialog';
+import RefreshMediaMenuItem from './RefreshMediaMenuItem';
 import { can } from '../Can';
 
 class MediaActionsMenuButton extends React.PureComponent {
@@ -23,7 +23,6 @@ class MediaActionsMenuButton extends React.PureComponent {
         url: PropTypes.string,
       }).isRequired,
     }).isRequired,
-    handleRefresh: PropTypes.func.isRequired,
     handleSendToTrash: PropTypes.func.isRequired,
     handleRestore: PropTypes.func.isRequired,
     handleAssign: PropTypes.func.isRequired,
@@ -61,7 +60,6 @@ class MediaActionsMenuButton extends React.PureComponent {
   render() {
     const {
       projectMedia,
-      handleRefresh,
       handleSendToTrash,
       handleRestore,
       handleAssign,
@@ -79,30 +77,16 @@ class MediaActionsMenuButton extends React.PureComponent {
           className="media-actions__edit"
           onClick={this.handleOpenEditTitleAndDescriptionDialog}
         >
-          <ListItemText
-            primary={
-              <FormattedMessage id="mediaActions.edit" defaultMessage="Edit title and description" />
-            }
-          />
+          <FormattedMessage id="mediaActions.edit" defaultMessage="Edit title and description" />
         </MenuItem>));
     }
 
-    if (can(projectMedia.permissions, 'update ProjectMedia') && !projectMedia.archived) {
-      if (projectMedia.media.url) {
-        menuItems.push((
-          <MenuItem
-            key="mediaActions.refresh"
-            className="media-actions__refresh"
-            id="media-actions__refresh"
-            onClick={() => this.handleActionAndClose(handleRefresh)}
-          >
-            <ListItemText
-              primary={
-                <FormattedMessage id="mediaActions.refresh" defaultMessage="Refresh" />
-              }
-            />
-          </MenuItem>));
-      }
+    if (
+      can(projectMedia.permissions, 'update ProjectMedia')
+      && !projectMedia.archived
+      && projectMedia.media.url
+    ) {
+      menuItems.push(<RefreshMediaMenuItem projectMedia={projectMedia} />);
     }
 
     if (can(projectMedia.permissions, 'update Status') && !projectMedia.archived) {
@@ -112,11 +96,7 @@ class MediaActionsMenuButton extends React.PureComponent {
           className="media-actions__assign"
           onClick={() => this.handleActionAndClose(handleAssign)}
         >
-          <ListItemText
-            primary={
-              <FormattedMessage id="mediaActions.assignOrUnassign" defaultMessage="Assignment" />
-            }
-          />
+          <FormattedMessage id="mediaActions.assignOrUnassign" defaultMessage="Assignment" />
         </MenuItem>));
     }
 
@@ -127,12 +107,12 @@ class MediaActionsMenuButton extends React.PureComponent {
           className="media-actions__lock-status"
           onClick={() => this.handleActionAndClose(handleStatusLock)}
         >
-          <ListItemText
-            primary={projectMedia.last_status_obj.locked ?
-              <FormattedMessage id="mediaActions.unlockStatus" defaultMessage="Unlock status" /> :
-              <FormattedMessage id="mediaActions.lockStatus" defaultMessage="Lock status" />}
-          />
-        </MenuItem>));
+          {projectMedia.last_status_obj.locked
+            ? <FormattedMessage id="mediaActions.unlockStatus" defaultMessage="Unlock status" />
+            : <FormattedMessage id="mediaActions.lockStatus" defaultMessage="Lock status" />
+          }
+        </MenuItem>
+      ));
     }
 
     if (can(projectMedia.permissions, 'update ProjectMedia') && !projectMedia.archived) {
@@ -142,10 +122,9 @@ class MediaActionsMenuButton extends React.PureComponent {
           className="media-actions__send-to-trash"
           onClick={() => this.handleActionAndClose(handleSendToTrash)}
         >
-          <ListItemText
-            primary={<FormattedMessage id="mediaActions.sendToTrash" defaultMessage="Send to trash" />}
-          />
-        </MenuItem>));
+          <FormattedMessage id="mediaActions.sendToTrash" defaultMessage="Send to trash" />
+        </MenuItem>
+      ));
     }
 
     if (can(projectMedia.permissions, 'restore ProjectMedia') && projectMedia.archived) {
@@ -156,10 +135,9 @@ class MediaActionsMenuButton extends React.PureComponent {
           id="media-actions__restore"
           onClick={() => this.handleActionAndClose(handleRestore)}
         >
-          <ListItemText
-            primary={<FormattedMessage id="mediaActions.restore" defaultMessage="Restore from trash" />}
-          />
-        </MenuItem>));
+          <FormattedMessage id="mediaActions.restore" defaultMessage="Restore from trash" />
+        </MenuItem>
+      ));
     }
 
     return menuItems.length ? (
@@ -201,6 +179,7 @@ export default createFragmentContainer(MediaActionsMenuButton, {
         locked
       }
       ...EditTitleAndDescriptionDialog_projectMedia
+      ...RefreshMediaMenuItem_projectMedia
     }
   `,
 });

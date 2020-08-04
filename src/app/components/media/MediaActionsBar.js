@@ -139,18 +139,6 @@ class MediaActionsBarComponent extends Component {
     });
   }
 
-  handleRefresh() {
-    Relay.Store.commitUpdate(
-      new UpdateProjectMediaMutation({
-        refresh_media: 1,
-        id: this.props.media.id,
-        srcProj: null,
-        dstProj: null,
-      }),
-      { onFailure: this.fail },
-    );
-  }
-
   handleStatusLock() {
     const { media } = this.props;
 
@@ -342,7 +330,6 @@ class MediaActionsBarComponent extends Component {
             }}
             key={media.id /* close menu if we navigate to a different projectMedia */}
             projectMedia={media}
-            handleRefresh={this.handleRefresh.bind(this)}
             handleSendToTrash={this.handleSendToTrash.bind(this)}
             handleRestore={this.handleRestore.bind(this)}
             handleAssign={this.handleAssign.bind(this)}
