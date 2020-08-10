@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { injectIntl, defineMessages } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
 import styled from 'styled-components';
@@ -9,10 +9,8 @@ import { withPusher, pusherShape } from '../../pusher';
 import TaskRoute from '../../relay/TaskRoute';
 import CheckContext from '../../CheckContext';
 import AddAnnotation from '../annotations/AddAnnotation';
-import Annotation from '../annotations/Annotation';
-import ProfileLink from '../layout/ProfileLink';
+import Version from '../annotations/Version';
 import MediasLoading from '../media/MediasLoading';
-import UserTooltip from '../user/UserTooltip';
 import UserUtil from '../user/UserUtil';
 import { black16, units, opaqueBlack54, checkBlue } from '../../styles/js/shared';
 
@@ -89,12 +87,11 @@ const StyledTaskLog = styled.div`
 
 /* eslint react/no-multi-comp: 0 */
 
-const messages = defineMessages({
-  bubbleTooltip: {
-    id: 'taskLog.bubbleTooltip',
-    defaultMessage: 'Toggle log',
-  },
-});
+const EventTypes = [
+  'create_comment',
+  'create_dynamicannotationfield',
+  'update_dynamicannotationfield',
+];
 
 class TaskLogComponent extends Component {
   static scrollToAnnotation() {
@@ -136,10 +133,9 @@ class TaskLogComponent extends Component {
     const {
       pusher,
       clientSessionId,
-      cachedTask,
       task,
     } = this.props;
-    pusher.subscribe(cachedTask.project_media.pusher_channel).bind('media_updated', 'TaskLog', (data, run) => {
+    pusher.subscribe(task.project_media.pusher_channel).bind('media_updated', 'TaskLog', (data, run) => {
       const annotation = JSON.parse(data.message);
       if (annotation.annotation_type === 'task' &&
         parseInt(annotation.id, 10) === parseInt(this.props.task.dbid, 10) &&
@@ -159,37 +155,32 @@ class TaskLogComponent extends Component {
   }
 
   unsubscribe() {
-    const { pusher, cachedTask } = this.props;
-    pusher.unsubscribe(cachedTask.project_media.pusher_channel);
+    const { pusher, task } = this.props;
+    pusher.unsubscribe(task.project_media.pusher_channel);
   }
 
   render() {
-    const { props } = this;
-    const task = Object.assign(props.cachedTask, props.task);
+    const { task } = this.props;
     const log = task.log.edges;
     return (
       <div>
         <ul id={`task-log-${task.dbid}`}>
-          {log.map((node) => {
-            const item = node.node;
-            if (item.event_type !== 'create_comment' &&
-              item.event_type !== 'create_dynamicannotationfield' &&
-              item.event_type !== 'update_dynamicannotationfield') {
-              return null;
-            }
-            return (
-              <li key={item.id}>
-                <StyledAnnotation>
-                  <Annotation
-                    annotation={item}
-                    annotated={task}
-                    annotatedType="Task"
-                  />
-                </StyledAnnotation>
-              </li>
-            );
-          })}
+          {log.map(({ node }) => EventTypes.includes(node.event_type) ? (
+            <li key={node.id}>
+              <StyledAnnotation>
+                <Version
+                  version={node}
+                  task={task}
+                />
+              </StyledAnnotation>
+            </li>
+          ) : null)}
         </ul>
+        {!task.project_media.archived ? (
+          <div id={`task-${this.props.task.dbid}-log`}>
+            <AddAnnotation task={task} taskResponse={this.props.response} />
+          </div>
+        ) : null}
       </div>
     );
   }
@@ -209,13 +200,15 @@ const TaskLogContainer = Relay.createContainer(withPusher(TaskLogComponent), {
     teamSlug: /^\/([^/]+)/.test(window.location.pathname) ? window.location.pathname.match(/^\/([^/]+)/)[1] : null,
   }),
   fragments: {
-    task: () => Relay.QL`
+    task: ({ teamSlug }) => Relay.QL`
       fragment on Task {
         id
         dbid
         log_count
         suggestions_count
         pending_suggestions_count
+        ${Version.getFragment('task')}
+        ${AddAnnotation.getFragment('task')}
         project_media {
           id
           dbid
@@ -230,109 +223,9 @@ const TaskLogContainer = Relay.createContainer(withPusher(TaskLogComponent), {
         log(first: 10000) {
           edges {
             node {
-              id,
-              dbid,
-              item_type,
-              item_id,
-              event,
-              event_type,
-              created_at,
-              object_after,
-              object_changes_json,
-              meta,
-              user {
-                id,
-                dbid,
-                name,
-                is_active,
-                team_user(team_slug: $teamSlug) {
-                  ${ProfileLink.getFragment('teamUser')}, # FIXME: Make Annotation a container
-                  ${UserTooltip.getFragment('teamUser')}, # FIXME: Make Annotation a container
-                },
-                source {
-                  id,
-                  dbid,
-                  image,
-                },
-                bot {
-                  dbid
-                }
-              }
-              annotation {
-                id,
-                dbid,
-                content,
-                annotation_type,
-                updated_at,
-                created_at,
-                permissions,
-                medias(first: 10000) {
-                  edges {
-                    node {
-                      id,
-                      dbid,
-                      quote,
-                      published,
-                      url,
-                      metadata,
-                      last_status,
-                      last_status_obj {
-                        id
-                        dbid
-                        content
-                        assignments(first: 10000) {
-                          edges {
-                            node {
-                              id
-                              dbid
-                              name
-                              source {
-                                id
-                                dbid
-                                image
-                              }
-                            }
-                          }
-                        }
-                      }
-                      log_count,
-                      permissions,
-                      domain,
-                      team {
-                        slug,
-                        get_embed_whitelist
-                      }
-                      media {
-                        type,
-                        metadata,
-                        embed_path,
-                        thumbnail_path,
-                        file_path,
-                        url,
-                        quote
-                      }
-                      user {
-                        dbid
-                        name
-                        is_active
-                        source {
-                          dbid
-                          image
-                        }
-                      }
-                    }
-                  }
-                }
-                annotator {
-                  name,
-                  profile_image
-                }
-                version {
-                  id
-                  item_id
-                  item_type
-                }
-              }
+              id
+              event_type  # for weird if-statement
+              ${Version.getFragment('version', { teamSlug })}
             }
           }
         }
@@ -372,7 +265,9 @@ class TaskLog extends Component {
     return (
       <StyledTaskLog>
         <div className="task__log-top">
-          <Tooltip title={this.props.intl.formatMessage(messages.bubbleTooltip)}>
+          <Tooltip
+            title={<FormattedMessage id="taskLog.bubbleTooltip" defaultMessage="Toggle log" />}
+          >
             <span
               className="task__log-icon"
               onClick={this.toggle.bind(this)}
@@ -386,19 +281,16 @@ class TaskLog extends Component {
         </div>
         { !this.state.collapsed ? <Relay.RootContainer
           Component={TaskLogContainer}
-          renderFetched={data => <TaskLogContainer cachedTask={this.props.task} {...data} />}
+          renderFetched={data => (
+            <TaskLogContainer
+              collapsed={this.state.collapsed}
+              response={this.props.response}
+              {...data}
+            />
+          )}
           route={route}
           renderLoading={() => <MediasLoading count={1} />}
         /> : null }
-        { !this.state.collapsed && !this.props.task.project_media.archived ?
-          <div id={`task-${this.props.task.dbid}-log`}>
-            <AddAnnotation
-              annotated={this.props.task}
-              annotatedType="Task"
-              taskResponse={this.props.response}
-              types={['comment']}
-            />
-          </div> : null }
       </StyledTaskLog>
     );
   }
@@ -408,4 +300,4 @@ TaskLog.contextTypes = {
   store: PropTypes.object,
 };
 
-export default injectIntl(TaskLog);
+export default TaskLog;

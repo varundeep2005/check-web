@@ -1,63 +1,58 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import Relay from 'react-relay/classic';
-import CheckContext from '../../CheckContext';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import MediaRoute from '../../relay/MediaRoute';
 import MediaComponent from './MediaComponent';
 import MediasLoading from './MediasLoading';
-import MediaTitle from './MediaTitle'; // TODO put MediaComponent in this file
+// TODO put MediaComponent in this file
+// eslint-disable-next-line no-unused-vars
+import MediaTitle from './MediaTitle';
 
-const MediaContainer = Relay.createContainer(MediaComponent, {
-  initialVariables: {
-    contextId: null,
-  },
-  fragments: {
-    media: () => Relay.QL`
-      fragment on ProjectMedia {
-        id
-        ${MediaTitle.getFragment('projectMedia')}
-        dbid
-        title
+const MediaContainer = createFragmentContainer(MediaComponent, {
+  media: graphql`
+    fragment Media_media on ProjectMedia {
+      id
+      ...MediaTitle_projectMedia
+      dbid
+      title
+      metadata
+      read_by_someone: is_read
+      read_by_me: is_read(by_me: true)
+      permissions
+      pusher_channel
+      project_ids
+      requests_count
+      media {
+        url
+        quote
+        embed_path
         metadata
-        read_by_someone: is_read
-        read_by_me: is_read(by_me: true)
-        permissions
-        pusher_channel
-        project_ids
-        requests_count
-        media {
-          url
-          quote
-          embed_path
-          metadata
-          type
-        }
-        comments: annotations(first: 10000, annotation_type: "comment") {
-          edges {
-            node {
-              ... on Comment {
+        type
+      }
+      comments: annotations(first: 10000, annotation_type: "comment") {
+        edges {
+          node {
+            ... on Comment {
+              id
+              dbid
+              text
+              parsed_fragment
+              annotator {
                 id
-                dbid
-                text
-                parsed_fragment
-                annotator {
-                  id
-                  name
-                  profile_image
-                }
-                comments: annotations(first: 10000, annotation_type: "comment") {
-                  edges {
-                    node {
-                      ... on Comment {
+                name
+                profile_image
+              }
+              comments: annotations(first: 10000, annotation_type: "comment") {
+                edges {
+                  node {
+                    ... on Comment {
+                      id
+                      created_at
+                      text
+                      annotator {
                         id
-                        created_at
-                        text
-                        annotator {
-                          id
-                          name
-                          profile_image
-                        }
+                        name
+                        profile_image
                       }
                     }
                   }
@@ -66,75 +61,66 @@ const MediaContainer = Relay.createContainer(MediaComponent, {
             }
           }
         }
-        clips: annotations(first: 10000, annotation_type: "clip") {
-          edges {
-            node {
-              ... on Dynamic {
-                id
-                data
-                parsed_fragment
-              }
-            }
-          }
-        }
-        tags(first: 10000) {
-          edges {
-            node {
+      }
+      clips: annotations(first: 10000, annotation_type: "clip") {
+        edges {
+          node {
+            ... on Dynamic {
               id
-              dbid
-              fragment
+              data
               parsed_fragment
-              annotated_id
-              annotated_type
-              annotated_type
-              tag_text_object {
-                id
-                text
-              }
-            }
-          }
-        }
-        geolocations: annotations(first: 10000, annotation_type: "geolocation") {
-          edges {
-            node {
-              ... on Dynamic {
-                id
-                parsed_fragment
-                content
-              }
-            }
-          }
-        }
-        team {
-          id
-          dbid
-          slug
-          name
-          team_bots(first: 10000) {
-            edges {
-              node {
-                login
-              }
             }
           }
         }
       }
-    `,
-  },
+      tags(first: 10000) {
+        edges {
+          node {
+            id
+            dbid
+            fragment
+            parsed_fragment
+            annotated_id
+            annotated_type
+            annotated_type
+            tag_text_object {
+              id
+              text
+            }
+          }
+        }
+      }
+      geolocations: annotations(first: 10000, annotation_type: "geolocation") {
+        edges {
+          node {
+            ... on Dynamic {
+              id
+              parsed_fragment
+              content
+            }
+          }
+        }
+      }
+      team {
+        id
+        dbid
+        slug
+        name
+        team_bots(first: 10000) {
+          edges {
+            node {
+              login
+            }
+          }
+        }
+      }
+    }
+  `,
 });
 
-const ProjectMedia = (props, context) => {
-  let { projectId } = props;
+const Media = (props) => {
   const { projectMediaId } = props;
-  const checkContext = new CheckContext({ props, context });
-  checkContext.setContext();
-  if (!projectId) {
-    const store = checkContext.getContextStore();
-    if (store.project) {
-      projectId = store.project.dbid;
-    }
-  }
-  const ids = `${projectMediaId},${projectId}`;
+  const ids = `${projectMediaId}`;
   const route = new MediaRoute({ ids });
 
   return (
@@ -146,8 +132,4 @@ const ProjectMedia = (props, context) => {
   );
 };
 
-ProjectMedia.contextTypes = {
-  store: PropTypes.object,
-};
-
-export default injectIntl(ProjectMedia);
+export default Media;

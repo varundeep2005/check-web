@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import { FormattedMessage, FormattedHTMLMessage } from 'react-intl';
 import Relay from 'react-relay/classic';
 import RCTooltip from 'rc-tooltip';
@@ -24,7 +25,8 @@ import EmbedCreate from './EmbedCreate';
 import VideoAnnotationIcon from '../../../assets/images/video-annotation/video-annotation';
 import TaskUpdate from './TaskUpdate';
 import SourcePicture from '../source/SourcePicture';
-import MediaDetail from '../media/MediaDetail';
+import { guessProjectMediaUrl } from '../media/MediaDetail';
+import MediaCondensed from '../media/MediaCondensed';
 import ProfileLink from '../layout/ProfileLink';
 import ParsedText from '../ParsedText';
 import DeleteAnnotationMutation from '../../relay/mutations/DeleteAnnotationMutation';
@@ -255,7 +257,7 @@ FlagLikelihood.propTypes = {
 
 // TODO Fix a11y issues
 /* eslint jsx-a11y/click-events-have-key-events: 0 */
-class Annotation extends Component {
+class Version extends Component {
   constructor(props) {
     super(props);
 
@@ -286,17 +288,19 @@ class Annotation extends Component {
 
     // Either to destroy versions or annotations
     const destroy_attr = {
-      parent_type: this.props.annotatedType.replace(/([a-z])([A-Z])/, '$1_$2').toLowerCase(),
-      annotated: this.props.annotated,
+      parent_type: this.props.task ? 'task' : 'project_media',
+      annotated: (this.props.task || this.props.projectMedia),
       id,
     };
-    if (this.props.annotation.annotation.version === null) {
+    if (this.props.version.annotation.version === null) {
+      // It's a non-versioned annotation
       Relay.Store.commitUpdate(
         new DeleteAnnotationMutation(destroy_attr),
         { onSuccess, onFailure: this.fail },
       );
     } else {
-      destroy_attr.id = this.props.annotation.annotation.version.id;
+      // It's a versioned annotation
+      destroy_attr.id = this.props.version.annotation.version.id;
       Relay.Store.commitUpdate(
         new DeleteVersionMutation(destroy_attr),
         { onSuccess, onFailure: this.fail },
@@ -320,7 +324,7 @@ class Annotation extends Component {
   handleSuggestion(vid, accept) {
     const onSuccess = () => {};
 
-    const task = { id: this.props.annotated.id };
+    const task = { id: this.props.task.id };
     if (accept) {
       task.accept_suggestion = vid;
     } else {
@@ -330,7 +334,6 @@ class Annotation extends Component {
     Relay.Store.commitUpdate(
       new UpdateTaskMutation({
         operation: 'suggest',
-        annotated: this.props.annotated.project_media,
         task,
       }),
       { onSuccess, onFailure: this.fail },
@@ -369,7 +372,7 @@ class Annotation extends Component {
 
   render() {
     const {
-      annotation: activity, annotated, annotation: { annotation }, classes,
+      version, projectMedia, task, version: { annotation }, classes,
     } = this.props;
 
     let annotationActions = null;
@@ -378,7 +381,10 @@ class Annotation extends Component {
         .charAt(0)
         .toUpperCase()}${annotation.annotation_type.slice(1)}`;
       // TODO: Improve hide when item is archived logic. Not all annotated types have archived flag.
-      annotationActions = can(annotation.permissions, permission) && !annotated.archived ? (
+      const hasActions = (
+        can(annotation.permissions, permission) && (task || !projectMedia.archived)
+      );
+      annotationActions = hasActions ? (
         <div>
           <Tooltip title={
             <FormattedMessage id="annotation.menuTooltip" defaultMessage="Annotation actions" />
@@ -408,7 +414,7 @@ class Annotation extends Component {
             ) : null}
             <MenuItem>
               <a
-                href={`#annotation-${activity.dbid}`}
+                href={`#annotation-${version.dbid}`}
                 style={{ textDecoration: 'none', color: black87 }}
               >
                 <FormattedMessage
@@ -422,16 +428,17 @@ class Annotation extends Component {
         : null;
     }
 
-    const updatedAt = parseStringUnixTimestamp(activity.created_at);
+    const updatedAt = parseStringUnixTimestamp(version.created_at);
     const timestamp = updatedAt
       ? <span className="annotation__timestamp"><TimeBefore date={updatedAt} /></span>
       : null;
-    let authorName = activity.user
-      ? <ProfileLink className="annotation__author-name" teamUser={activity.user.team_user} /> : null;
-    const object = JSON.parse(activity.object_after);
+    // version.user.team_user is null during CreateCommentMutation optimistic update
+    let authorName = (version.user && version.user.team_user)
+      ? <ProfileLink className="annotation__author-name" teamUser={version.user.team_user} /> : null;
+    const object = JSON.parse(version.object_after);
     const content = object.data;
     const isVideoAnno = object.fragment !== undefined;
-    let activityType = activity.event_type;
+    let activityType = version.event_type;
     let contentTemplate = null;
     let showCard = false;
 
@@ -458,10 +465,13 @@ class Annotation extends Component {
           {/* embedded medias */}
           <div className="annotation__card-embedded-medias">
             {annotation.medias.edges.map(media => (
-              <div key={media.node.dbid}>
-                <MediaDetail media={media.node} condensed readonly hideRelated />
-              </div>))
-            }
+              <Card key={media.node.id} className="card media-detail">
+                <MediaCondensed
+                  media={media.node}
+                  mediaUrl={guessProjectMediaUrl(projectMedia.team, media.node)}
+                />
+              </Card>
+            ))}
           </div>
 
           {/* lightbox */}
@@ -476,14 +486,14 @@ class Annotation extends Component {
       break;
     }
     case 'create_tag':
-      if (activity.tag && activity.tag.tag_text) {
+      if (version.tag && version.tag.tag_text) {
         contentTemplate = (
           <span>
             <FormattedMessage
               id="annotation.taggedHeader"
               defaultMessage="Tagged #{tag} by {author}"
               values={{
-                tag: activity.tag.tag_text.replace(/^#/, ''),
+                tag: version.tag.tag_text.replace(/^#/, ''),
                 author: authorName,
               }}
             />
@@ -519,7 +529,7 @@ class Annotation extends Component {
       );
       break;
     case 'create_relationship': {
-      const meta = JSON.parse(activity.meta);
+      const meta = JSON.parse(version.meta);
       if (meta) {
         const { target } = meta;
         contentTemplate = (
@@ -538,7 +548,7 @@ class Annotation extends Component {
       break;
     }
     case 'destroy_relationship': {
-      const meta = JSON.parse(activity.meta);
+      const meta = JSON.parse(version.meta);
       if (meta) {
         const { target } = meta;
         contentTemplate = (
@@ -557,7 +567,7 @@ class Annotation extends Component {
       break;
     }
     case 'create_assignment': {
-      const meta = JSON.parse(activity.meta);
+      const meta = JSON.parse(version.meta);
       if (meta) {
         const { type, title, user_name } = meta;
         const values = {
@@ -591,7 +601,7 @@ class Annotation extends Component {
       break;
     }
     case 'destroy_assignment': {
-      const meta = JSON.parse(activity.meta);
+      const meta = JSON.parse(version.meta);
       if (meta) {
         const { type, title, user_name } = meta;
         const values = {
@@ -651,7 +661,7 @@ class Annotation extends Component {
           </div>
         );
       } else if (object.annotation_type === 'verification_status') {
-        const statusChanges = JSON.parse(activity.object_changes_json);
+        const statusChanges = JSON.parse(version.object_changes_json);
         if (statusChanges.locked) {
           if (statusChanges.locked[1]) {
             contentTemplate = (
@@ -671,7 +681,7 @@ class Annotation extends Component {
             );
           }
         } else if (statusChanges.assigned_to_id) {
-          const assignment = JSON.parse(activity.meta);
+          const assignment = JSON.parse(version.meta);
           if (assignment.assigned_to_name) {
             contentTemplate = (
               <FormattedMessage
@@ -704,7 +714,7 @@ class Annotation extends Component {
       if (object.field_name === 'metadata_value' && activityType === 'update_dynamicannotationfield') {
         contentTemplate = (
           <EmbedUpdate
-            activity={activity}
+            version={version}
             authorName={authorName}
           />);
       }
@@ -712,7 +722,7 @@ class Annotation extends Component {
       if (object.field_name === 'verification_status_status' && config.appName === 'check' && activityType === 'update_dynamicannotationfield') {
         const statusValue = object.value;
         const statusCode = statusValue.toLowerCase().replace(/[ _]/g, '-');
-        const status = getStatus(this.props.annotated.team.verification_statuses, statusValue);
+        const status = getStatus(this.props.projectMedia.team.verification_statuses, statusValue);
         contentTemplate = (
           <span>
             <FormattedMessage
@@ -774,7 +784,7 @@ class Annotation extends Component {
       if (/^suggestion_/.test(object.field_name)) {
         activityType = 'task_answer_suggestion';
         const suggestion = JSON.parse(object.value);
-        const review = activity.meta ? JSON.parse(activity.meta) : null;
+        const review = version.meta ? JSON.parse(version.meta) : null;
         contentTemplate = (
           <div>
             <div className="annotation__card-content annotation__task-answer-suggestion">
@@ -783,7 +793,7 @@ class Annotation extends Component {
             <br />
             <p>
               <small>
-                <Link to={`/check/bot/${activity.user.bot.dbid}`}>
+                <Link to={`/check/bot/${version.user.bot.dbid}`}>
                   <FormattedMessage
                     id="annotation.seeHowThisBotWorks"
                     defaultMessage="See how this bot works"
@@ -814,7 +824,7 @@ class Annotation extends Component {
               </div> :
               <div>
                 <Button
-                  onClick={this.handleSuggestion.bind(this, activity.dbid, true)}
+                  onClick={this.handleSuggestion.bind(this, version.dbid, true)}
                   style={{ border: `1px solid ${black38}` }}
                   color="primary"
                 >
@@ -825,7 +835,7 @@ class Annotation extends Component {
                 </Button>
                 &nbsp;
                 <Button
-                  onClick={this.handleSuggestion.bind(this, activity.dbid, false)}
+                  onClick={this.handleSuggestion.bind(this, version.dbid, false)}
                   style={{ border: `1px solid ${black38}` }}
                   color="primary"
                 >
@@ -840,16 +850,16 @@ class Annotation extends Component {
         );
       }
 
-      if (/^response_/.test(object.field_name) && activity.task) {
+      if (/^response_/.test(object.field_name) && version.task) {
         contentTemplate = (
           <span className="annotation__task-resolved">
             <FormattedMessage
               id="annotation.taskResolve"
               defaultMessage="Task completed by {author}: {task}{response}"
               values={{
-                task: activity.task.label,
+                task: version.task.label,
                 author: authorName,
-                response: Annotation.renderTaskResponse(activity.task.type, object),
+                response: Version.renderTaskResponse(version.task.type, object),
               }}
             />
           </span>
@@ -981,7 +991,7 @@ class Annotation extends Component {
         const objectValue = JSON.parse(object.value);
         const messageType = objectValue.source.type;
         const messageText = objectValue.text ? objectValue.text.trim() : null;
-        const smoochSlackUrl = activity.smooch_user_slack_channel_url;
+        const smoochSlackUrl = version.smooch_user_slack_channel_url;
         contentTemplate = (
           <div>
             <StyledRequestHeader>
@@ -1031,23 +1041,23 @@ class Annotation extends Component {
     case 'update_embed':
       contentTemplate = (
         <EmbedUpdate
-          activity={activity}
+          version={version}
           authorName={authorName}
         />);
       break;
     case 'create_embed':
       contentTemplate = (
         <EmbedCreate
-          annotated={annotated}
+          projectMedia={projectMedia}
           content={content}
           authorName={authorName}
         />);
       break;
     case 'update_projectmediaproject':
-      if (activity.projects.edges.length > 0 && activity.user) {
-        const previousProject = activity.projects.edges[0].node;
-        const currentProject = activity.projects.edges[1].node;
-        const urlPrefix = `/${annotated.team.slug}/project/`;
+      if (version.projects.edges.length > 0 && version.user) {
+        const previousProject = version.projects.edges[0].node;
+        const currentProject = version.projects.edges[1].node;
+        const urlPrefix = `/${projectMedia.team.slug}/project/`;
         contentTemplate = (
           <span>
             <FormattedMessage
@@ -1069,7 +1079,7 @@ class Annotation extends Component {
             />
           </span>
         );
-      } else if (activity.object_changes_json === '{"archived":[false,true]}') {
+      } else if (version.object_changes_json === '{"archived":[false,true]}') {
         contentTemplate = (
           <span>
             <FormattedMessage
@@ -1081,7 +1091,7 @@ class Annotation extends Component {
             />
           </span>
         );
-      } else if (activity.object_changes_json === '{"archived":[true,false]}') {
+      } else if (version.object_changes_json === '{"archived":[true,false]}') {
         contentTemplate = (
           <span>
             <FormattedMessage
@@ -1096,8 +1106,8 @@ class Annotation extends Component {
       }
       break;
     case 'copy_projectmedia':
-      if (activity.teams.edges.length > 0 && activity.user) {
-        const previousTeam = activity.teams.edges[0].node;
+      if (version.teams.edges.length > 0 && version.user) {
+        const previousTeam = version.teams.edges[0].node;
         const previousTeamUrl = `/${previousTeam.slug}/`;
         contentTemplate = (
           <span>
@@ -1118,7 +1128,7 @@ class Annotation extends Component {
       }
       break;
     case 'update_task':
-      contentTemplate = <TaskUpdate activity={activity} authorName={authorName} />;
+      contentTemplate = <TaskUpdate version={version} authorName={authorName} />;
       break;
     default:
       contentTemplate = null;
@@ -1137,7 +1147,7 @@ class Annotation extends Component {
     return (
       <StyledAnnotationWrapper
         className={`annotation ${templateClass} ${typeClass}`}
-        id={`annotation-${activity.dbid}`}
+        id={`annotation-${version.dbid}`}
       >
         {useCardTemplate ?
           <StyledAnnotationCardWrapper>
@@ -1149,13 +1159,13 @@ class Annotation extends Component {
                 )}`}
               >
                 {authorName ?
-                  <RCTooltip placement="top" overlay={<UserTooltip teamUser={activity.user.team_user} />}>
+                  <RCTooltip placement="top" overlay={<UserTooltip teamUser={version.user.team_user} />}>
                     <StyledAvatarColumn className="annotation__avatar-col">
                       <SourcePicture
                         className="avatar"
                         type="user"
                         size="small"
-                        object={activity.user.source}
+                        object={version.user.source}
                       />
                     </StyledAvatarColumn>
                   </RCTooltip> : null}
@@ -1167,7 +1177,7 @@ class Annotation extends Component {
                       {authorName ?
                         <ProfileLink
                           className="annotation__card-author"
-                          teamUser={activity.user.team_user}
+                          teamUser={version.user.team_user}
                         /> : null}
                       <span>
                         {timestamp}
@@ -1193,11 +1203,24 @@ class Annotation extends Component {
     );
   }
 }
-
-Annotation.propTypes = {
-  // https://github.com/yannickcr/eslint-plugin-react/issues/1389
-  // eslint-disable-next-line react/no-typos
+Version.defaultProps = {
+  projectMedia: null, // if "task" is passed
+  task: null, // if "projectMedia" is passed
+};
+Version.propTypes = {
   setFlashMessage: PropTypes.func.isRequired,
+  projectMedia: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }), // or null, if task is set
+  task: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }), // or null, if projectMedia is set
+  version: PropTypes.shape({
+    annotation: PropTypes.shape({
+      task: PropTypes.shape({
+      }),
+    }), // sometimes it's null
+  }).isRequired,
 };
 
 const annotationStyles = theme => ({
@@ -1211,4 +1234,108 @@ const annotationStyles = theme => ({
   },
 });
 
-export default withStyles(annotationStyles)(withSetFlashMessage(Annotation));
+export default createFragmentContainer(
+  withStyles(annotationStyles)(withSetFlashMessage(Version)),
+  {
+    projectMedia: graphql`
+      fragment Version_projectMedia on ProjectMedia {
+        id
+        archived
+        ...EmbedCreate_projectMedia
+        team { # TODO move to top level; nix ProjectMedia.team everywhere
+          id
+          verification_statuses
+        }
+      }
+    `,
+    task: graphql`
+      fragment Version_task on Task {
+        id
+      }
+    `,
+    version: graphql`
+      fragment Version_version on Version @argumentDefinitions(
+        teamSlug: { type: "String!"},
+      ) {
+        id
+        dbid
+        event_type
+        created_at
+        object_after
+        object_changes_json
+        meta
+        ...EmbedUpdate_version
+        ...TaskUpdate_version
+        teams(first: 2) {  # copy_projectmedia
+          edges {
+            node {
+              id
+              slug
+              name
+            }
+          }
+        }
+        projects(first: 2) {  # update_projectmediaproject
+          edges {
+            node {
+              id
+              dbid
+              title
+            }
+          }
+        }
+        user {
+          id
+          dbid
+          team_user(team_slug: $teamSlug) {
+            id
+            ...ProfileLink_teamUser
+            ...UserTooltip_teamUser
+          }
+          bot {
+            id
+            dbid
+          }
+          source {  # SourcePicture
+            id,
+            dbid,
+            image,
+          }
+        }
+        task {  # annotation__task-resolved
+          id
+          label
+          type
+        }
+        tag {  # create_tag
+          id
+          tag_text
+        }
+        annotation {
+          id
+          annotation_type
+          content
+          permissions
+          medias(first: 10000) {
+            edges {
+              node {
+                id
+                dbid  # MediaDetail.js:guessProjectMediaUrl
+                project_ids  # MediaDetail.js:guessProjectMediaUrl
+                ...MediaCondensed_media
+              }
+            }
+          }
+          version {
+            # annotation__delete ... this version is presumably different from
+            # this.props.version; and it may be null.
+            # [adamhooper, 2020-08-07] Nobody knows how this works.
+            id
+            item_id
+            item_type
+          }
+        }
+      }
+    `,
+  },
+);

@@ -1,10 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import { FormattedMessage } from 'react-intl';
 import ParsedText from '../ParsedText';
 
 class TaskUpdate extends React.Component {
-  shouldLogChange(activity) {
-    const changes = JSON.parse(activity.object_changes_json);
+  shouldLogChange(version) {
+    const changes = JSON.parse(version.object_changes_json);
 
     if (changes.data) {
       ([this.from, this.to] = changes.data);
@@ -47,7 +49,7 @@ class TaskUpdate extends React.Component {
   }
 
   render() {
-    const { authorName: author, activity } = this.props;
+    const { authorName: author, version } = this.props;
 
     // TODO nix all these properties and shouldLogChange(). A better approach:
     // make the if-statements construct an Array of child React.Components.
@@ -59,7 +61,7 @@ class TaskUpdate extends React.Component {
     this.addedComment = false;
     this.removedComment = false;
     this.changedJsonSchema = false;
-    const shouldLog = this.shouldLogChange(activity); // modifies all the properties.
+    const shouldLog = this.shouldLogChange(version); // modifies all the properties.
 
     if (shouldLog) {
       let title = '';
@@ -73,9 +75,9 @@ class TaskUpdate extends React.Component {
         this.removedComment ||
         this.changedJsonSchema
       ) {
-        title = JSON.parse(activity.object_after).data.label;
-        if (activity.meta) {
-          const meta = JSON.parse(activity.meta);
+        title = JSON.parse(version.object_changes_json).data[1].label;
+        if (version.meta) {
+          const meta = JSON.parse(version.meta);
           assigneeFrom = meta.assigned_from_name;
           assigneeTo = meta.assigned_to_name;
           if (meta.annotation_type === 'comment') {
@@ -184,5 +186,21 @@ class TaskUpdate extends React.Component {
     return null;
   }
 }
+TaskUpdate.propTypes = {
+  authorName: PropTypes.string.isRequired,
+  version: PropTypes.shape({
+    object_changes_json: PropTypes.string.isRequired,
+    meta: PropTypes.string.isRequired,
+  }).isRequired,
+};
 
-export default TaskUpdate;
+export { TaskUpdate }; // for unit tests
+export default createFragmentContainer(TaskUpdate, {
+  version: graphql`
+    fragment TaskUpdate_version on Version {
+      id
+      object_changes_json
+      meta
+    }
+  `,
+});

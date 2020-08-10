@@ -63,6 +63,7 @@ class CreateCommentMutation extends Relay.Mutation {
           dbid: annotator.dbid,
           name: annotator.name,
           is_active: true,
+          team_user: null, // TODO version.team_user - https://mantis.meedan.com/view.php?id=8568
           source: {
             id: 'U291cmNlLzA=',
             dbid: annotator.source_id,

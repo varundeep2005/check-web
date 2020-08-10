@@ -19,6 +19,23 @@ function commitToggleLockStatus({
             id
             locked
           }
+          project_media {
+            log_count
+          }
+          versionEdge {
+            node {
+              id
+              created_at
+              dbid
+              event
+              event_type
+              item_id
+              item_type
+              meta
+              object_changes_json
+
+            }
+          }
         }
       }
     `,

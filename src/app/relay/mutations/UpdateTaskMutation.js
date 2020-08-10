@@ -104,8 +104,8 @@ class UpdateTaskMutation extends Relay.Mutation {
 
   getConfigs() {
     const fieldIDs = { task: this.props.task.id };
-    if (this.props.annotated) {
-      fieldIDs.project_media = this.props.annotated.id;
+    if (this.props.projectMedia) {
+      fieldIDs.project_media = this.props.projectMedia.id;
     }
     const configs = [
       {
@@ -117,7 +117,7 @@ class UpdateTaskMutation extends Relay.Mutation {
       configs.push({
         type: 'RANGE_ADD',
         parentName: 'project_media',
-        parentID: this.props.annotated.id,
+        parentID: this.props.projectMedia.id,
         connectionName: 'log',
         edgeName: 'versionEdge',
         rangeBehaviors: () => ('prepend'),

@@ -1,5 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import { FormattedMessage } from 'react-intl';
 import Relay from 'react-relay/classic';
 import TextField from '@material-ui/core/TextField';
@@ -7,34 +8,33 @@ import Button from '@material-ui/core/Button';
 import InsertPhotoIcon from '@material-ui/icons/InsertPhoto';
 import styled from 'styled-components';
 import CreateCommentMutation from '../../relay/mutations/CreateCommentMutation';
-import CreateTagMutation from '../../relay/mutations/CreateTagMutation';
-import CreateStatusMutation from '../../relay/mutations/CreateStatusMutation';
-import UpdateStatusMutation from '../../relay/mutations/UpdateStatusMutation';
-import CreateDynamicMutation from '../../relay/mutations/CreateDynamicMutation';
-import { can } from '../Can';
 import CheckContext from '../../CheckContext';
 import UploadFile from '../UploadFile';
 import { ContentColumn, Row, black38, black87, units } from '../../styles/js/shared';
 import { getErrorMessage } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
 
-class AddAnnotation extends Component {
-  static parseCommand(input) {
-    const matches = input.match(/^\/([a-z_]+) (.*)/);
-    let command = { type: 'unk', args: null };
-    if (matches !== null) {
-      ([, command.type, command.args] = matches);
-    } else if (/^[^/]/.test(input) || !input) {
-      command = { type: 'comment', args: input };
+const AddAnnotationButtonGroup = styled(Row)`
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  .add-annotation__insert-photo {
+    svg {
+      path { color: ${black38}; }
+      &:hover path {
+        color: ${black87};
+        cusor: pointer;
+      }
     }
-    return command;
   }
+`;
 
+class AddAnnotation extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      cmd: '',
+      comment: '',
       image: null,
       message: null,
       isSubmitting: false,
@@ -45,16 +45,16 @@ class AddAnnotation extends Component {
 
   componentDidMount() {
     // This code only applies if this page is embedded in the browser extension
-    if (window.parent !== window && this.props.annotatedType === 'Task') {
+    if (window.parent !== window && this.props.task) {
       // Receive the selected text from the page and use it to fill a task note
-      const task = this.props.annotated;
+      const { task } = this.props;
       const receiveMessage = (event) => {
         const data = JSON.parse(event.data);
         if (data.selectedText &&
           this.state.canBeAutoChanged &&
           (this.props.taskResponse || task.type !== 'free_text') &&
-          parseInt(data.task, 10) === parseInt(this.props.annotated.dbid, 10)) {
-          this.setState({ cmd: data.selectedText });
+          parseInt(data.task, 10) === parseInt(this.props.task.dbid, 10)) {
+          this.setState({ comment: data.selectedText });
         }
       };
       window.addEventListener('message', receiveMessage, false);
@@ -84,7 +84,7 @@ class AddAnnotation extends Component {
 
   resetState = () => {
     this.setState({
-      cmd: '',
+      comment: '',
       image: null,
       message: null,
       isSubmitting: false,
@@ -107,178 +107,51 @@ class AddAnnotation extends Component {
     });
   };
 
-  addComment(
-    annotated,
-    annotated_id,
-    annotated_type,
-    comment,
-  ) {
+  addComment(text, image) {
     const { currentUser: annotator } = this.getContext();
-    const image = this.state.fileMode ? this.state.image : '';
+    const { task, projectMedia } = this.props;
 
-    Relay.Store.commitUpdate(
-      new CreateCommentMutation({
-        parent_type: annotated_type
-          .replace(/([a-z])([A-Z])/, '$1_$2')
-          .toLowerCase(),
-        annotator,
-        annotated,
-        image,
-        context: this.getContext(),
-        annotation: {
-          text: comment,
-          annotated_type,
-          annotated_id,
-        },
-      }),
-      { onFailure: this.fail, onSuccess: this.resetState },
-    );
-  }
-
-  addTag(annotated, annotated_id, annotated_type, tags) {
-    const tagsList = [...new Set(tags.split(','))];
-
-    const annotator = this.getContext().currentUser;
-
-    const context = this.getContext();
-
-    tagsList.forEach((tag) => {
-      Relay.Store.commitUpdate(
-        new CreateTagMutation({
-          annotated,
-          annotator,
-          parent_type: annotated_type
-            .replace(/([a-z])([A-Z])/, '$1_$2')
-            .toLowerCase(),
-          context,
-          annotation: {
-            tag: tag.trim(),
-            annotated_type,
-            annotated_id,
-          },
-        }),
-        { onFailure: this.fail, onSuccess: this.resetState },
-      );
-    });
-  }
-
-  addStatus(annotated, annotated_id, annotated_type, status) {
-    const annotator = this.getContext().currentUser;
-
-    let status_id = '';
-    if (annotated.last_status_obj !== null) {
-      status_id = annotated.last_status_obj.id;
-    }
-    const status_attr = {
-      parent_type: annotated_type
-        .replace(/([a-z])([A-Z])/, '$1_$2')
-        .toLowerCase(),
-      annotated,
+    const buildMutationProps = (parent_type, annotated_type, annotated) => ({
+      parent_type,
       annotator,
-      context: this.getContext(),
+      annotated,
+      image,
       annotation: {
-        status,
+        text,
         annotated_type,
-        annotated_id,
-        status_id,
+        annotated_id: annotated.dbid,
       },
-    };
-    // Add or Update status
-    if (status_id && status_id.length) {
-      Relay.Store.commitUpdate(new UpdateStatusMutation(status_attr), {
-        onFailure: this.fail, onSuccess: this.resetState,
-      });
-    } else {
-      Relay.Store.commitUpdate(new CreateStatusMutation(status_attr), {
-        onFailure: this.fail, onSuccess: this.resetState,
-      });
-    }
-  }
-
-  addDynamic(annotated, annotated_id, annotated_type, params, annotation_type) {
-    const annotator = this.getContext().currentUser;
-
-    // /location location_name=Salvador&location_position=-12.9016241,-38.4198075
-    const fields = {};
-    if (params) {
-      params.split('&').forEach((part) => {
-        const [pair0, pair1] = part.split('=');
-        fields[pair0] = pair1;
-      });
-    }
+    });
+    const mutationProps = this.props.task
+      ? buildMutationProps('task', 'Task', task)
+      : buildMutationProps('project_media', 'ProjectMedia', projectMedia);
 
     Relay.Store.commitUpdate(
-      new CreateDynamicMutation({
-        parent_type: annotated_type
-          .replace(/([a-z])([A-Z])/, '$1_$2')
-          .toLowerCase(),
-        annotator,
-        annotated,
-        context: this.getContext(),
-        annotation: {
-          fields,
-          annotation_type,
-          annotated_type,
-          annotated_id,
-        },
-      }),
+      new CreateCommentMutation(mutationProps),
       { onFailure: this.fail, onSuccess: this.resetState },
     );
   }
 
-  handleChange(e) {
-    this.setState({ cmd: e.target.value, message: null });
+  handleChange = (e) => {
+    this.setState({ comment: e.target.value, message: null });
   }
 
-  handleFocus() {
+  handleFocus = () => {
     this.setState({ message: null });
   }
 
-  handleSubmit(e) {
-    const command = AddAnnotation.parseCommand(this.state.cmd);
-    const image = this.state.fileMode ? this.state.image : null;
+  handleSubmit = (e) => {
+    e.preventDefault();
 
-    if (this.state.isSubmitting || (!this.state.cmd && !image)) {
-      e.preventDefault();
+    const { comment } = this.state;
+    const image = this.state.fileMode ? this.state.image : null;
+    if (this.state.isSubmitting || (!comment && !image)) {
       return;
     }
 
     this.setState({ isSubmitting: true });
-    let action = null;
 
-    if (this.props.types && this.props.types.indexOf(command.type) === -1) {
-      this.invalidCommand();
-    } else {
-      switch (command.type) {
-      case 'comment':
-        action = this.addComment.bind(this);
-        break;
-      case 'tag':
-        action = this.addTag.bind(this);
-        break;
-      case 'status':
-        action = this.addStatus.bind(this);
-        break;
-      default:
-        action = this.addDynamic.bind(this);
-        break;
-      }
-
-      if (action) {
-        const { annotated, annotatedType: annotated_type } = this.props;
-        action(
-          annotated,
-          annotated.dbid,
-          annotated_type,
-          command.args,
-          command.type,
-        );
-      } else {
-        this.invalidCommand();
-      }
-    }
-
-    e.preventDefault();
+    this.addComment(comment, image);
   }
 
   handleKeyUp(e) {
@@ -301,30 +174,6 @@ class AddAnnotation extends Component {
   }
 
   render() {
-    const AddAnnotationButtonGroup = styled(Row)`
-      align-items: center;
-      display: flex;
-      justify-content: flex-end;
-      .add-annotation__insert-photo {
-        svg {
-          path { color: ${black38}; }
-          &:hover path {
-            color: ${black87};
-            cusor: pointer;
-          }
-        }
-      }
-    `;
-
-    if (this.props.annotated.archived ||
-      ((this.props.annotatedType === 'ProjectMedia' &&
-      !can(this.props.annotated.permissions, 'create Comment')) ||
-      (this.props.annotatedType === 'Task' &&
-      !can(this.props.annotated.permissions, 'update Task'))
-      )) {
-      return null;
-    }
-
     return (
       <form
         className="add-annotation"
@@ -343,7 +192,6 @@ class AddAnnotation extends Component {
               <TextField
                 placeholder={inputHint}
                 onFocus={this.handleFocus.bind(this)}
-                ref={(i) => { this.cmd = i; }}
                 error={Boolean(this.state.message)}
                 helperText={this.state.message}
                 name="cmd"
@@ -352,7 +200,7 @@ class AddAnnotation extends Component {
                 fullWidth
                 onKeyPress={this.handleKeyPress.bind(this)}
                 onKeyUp={this.handleKeyUp.bind(this)}
-                value={this.state.cmd}
+                value={this.state.comment}
                 onChange={this.handleChange.bind(this)}
               />
             )}
@@ -385,9 +233,47 @@ class AddAnnotation extends Component {
     );
   }
 }
-
 AddAnnotation.contextTypes = {
   store: PropTypes.object,
 };
+AddAnnotation.defaultProps = {
+  projectMedia: null,
+  task: null,
+};
+AddAnnotation.propTypes = {
+  projectMedia: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    dbid: PropTypes.number.isRequired,
+    log_count: PropTypes.number.isRequired,
+  }), // or null if `task` is set
+  task: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    dbid: PropTypes.string.isRequired, // Task.dbid is String; ProjectMedia.dbid is Int
+    project_media: PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      log_count: PropTypes.number.isRequired,
+    }).isRequired,
+  }), // or null if `projectMedia` is set
+};
 
-export default AddAnnotation;
+export { AddAnnotation };
+// TODO make two separate components: one for Task, one for ProjectMedia
+export default createFragmentContainer(AddAnnotation, {
+  projectMedia: graphql`
+    fragment AddAnnotation_projectMedia on ProjectMedia {
+      id
+      dbid
+      log_count
+    }
+  `,
+  task: graphql`
+    fragment AddAnnotation_task on Task {
+      id
+      dbid
+      project_media {
+        id
+        log_count
+      }
+    }
+  `,
+});

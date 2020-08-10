@@ -158,7 +158,7 @@ class MediaTasksComponent extends Component {
   }
 
   render() {
-    const media = Object.assign(this.props.cachedMedia, this.props.media);
+    const { media } = this.props;
     const currentUserRole = UserUtil.myRole(
       this.getContext().currentUser,
       this.getContext().team.slug,
@@ -370,7 +370,7 @@ const MediaTasks = (props) => {
   return (
     <Relay.RootContainer
       Component={MediaTasksContainer}
-      renderFetched={data => <MediaTasksContainer cachedMedia={media} {...data} />}
+      renderFetched={data => <MediaTasksContainer {...data} />}
       route={route}
       renderLoading={() => <MediasLoading count={1} />}
     />

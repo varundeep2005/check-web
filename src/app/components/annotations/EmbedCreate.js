@@ -1,15 +1,16 @@
 import React from 'react';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
+import { FormattedMessage } from 'react-intl';
 import ParsedText from '../ParsedText';
 
 const EmbedCreate = (props) => {
-  const { content, annotated, authorName } = props;
+  const { content, projectMedia, authorName } = props;
   let addedReport = false;
   let editedTitle = false;
   let createdNote = false;
 
   if (content.title) {
-    if (annotated.quote && annotated.quote === content.title) {
+    if (projectMedia.media.quote && projectMedia.media.quote === content.title) {
       addedReport = true;
     } else {
       editedTitle = true;
@@ -60,4 +61,15 @@ const EmbedCreate = (props) => {
   return null;
 };
 
-export default injectIntl(EmbedCreate);
+export { EmbedCreate };
+export default createFragmentContainer(EmbedCreate, {
+  projectMedia: graphql`
+    fragment EmbedCreate_projectMedia on ProjectMedia {
+      id
+      media {
+        id
+        quote
+      }
+    }
+  `,
+});

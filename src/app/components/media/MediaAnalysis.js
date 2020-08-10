@@ -11,7 +11,6 @@ import CreateAnalysisMutation from '../../relay/mutations/CreateAnalysisMutation
 import UpdateAnalysisMutation from '../../relay/mutations/UpdateAnalysisMutation';
 import CheckContext from '../../CheckContext';
 import { stringHelper } from '../../customHelpers';
-import { getCurrentProjectId } from '../../helpers';
 
 class MediaAnalysisComponent extends Component {
   constructor(props) {
@@ -28,8 +27,7 @@ class MediaAnalysisComponent extends Component {
   }
 
   handleSave() {
-    const cachedMedia = this.props.cachedMedia || {};
-    const media = Object.assign(cachedMedia, this.props.media);
+    const { media } = this.props;
 
     const onFailure = () => {
       const message = (<FormattedMessage
@@ -95,8 +93,7 @@ class MediaAnalysisComponent extends Component {
   }
 
   render() {
-    const cachedMedia = this.props.cachedMedia || {};
-    const media = Object.assign(cachedMedia, this.props.media);
+    const { media } = this.props;
 
     const disabled = (media.archived || !can(media.permissions, 'create Dynamic'));
 
@@ -173,16 +170,14 @@ const MediaAnalysisContainer = Relay.createContainer(withSetFlashMessage(MediaAn
 });
 
 const MediaAnalysis = (props) => {
-  const projectId = getCurrentProjectId(props.media.project_ids);
-  const ids = `${props.media.dbid},${projectId}`;
+  const ids = `${props.media.dbid}`;
   const route = new MediaRoute({ ids });
-  const cachedMedia = Object.assign({}, props.media);
 
   return (
     <Relay.RootContainer
       Component={MediaAnalysisContainer}
       renderFetched={data =>
-        <MediaAnalysisContainer cachedMedia={cachedMedia} {...props} {...data} />}
+        <MediaAnalysisContainer {...props} {...data} />}
       route={route}
     />
   );

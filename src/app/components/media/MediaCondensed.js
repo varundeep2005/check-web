@@ -20,11 +20,10 @@ import { withSetFlashMessage } from '../FlashMessage';
 import TimeBefore from '../TimeBefore';
 import MediaTypeDisplayName from './MediaTypeDisplayName';
 import MediaRoute from '../../relay/MediaRoute';
-import CheckContext from '../../CheckContext';
 import UpdateProjectMediaMutation from '../../relay/mutations/UpdateProjectMediaMutation';
 import DeleteRelationshipMutation from '../../relay/mutations/DeleteRelationshipMutation';
 import UpdateRelationshipMutation from '../../relay/mutations/UpdateRelationshipMutation';
-import { truncateLength, getErrorMessage, parseStringUnixTimestamp, getCurrentProjectId } from '../../helpers';
+import { truncateLength, getErrorMessage, parseStringUnixTimestamp } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
 import { black87 } from '../../styles/js/shared';
 
@@ -35,10 +34,6 @@ class MediaCondensedComponent extends Component {
       isEditing: false,
       broken: false,
     };
-  }
-
-  getContext() {
-    return new CheckContext(this).getContextStore();
   }
 
   getDescription() {
@@ -148,7 +143,7 @@ class MediaCondensedComponent extends Component {
         id,
         source,
         target,
-        media: Object.assign(this.props.cachedMedia, this.props.media),
+        media: this.props.media,
         current: this.props.currentRelatedMedia,
       }),
       { onFailure },
@@ -185,7 +180,7 @@ class MediaCondensedComponent extends Component {
         id,
         source,
         target,
-        media: Object.assign(this.props.cachedMedia, this.props.media),
+        media: this.props.media,
         current: this.props.currentRelatedMedia || this.props.media,
       }),
       { onFailure, onSuccess },
@@ -207,8 +202,7 @@ class MediaCondensedComponent extends Component {
       return null;
     }
 
-    const cachedMedia = this.props.cachedMedia || {};
-    const media = Object.assign(cachedMedia, this.props.media);
+    const { media } = this.props;
 
     let smoochBotInstalled = false;
     if (media.team && media.team.team_bot_installations) {
@@ -388,16 +382,9 @@ MediaCondensedComponent.propTypes = {
   setFlashMessage: PropTypes.func.isRequired,
 };
 
-MediaCondensedComponent.contextTypes = {
-  store: PropTypes.object,
-};
-
 const ConnectedMediaCondensedComponent = withSetFlashMessage(MediaCondensedComponent);
 
 const MediaCondensedContainer = Relay.createContainer(ConnectedMediaCondensedComponent, {
-  initialVariables: {
-    contextId: null,
-  },
   fragments: {
     media: () => Relay.QL`
       fragment on ProjectMedia {
@@ -415,6 +402,7 @@ const MediaCondensedContainer = Relay.createContainer(ConnectedMediaCondensedCom
         permissions
         requests_count
         team {
+          id
           team_bot_installations(first: 10000) {
             edges {
               node {
@@ -438,11 +426,9 @@ const MediaCondensedContainer = Relay.createContainer(ConnectedMediaCondensedCom
   },
 });
 
-const MediaCondensed = (props) => {
-  const projectId = getCurrentProjectId(props.media.project_ids);
-  const ids = `${props.media.dbid},${projectId}`;
+const MediaCondensedRootContainer = (props) => {
+  const ids = `${props.media.dbid}`;
   const route = new MediaRoute({ ids });
-  const cachedMedia = Object.assign({}, props.media);
 
   if (props.media.dbid === 0) {
     return (
@@ -454,10 +440,11 @@ const MediaCondensed = (props) => {
     <Relay.RootContainer
       Component={MediaCondensedContainer}
       renderFetched={data =>
-        <MediaCondensedContainer cachedMedia={cachedMedia} {...props} {...data} />}
+        <MediaCondensedContainer {...props} {...data} />}
       route={route}
     />
   );
 };
 
-export default MediaCondensed;
+export default MediaCondensedContainer;
+export { MediaCondensedRootContainer };

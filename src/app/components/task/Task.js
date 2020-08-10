@@ -172,7 +172,7 @@ class Task extends Component {
     Relay.Store.commitUpdate(
       new UpdateTaskMutation({
         operation: 'answer',
-        annotated: media,
+        projectMedia: media,
         file,
         user: this.getCurrentUser(),
         task: {
@@ -238,7 +238,7 @@ class Task extends Component {
     Relay.Store.commitUpdate(
       new UpdateTaskMutation({
         operation: 'update',
-        annotated: media,
+        projectMedia: media,
         user: this.getCurrentUser(),
         task: taskObj,
       }),
@@ -258,7 +258,7 @@ class Task extends Component {
       new UpdateTaskMutation({
         operation: 'assign',
         user: this.getCurrentUser(),
-        annotated: this.props.media,
+        projectMedia: this.props.media,
         task,
       }),
       { onSuccess, onFailure: this.fail },
@@ -480,7 +480,7 @@ class Task extends Component {
     const assignments = task.assignments.edges;
     const assignmentComponents = [];
     assignments.forEach((assignment) => {
-      assignmentComponents.push(<ProfileLink user={assignment.node.team_user} />);
+      assignmentComponents.push(<ProfileLink teamUser={assignment.node.team_user} />);
       if (currentUser && assignment.node.dbid === currentUser.dbid) {
         taskAssigned = true;
       }

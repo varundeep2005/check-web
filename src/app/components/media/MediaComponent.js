@@ -101,7 +101,6 @@ class MediaComponent extends Component {
   }
 
   componentDidMount() {
-    this.setCurrentContext();
     MediaComponent.scrollToAnnotation();
     this.subscribe();
     window.addEventListener('resize', this.updatePlayerRect);
@@ -137,7 +136,6 @@ class MediaComponent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    this.setCurrentContext();
     MediaComponent.scrollToAnnotation();
     if (this.props.media.dbid !== prevProps.media.dbid) {
       this.subscribe();
@@ -158,15 +156,6 @@ class MediaComponent extends Component {
     this.setState({ showVideoAnnotation: true, videoAnnotationTab: 'timeline' });
     this.setPlayerState({ seekTo: parsedFragment });
   };
-
-  setCurrentContext() {
-    if (/^\/[^/]+\/project\/[0-9]+\/media\/[0-9]+/.test(window.location.pathname)) {
-      const projectId = window.location.pathname.match(/^\/[^/]+\/project\/([0-9]+)\/media\/[0-9]+/)[1];
-      if (this.props.relay.variables.contextId !== projectId) {
-        this.props.relay.setVariables({ contextId: projectId });
-      }
-    }
-  }
 
   setPlayerRect = () => {
     // update player rect used to anchor video annotation drawer
@@ -231,14 +220,7 @@ class MediaComponent extends Component {
   handleTabChange = (e, value) => this.setState({ showTab: value });
 
   render() {
-    if (this.props.relay.variables.contextId === null && /\/project\//.test(window.location.pathname)) {
-      return null;
-    }
-
     const { media } = this.props;
-    media.url = media.media.url;
-    media.quote = media.media.quote;
-    media.embed_path = media.media.embed_path;
 
     const {
       playerState: {

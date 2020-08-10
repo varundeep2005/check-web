@@ -2,7 +2,33 @@ import React from 'react';
 import Card from '@material-ui/core/Card';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaExpanded from './MediaExpanded';
-import MediaCondensed from './MediaCondensed';
+import { MediaCondensedRootContainer } from './MediaCondensed';
+
+function guessProjectMediaProjectIdForUrl(mediaProjectIds) {
+  const { pathname } = window.location;
+  const pathMatch = /project\/([0-9]+)/.exec(pathname);
+  if (pathMatch) {
+    const pathProjectId = +pathMatch[1];
+    if (mediaProjectIds.includes(pathProjectId)) {
+      return pathProjectId;
+    }
+  }
+  if (mediaProjectIds.length) {
+    return mediaProjectIds[0];
+  }
+  return null;
+}
+
+export function guessProjectMediaUrl(team, media) {
+  if (!media.dbid) {
+    return null;
+  }
+
+  const projectId = guessProjectMediaProjectIdForUrl(media.project_ids);
+  return projectId
+    ? `/${media.team.slug}/project/${projectId}/media/${media.dbid}`
+    : `/${media.team.slug}/media/${media.dbid}`;
+}
 
 class MediaDetail extends React.Component {
   componentDidMount() {
@@ -41,8 +67,6 @@ class MediaDetail extends React.Component {
 
   render() {
     const {
-      annotated,
-      annotatedType,
       end,
       gaps,
       media,
@@ -59,31 +83,12 @@ class MediaDetail extends React.Component {
     } = this.props;
 
     // Build the item URL
-
-    const path = this.props.location
-      ? this.props.location.pathname
-      : window.location.pathname;
-    let projectId = null;
-    if (media.project_ids && media.project_ids.length > 0) {
-      projectId = media.project_ids[media.project_ids.length - 1];
-    }
-    if (/project\/([0-9]+)/.test(path)) {
-      projectId = path.match(/project\/([0-9]+)/).pop();
-    }
-    if (!projectId && annotated && annotatedType === 'Project') {
-      projectId = annotated.dbid;
-    }
-    let mediaUrl = projectId && media.team && media.dbid > 0
-      ? `/${media.team.slug}/project/${projectId}/media/${media.dbid}`
-      : null;
-    if (!mediaUrl && media.team && media.dbid > 0) {
-      mediaUrl = `/${media.team.slug}/media/${media.dbid}`;
-    }
+    const mediaUrl = guessProjectMediaUrl(media.team, media);
 
     return (
       <Card className="card media-detail">
         {this.props.condensed ? (
-          <MediaCondensed
+          <MediaCondensedRootContainer
             media={this.props.media}
             mediaUrl={mediaUrl}
             currentRelatedMedia={this.props.currentRelatedMedia}

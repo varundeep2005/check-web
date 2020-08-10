@@ -1,9 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import { FormattedMessage } from 'react-intl';
 import ParsedText from '../ParsedText';
 
 const EmbedUpdate = (props) => {
-  const changes = JSON.parse(props.activity.object_changes_json);
+  const changes = JSON.parse(props.version.object_changes_json);
   if (!changes.data && changes.value_json) {
     changes.data = [JSON.parse(changes.value_json[0]), JSON.parse(changes.value_json[1])];
   }
@@ -101,5 +103,19 @@ const EmbedUpdate = (props) => {
 
   return null;
 };
+EmbedUpdate.propTypes = {
+  version: PropTypes.shape({
+    object_changes_json: PropTypes.string.isRequired,
+  }).isRequired,
+  authorName: PropTypes.string.isRequired,
+};
 
-export default EmbedUpdate;
+export { EmbedUpdate }; // for unit tests
+export default createFragmentContainer(EmbedUpdate, {
+  version: graphql`
+    fragment EmbedUpdate_version on Version {
+      id
+      object_changes_json
+    }
+  `,
+});

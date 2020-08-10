@@ -1,13 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
+import { FormattedMessage } from 'react-intl';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaRoute from '../../relay/MediaRoute';
 import MediasLoading from './MediasLoading';
-import Annotations from '../annotations/Annotations';
-import UserTooltip from '../user/UserTooltip';
-import ProfileLink from '../layout/ProfileLink';
-import { getCurrentProjectId } from '../../helpers';
+import Versions from '../annotations/Versions';
 
 class MediaLogComponent extends Component {
   static propTypes = {
@@ -59,13 +57,15 @@ class MediaLogComponent extends Component {
   }
 
   render() {
-    const media = Object.assign(this.props.cachedMedia, this.props.media);
+    const { media } = this.props;
 
     return (
-      <Annotations
-        annotations={media.log.edges}
-        annotated={media}
-        annotatedType="ProjectMedia"
+      <Versions
+        projectMedia={media}
+        versions={media.media_log_log.edges.map(({ node }) => node)}
+        noActivityMessage={
+          <FormattedMessage id="annotation.noAnnotationsYet" defaultMessage="No activity" />
+        }
       />
     );
   }
@@ -107,149 +107,16 @@ const MediaLogContainer = Relay.createContainer(withPusher(MediaLogComponent), {
     teamSlug: /^\/([^/]+)/.test(window.location.pathname) ? window.location.pathname.match(/^\/([^/]+)/)[1] : null,
   }),
   fragments: {
-    media: () => Relay.QL`
+    media: ({ teamSlug }) => Relay.QL`
       fragment on ProjectMedia {
         id
         dbid
         pusher_channel
-        team { verification_statuses } # FIXME: Make Annotation a container
-        log(last: $pageSize, event_types: $eventTypes, field_names: $fieldNames, annotation_types: $annotationTypes) {
+        ${Versions.getFragment('projectMedia')}
+        media_log_log: log(last: $pageSize, event_types: $eventTypes, field_names: $fieldNames, annotation_types: $annotationTypes) {
           edges {
             node {
-              id,
-              dbid,
-              item_type,
-              item_id,
-              event,
-              event_type,
-              created_at,
-              object_after,
-              object_changes_json,
-              meta,
-              teams(first: 2) {
-                edges {
-                  node {
-                    id,
-                    dbid,
-                    name,
-                    slug
-                  }
-                }
-              }
-              projects(first: 2) {
-                edges {
-                  node {
-                    id,
-                    dbid,
-                    title
-                    team {
-                      slug
-                    }
-                  }
-                }
-              }
-              user {
-                id,
-                dbid,
-                name,
-                is_active,
-                team_user(team_slug: $teamSlug) {
-                  ${ProfileLink.getFragment('teamUser')}, # FIXME: Make Annotation a container
-                  ${UserTooltip.getFragment('teamUser')}, # FIXME: Make Annotation a container
-                },
-                source {
-                  id,
-                  dbid,
-                  image,
-                }
-              }
-              task {
-                id,
-                dbid,
-                label,
-                type
-              }
-              tag {
-                id
-                dbid
-                tag
-                tag_text
-              }
-              annotation {
-                id,
-                dbid,
-                content,
-                annotation_type,
-                updated_at,
-                created_at,
-                permissions,
-                medias(first: 10000) {
-                  edges {
-                    node {
-                      id,
-                      dbid,
-                      quote,
-                      published,
-                      url,
-                      metadata,
-                      last_status,
-                      last_status_obj {
-                        id
-                        dbid
-                        content
-                        assignments(first: 10000) {
-                          edges {
-                            node {
-                              id
-                              dbid
-                              name
-                              source {
-                                id
-                                dbid
-                                image
-                              }
-                            }
-                          }
-                        }
-                      }
-                      log_count,
-                      permissions,
-                      domain,
-                      team {
-                        slug,
-                        get_embed_whitelist
-                      }
-                      media {
-                        type,
-                        metadata
-                        embed_path,
-                        thumbnail_path,
-                        file_path,
-                        url,
-                        quote
-                      }
-                      user {
-                        dbid
-                        name
-                        is_active
-                        source {
-                          dbid
-                          image
-                        }
-                      }
-                    }
-                  }
-                }
-                annotator {
-                  name,
-                  profile_image
-                }
-                version {
-                  id
-                  item_id
-                  item_type
-                }
-              }
+              ${Versions.getFragment('versions', { teamSlug })}
             }
           }
         }
@@ -259,14 +126,13 @@ const MediaLogContainer = Relay.createContainer(withPusher(MediaLogComponent), {
 });
 
 const MediaLog = (props) => {
-  const projectId = getCurrentProjectId(props.media.project_ids);
-  const ids = `${props.media.dbid},${projectId}`;
+  const ids = `${props.media.dbid}`;
   const route = new MediaRoute({ ids });
 
   return (
     <Relay.RootContainer
       Component={MediaLogContainer}
-      renderFetched={data => <MediaLogContainer cachedMedia={props.media} {...data} />}
+      renderFetched={data => <MediaLogContainer {...data} />}
       route={route}
       renderLoading={() => <MediasLoading count={1} />}
     />

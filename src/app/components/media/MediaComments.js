@@ -5,10 +5,7 @@ import Relay from 'react-relay/classic';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaRoute from '../../relay/MediaRoute';
 import MediasLoading from './MediasLoading';
-import Annotations from '../annotations/Annotations';
-import ProfileLink from '../layout/ProfileLink';
-import UserTooltip from '../user/UserTooltip';
-import { getCurrentProjectId } from '../../helpers';
+import Versions from '../annotations/Versions';
 
 class MediaCommentsComponent extends Component {
   componentDidMount() {
@@ -64,26 +61,22 @@ class MediaCommentsComponent extends Component {
   }
 
   render() {
-    const media = Object.assign(this.props.cachedMedia, this.props.media);
+    const { media } = this.props;
 
     return (
       <div id="media__comments" style={this.props.style}>
-        <Annotations
+        <Versions
           showAddAnnotation
           style={{
             background: 'transparent',
             border: 0,
             boxShadow: 'none',
           }}
-          annotations={media.log.edges}
-          annotated={media}
-          annotatedType="ProjectMedia"
+          versions={media.media_comments_log.edges.map(({ node }) => node)}
+          projectMedia={media}
           onTimelineCommentOpen={this.props.onTimelineCommentOpen}
           noActivityMessage={
-            <FormattedMessage
-              id="mediaComments.noNote"
-              defaultMessage="No note"
-            />
+            <FormattedMessage id="mediaComments.noNote" defaultMessage="No note" />
           }
         />
       </div>
@@ -114,115 +107,17 @@ const MediaCommentsContainer = Relay.createContainer(withPusher(MediaCommentsCom
     teamSlug: /^\/([^/]+)/.test(window.location.pathname) ? window.location.pathname.match(/^\/([^/]+)/)[1] : null,
   }),
   fragments: {
-    media: () => Relay.QL`
+    media: ({ teamSlug }) => Relay.QL`
       fragment on ProjectMedia {
         id
         dbid
         archived
         pusher_channel
-        log(last: $pageSize, event_types: $eventTypes, field_names: $fieldNames, annotation_types: $annotationTypes) {
+        ${Versions.getFragment('projectMedia')}
+        media_comments_log: log(last: $pageSize, event_types: $eventTypes, field_names: $fieldNames, annotation_types: $annotationTypes) {
           edges {
             node {
-              id,
-              dbid,
-              item_type,
-              item_id,
-              event,
-              event_type,
-              created_at,
-              object_after,
-              object_changes_json,
-              meta,
-              user {
-                id,
-                dbid,
-                name,
-                is_active,
-                team_user(team_slug: $teamSlug) {
-                  ${ProfileLink.getFragment('teamUser')}, # FIXME: Make Annotation a container
-                  ${UserTooltip.getFragment('teamUser')}, # FIXME: Make Annotation a container
-                },
-                source {
-                  id,
-                  dbid,
-                  image,
-                }
-              }
-              annotation {
-                id,
-                dbid,
-                content,
-                annotation_type,
-                updated_at,
-                created_at,
-                permissions,
-                medias(first: 10000) {
-                  edges {
-                    node {
-                      id,
-                      dbid,
-                      quote,
-                      published,
-                      url,
-                      metadata,
-                      last_status,
-                      last_status_obj {
-                        id
-                        dbid
-                        content
-                        assignments(first: 10000) {
-                          edges {
-                            node {
-                              id
-                              dbid
-                              name
-                              source {
-                                id
-                                dbid
-                                image
-                              }
-                            }
-                          }
-                        }
-                      }
-                      log_count,
-                      permissions,
-                      domain,
-                      team {
-                        slug,
-                        get_embed_whitelist
-                      }
-                      media {
-                        type,
-                        metadata
-                        embed_path,
-                        thumbnail_path,
-                        file_path,
-                        url,
-                        quote
-                      }
-                      user {
-                        dbid
-                        name
-                        is_active
-                        source {
-                          dbid
-                          image
-                        }
-                      }
-                    }
-                  }
-                }
-                annotator {
-                  name,
-                  profile_image
-                }
-                version {
-                  id
-                  item_id
-                  item_type
-                }
-              }
+              ${Versions.getFragment('versions', { teamSlug })}
             }
           }
         }
@@ -232,8 +127,7 @@ const MediaCommentsContainer = Relay.createContainer(withPusher(MediaCommentsCom
 });
 
 const MediaComments = (props) => {
-  const projectId = getCurrentProjectId(props.media.project_ids);
-  const ids = `${props.media.dbid},${projectId}`;
+  const ids = `${props.media.dbid}`;
   const route = new MediaRoute({ ids });
 
   return (
@@ -241,7 +135,6 @@ const MediaComments = (props) => {
       Component={MediaCommentsContainer}
       renderFetched={data => (
         <MediaCommentsContainer
-          cachedMedia={props.media}
           style={props.style}
           {...data}
           onTimelineCommentOpen={props.onTimelineCommentOpen}

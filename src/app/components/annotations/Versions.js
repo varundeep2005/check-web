@@ -1,13 +1,14 @@
 import React from 'react';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import PropTypes from 'prop-types';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
 import styled from 'styled-components';
 import AddAnnotation from './AddAnnotation';
-import Annotation from './Annotation';
+import Version from './Version';
 import { units, black16, black38, opaqueBlack16, borderWidthMedium, Text } from '../../styles/js/shared';
 
-const StyledAnnotations = styled.div`
+const StyledVersions = styled.div`
   display: flex;
   flex-direction: column;
   .annotations__list {
@@ -42,11 +43,11 @@ const StyledAnnotations = styled.div`
   }
 `;
 
-const StyledAnnotationCardActions = styled(CardActions)`
+const StyledVersionCardActions = styled(CardActions)`
   margin-top: auto;
 `;
 
-class Annotations extends React.Component {
+class Versions extends React.Component {
   componentDidMount() {
     this.scrollToBottom();
   }
@@ -65,38 +66,55 @@ class Annotations extends React.Component {
   render() {
     const { props } = this;
     return (
-      <StyledAnnotations
+      <StyledVersions
         className="annotations"
         showAddAnnotation={props.showAddAnnotation}
-        annotationCount={props.annotations.length}
+        annotationCount={props.versions.length}
       >
         <Card style={props.style}>
           <div className="annotations__list">
-            {!props.annotations.length ?
-              <Text style={{ margin: 'auto', color: black38 }}>
-                { props.noActivityMessage ? props.noActivityMessage : <FormattedMessage id="annotation.noAnnotationsYet" defaultMessage="No activity" /> }
-              </Text> :
-              props.annotations.map(annotation => (
-                <div key={annotation.node.dbid} className="annotations__list-item">
-                  <Annotation
-                    annotated={props.annotated}
-                    annotatedType={props.annotatedType}
-                    annotation={annotation.node}
+            {!props.versions.length
+              ? <Text style={{ margin: 'auto', color: black38 }}>{props.noActivityMessage}</Text>
+              : props.versions.map(version => (
+                <div key={version.id} className="annotations__list-item">
+                  <Version
+                    team={props.projectMedia.team /* TODO pass team separately */}
+                    projectMedia={props.projectMedia}
+                    annotatedType="ProjectMedia"
+                    version={version}
                     onTimelineCommentOpen={props.onTimelineCommentOpen}
                   />
                 </div>))}
           </div>
-          <StyledAnnotationCardActions>
-            { props.showAddAnnotation ?
-              <AddAnnotation
-                annotated={props.annotated}
-                annotatedType={props.annotatedType}
-                types={props.types}
-              /> : null }
-          </StyledAnnotationCardActions>
+          <StyledVersionCardActions>
+            {props.showAddAnnotation ? <AddAnnotation projectMedia={props.projectMedia} /> : null}
+          </StyledVersionCardActions>
         </Card>
-      </StyledAnnotations>);
+      </StyledVersions>);
   }
 }
+Versions.propTypes = {
+  projectMedia: PropTypes.object.isRequired,
+  versions: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.string.isRequired,
+  }).isRequired).isRequired,
+  noActivityMessage: PropTypes.node.isRequired,
+};
 
-export default injectIntl(Annotations);
+export default createFragmentContainer(Versions, {
+  projectMedia: graphql`
+    fragment Versions_projectMedia on ProjectMedia {
+      id
+      ...Version_projectMedia
+      ...AddAnnotation_projectMedia
+    }
+  `,
+  versions: graphql`
+    fragment Versions_versions on Version @argumentDefinitions(
+      teamSlug: { type: "String!" },
+    ) @relay(plural: true) {
+      id
+      ...Version_version @arguments(teamSlug: $teamSlug)
+    }
+  `,
+});
