@@ -5,6 +5,7 @@ import { FormattedMessage } from 'react-intl';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaRoute from '../../relay/MediaRoute';
 import MediasLoading from './MediasLoading';
+import MediaScrollableMetadata from './MediaScrollableMetadata';
 import Versions from '../annotations/Versions';
 
 class MediaLogComponent extends Component {
@@ -60,13 +61,15 @@ class MediaLogComponent extends Component {
     const { media } = this.props;
 
     return (
-      <Versions
-        projectMedia={media}
-        versions={media.media_log_log.edges.map(({ node }) => node)}
-        noActivityMessage={
-          <FormattedMessage id="annotation.noAnnotationsYet" defaultMessage="No activity" />
-        }
-      />
+      <MediaScrollableMetadata>
+        <Versions
+          projectMedia={media}
+          versions={media.media_log_log.edges.map(({ node }) => node)}
+          noActivityMessage={
+            <FormattedMessage id="annotation.noAnnotationsYet" defaultMessage="No activity" />
+          }
+        />
+      </MediaScrollableMetadata>
     );
   }
 }

@@ -107,7 +107,7 @@ EmbedUpdate.propTypes = {
   version: PropTypes.shape({
     object_changes_json: PropTypes.string.isRequired,
   }).isRequired,
-  authorName: PropTypes.string.isRequired,
+  authorName: PropTypes.node.isRequired,
 };
 
 export { EmbedUpdate }; // for unit tests

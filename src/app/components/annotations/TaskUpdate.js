@@ -187,7 +187,7 @@ class TaskUpdate extends React.Component {
   }
 }
 TaskUpdate.propTypes = {
-  authorName: PropTypes.string.isRequired,
+  authorName: PropTypes.node.isRequired,
   version: PropTypes.shape({
     object_changes_json: PropTypes.string.isRequired,
     meta: PropTypes.string.isRequired,

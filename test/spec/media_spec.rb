@@ -237,7 +237,7 @@ shared_examples 'media' do |type|
   it "should update notes count after delete annotation", bin3: true do
     create_media_depending_on_type
     wait_for_selector(".media-tab__comments").click
-    wait_for_selector(".annotations__list")
+    wait_for_selector(".media__comments")
     fill_field('#cmd-input', 'Comment')
     @driver.action.send_keys(:enter).perform
     wait_for_selector('.annotation__avatar-col')

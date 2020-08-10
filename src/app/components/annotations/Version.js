@@ -347,7 +347,15 @@ class Version extends Component {
       if (response.other) {
         selected.push(response.other);
       }
-      return <ul>{selected.map(s => <li><ParsedText text={s} /></li>)}</ul>;
+      return (
+        <ul>
+          {
+            // TODO ensure multiple-choice values are all unique, then use them as key
+            // eslint-disable-next-line react/no-array-index-key
+            selected.map((s, i) => <li key={i}><ParsedText text={s} /></li>)
+          }
+        </ul>
+      );
     } else if (type === 'geolocation') {
       const geojson = JSON.parse(object.value);
       const { geometry: { coordinates }, properties: { name } } = geojson;
@@ -643,7 +651,7 @@ class Version extends Component {
         const flagsContent = (
           <ul>
             { Object.keys(flags).filter(flag => flag !== 'spam').map(flag => (
-              <li style={{ margin: units(1), listStyle: 'disc' }}>
+              <li key={flag} style={{ margin: units(1), listStyle: 'disc' }}>
                 <FlagName flag={flag} />
                 {': '}
                 <FlagLikelihood likelihood={flags[flag]} />

@@ -6,6 +6,7 @@ import { withPusher, pusherShape } from '../../pusher';
 import MediaRoute from '../../relay/MediaRoute';
 import MediasLoading from './MediasLoading';
 import Versions from '../annotations/Versions';
+import MediaScrollableMetadata from './MediaScrollableMetadata';
 
 class MediaRequestsComponent extends Component {
   componentDidMount() {
@@ -55,20 +56,15 @@ class MediaRequestsComponent extends Component {
     const { media } = this.props;
 
     return (
-      <div id="media__requests" style={this.props.style}>
+      <MediaScrollableMetadata id="media__requests">
         <Versions
-          style={{
-            background: 'transparent',
-            border: 0,
-            boxShadow: 'none',
-          }}
           versions={media.media_requests_log.edges.map(({ node }) => node)}
           projectMedia={media}
           noActivityMessage={
             <FormattedMessage id="MediaRequests.noRequest" defaultMessage="No requests" />
           }
         />
-      </div>
+      </MediaScrollableMetadata>
     );
   }
 }
@@ -125,7 +121,7 @@ const MediaRequests = (props) => {
     <Relay.RootContainer
       Component={MediaRequestsContainer}
       renderFetched={data =>
-        <MediaRequestsContainer style={props.style} {...data} />
+        <MediaRequestsContainer {...data} />
       }
       route={route}
       renderLoading={() => <MediasLoading count={1} />}

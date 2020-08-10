@@ -2,10 +2,25 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import Relay from 'react-relay/classic';
+import { makeStyles } from '@material-ui/core/styles';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaRoute from '../../relay/MediaRoute';
 import MediasLoading from './MediasLoading';
+import MediaScrollableMetadata from './MediaScrollableMetadata';
 import Versions from '../annotations/Versions';
+import AddAnnotation from '../annotations/AddAnnotation';
+import { can } from '../Can';
+
+const useStyles = makeStyles({
+  flex0: {
+    flex: '0 0 auto',
+  },
+});
+
+function Flex0Div({ children }) {
+  const classes = useStyles();
+  return <div className={classes.flex0}>{children}</div>;
+}
 
 class MediaCommentsComponent extends Component {
   componentDidMount() {
@@ -62,16 +77,9 @@ class MediaCommentsComponent extends Component {
 
   render() {
     const { media } = this.props;
-
     return (
-      <div id="media__comments" style={this.props.style}>
+      <MediaScrollableMetadata id="media__comments">
         <Versions
-          showAddAnnotation
-          style={{
-            background: 'transparent',
-            border: 0,
-            boxShadow: 'none',
-          }}
           versions={media.media_comments_log.edges.map(({ node }) => node)}
           projectMedia={media}
           onTimelineCommentOpen={this.props.onTimelineCommentOpen}
@@ -79,7 +87,12 @@ class MediaCommentsComponent extends Component {
             <FormattedMessage id="mediaComments.noNote" defaultMessage="No note" />
           }
         />
-      </div>
+        {!media.archived && can(media.permissions, 'create Comment') ? (
+          <Flex0Div>
+            <AddAnnotation projectMedia={media} />
+          </Flex0Div>
+        ) : null}
+      </MediaScrollableMetadata>
     );
   }
 }
@@ -87,6 +100,14 @@ class MediaCommentsComponent extends Component {
 MediaCommentsComponent.propTypes = {
   clientSessionId: PropTypes.string.isRequired,
   pusher: pusherShape.isRequired,
+  media: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    dbid: PropTypes.number.isRequired,
+    archived: PropTypes.bool.isRequired,
+    permissions: PropTypes.string.isRequired,
+    pusher_channel: PropTypes.string.isRequired,
+    media_comments_log: PropTypes.object.isRequired,
+  }).isRequired,
 };
 
 const pageSize = 30;
@@ -112,8 +133,10 @@ const MediaCommentsContainer = Relay.createContainer(withPusher(MediaCommentsCom
         id
         dbid
         archived
+        permissions
         pusher_channel
         ${Versions.getFragment('projectMedia')}
+        ${AddAnnotation.getFragment('projectMedia')}
         media_comments_log: log(last: $pageSize, event_types: $eventTypes, field_names: $fieldNames, annotation_types: $annotationTypes) {
           edges {
             node {
@@ -135,7 +158,6 @@ const MediaComments = (props) => {
       Component={MediaCommentsContainer}
       renderFetched={data => (
         <MediaCommentsContainer
-          style={props.style}
           {...data}
           onTimelineCommentOpen={props.onTimelineCommentOpen}
         />)}
