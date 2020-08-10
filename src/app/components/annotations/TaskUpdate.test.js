@@ -9,6 +9,7 @@ describe('<TaskUpdate />', () => {
   it('should render empty string if no changes', () => {
     const version = {
       object_changes_json: '{}',
+      meta: '{}',
     };
     const wrapper = mountWithIntlProvider((
       <TaskUpdate version={version} authorName={authorName} />
@@ -19,6 +20,7 @@ describe('<TaskUpdate />', () => {
   it('should render edited title entry', () => {
     const version = {
       object_changes_json: '{"data":[{"label":"Old title","description":"This is a task"},{"label":"New edited title","description":"This is a task"}]}',
+      meta: '{}',
     };
     const wrapper = mountWithIntlProvider((
       <TaskUpdate version={version} authorName={authorName} />
@@ -29,6 +31,7 @@ describe('<TaskUpdate />', () => {
   it('should render edited note entry', () => {
     const version = {
       object_changes_json: '{"data":[{"label":"Same old title","description":"This is a task"},{"label":"Same old title","description":"This is an edited description."}]}',
+      meta: '{}',
     };
     const wrapper = mountWithIntlProvider((
       <TaskUpdate version={version} authorName={authorName} />
@@ -39,6 +42,7 @@ describe('<TaskUpdate />', () => {
   it('should render created note entry', () => {
     const version = {
       object_changes_json: '{"data":[{"label":"Same old title"},{"label":"Same old title","description":"This is a new description."}]}',
+      meta: '{}',
     };
     const wrapper = mountWithIntlProvider((
       <TaskUpdate version={version} authorName={authorName} />
