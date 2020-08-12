@@ -6,6 +6,7 @@ class SearchRoute extends Relay.Route {
   };
   static paramDefinitions = {
     jsonEncodedQuery: { required: true },
+    projectId: { required: true },
   };
   static routeName = 'SearchRoute';
 }

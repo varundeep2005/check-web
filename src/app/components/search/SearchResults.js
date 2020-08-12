@@ -492,7 +492,8 @@ SearchResultsComponent.propTypes = {
 
 const SearchResultsContainer = Relay.createContainer(withPusher(SearchResultsComponent), {
   initialVariables: {
-    projectId: 0,
+    projectId: null,
+    projectIdIsSet: false,
     pageSize,
   },
   fragments: {
@@ -540,9 +541,9 @@ const SearchResultsContainer = Relay.createContainer(withPusher(SearchResultsCom
               last_seen,
               share_count,
               is_read,
-              project_media_project(project_id: $projectId) {
-                dbid
+              project_media_project(project_id: $projectId) @include(if: $projectIdIsSet) {
                 id
+                dbid
               }
               team {
                 verification_statuses
@@ -613,6 +614,7 @@ export default function SearchResults({ query, teamSlug, ...props }) {
   const route = React.useMemo(() => new SearchRoute({
     jsonEncodedQuery,
     projectId,
+    projectIdIsSet: Boolean(projectId),
   }), [jsonEncodedQuery]);
 
   return (
@@ -621,7 +623,14 @@ export default function SearchResults({ query, teamSlug, ...props }) {
       route={route}
       forceFetch
       renderFetched={data => (
-        <SearchResultsContainer {...props} query={query} search={data.search} />
+        <SearchResultsContainer
+          projectId={projectId}
+          projectIdIsSet={Boolean(projectId)}
+          pageSize={20}
+          {...props}
+          query={query}
+          search={data.search}
+        />
       )}
       renderLoading={() => <MediasLoading />}
     />

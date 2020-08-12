@@ -357,11 +357,22 @@ MediaActionsBarComponent.contextTypes = {
 const ConnectedMediaActionsBarComponent =
   withStyles(Styles)(withSetFlashMessage(MediaActionsBarComponent));
 
+function getProjectIdFromUrl() {
+  const m = /^\/[^/]+\/project\/(\d+)/.exec(window.location.pathname);
+  return m ? +m[1] : null;
+}
+
 const MediaActionsBarContainer = Relay.createContainer(ConnectedMediaActionsBarComponent, {
   initialVariables: {
     contextId: null,
     projectId: null,
+    projectIdIsSet: false,
   },
+  prepareVariables: vars => ({
+    ...vars,
+    projectId: getProjectIdFromUrl() || 0,
+    projectIdIsSet: Boolean(getProjectIdFromUrl()),
+  }),
   fragments: {
     media: () => Relay.QL`
       fragment on ProjectMedia {
@@ -385,7 +396,7 @@ const MediaActionsBarContainer = Relay.createContainer(ConnectedMediaActionsBarC
           id
           data
         }
-        project_media_project(project_id: $projectId){
+        project_media_project(project_id: $projectId) @include(if: $projectIdIsSet) {
           id
           ${MoveProjectMediaToProjectAction.getFragment('projectMediaProject')}
           project {
