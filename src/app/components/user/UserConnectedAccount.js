@@ -9,7 +9,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Button from '@material-ui/core/Button';
 import ConfirmDialog from '../layout/ConfirmDialog';
 import UserDisconnectLoginAccountMutation from '../../relay/mutations/UserDisconnectLoginAccountMutation';
-import { login } from '../../redux/actions';
+import { login } from '../../loginLogout';
 import SocialIcon from '../SocialIcon';
 import { FlexRow } from '../../styles/js/shared';
 

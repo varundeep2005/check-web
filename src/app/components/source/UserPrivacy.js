@@ -8,7 +8,7 @@ import Button from '@material-ui/core/Button';
 import List from '@material-ui/core/List';
 import ConfirmDialog from '../layout/ConfirmDialog';
 import UserConnectedAccount from '../user/UserConnectedAccount';
-import { logout } from '../../redux/actions';
+import { logout } from '../../loginLogout';
 import DeleteCheckUserMutation from '../../relay/mutations/DeleteCheckUserMutation';
 import CheckContext from '../../CheckContext';
 import { mapGlobalMessage } from '../MappedMessage';

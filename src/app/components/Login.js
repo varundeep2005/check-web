@@ -13,7 +13,7 @@ import styled from 'styled-components';
 import Message from './Message';
 import UploadFile from './UploadFile';
 import UserTosForm from './UserTosForm';
-import { login, request } from '../redux/actions';
+import { login, request } from '../loginLogout';
 import { FormattedGlobalMessage } from './MappedMessage';
 import { stringHelper } from '../customHelpers';
 import { getErrorObjects } from '../helpers';

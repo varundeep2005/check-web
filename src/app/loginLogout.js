@@ -1,7 +1,7 @@
 import superagent from 'superagent';
 import util from 'util';
 import config from 'config'; // eslint-disable-line require-path-exists/exists
-import { safelyParseJSON } from '../helpers';
+import { safelyParseJSON } from './helpers';
 
 // REST calls
 

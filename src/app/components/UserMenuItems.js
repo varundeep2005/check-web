@@ -5,7 +5,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { FormattedMessage } from 'react-intl';
 import styled from 'styled-components';
 import ExternalLink from './ExternalLink';
-import { logout } from '../redux/actions';
+import { logout } from '../loginLogout';
 import { opaqueBlack87 } from '../styles/js/shared';
 
 const StyledUserMenuItems = styled.div`
