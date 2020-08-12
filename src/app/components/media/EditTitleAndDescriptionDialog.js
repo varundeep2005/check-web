@@ -41,7 +41,7 @@ function commitSetProjectMediaTitleAndDescription({
       updateProjectMedia: {
         project_media: {
           id: projectMedia.id,
-          metadata,
+          metadata: { ...projectMedia.metadata, ...metadata },
           title: metadata.title, // derived value
           description: metadata.description, // derived value
         },
