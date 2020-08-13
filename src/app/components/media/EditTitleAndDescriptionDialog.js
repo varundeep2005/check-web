@@ -33,6 +33,7 @@ function commitSetProjectMediaTitleAndDescription({
             metadata
             title  # redundant field
             description  # redundant field
+            overridden  # redundant field
           }
         }
       }
@@ -44,6 +45,7 @@ function commitSetProjectMediaTitleAndDescription({
           metadata: { ...projectMedia.metadata, ...metadata },
           title: metadata.title, // derived value
           description: metadata.description, // derived value
+          overridden: { ...projectMedia.overridden, title: true, description: true },
         },
       },
     },
@@ -204,6 +206,7 @@ export default createFragmentContainer(EditTitleAndDescriptionDialog, {
       id
       dbid
       metadata
+      overridden
       media {
         embed_path
       }
