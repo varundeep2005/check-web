@@ -6,7 +6,6 @@ import styled from 'styled-components';
 import { withPusher, pusherShape } from '../../pusher';
 import CreateRelatedMedia from './CreateRelatedMedia';
 import MediaRoute from '../../relay/MediaRoute';
-import mediaFragment from '../../relay/mediaFragment';
 import MediaDetail from './MediaDetail';
 import MediasLoading from './MediasLoading';
 import { getFilters, getCurrentProjectId } from '../../helpers';
@@ -33,8 +32,6 @@ const StyledHeaderRow = styled.div`
     margin: 0;
   }
 `;
-
-const previousFilters = {};
 
 class MediaRelatedComponent extends Component {
   constructor(props) {
@@ -87,10 +84,7 @@ class MediaRelatedComponent extends Component {
   }
 
   render() {
-    const filters = getFilters();
-    const { dbid } = this.props.media;
-
-    const medias = [];
+    let medias = [];
     const { relationships } = this.props.media;
     const { targets_count, sources_count } = relationships;
     const targets = relationships.targets.edges;
@@ -99,23 +93,19 @@ class MediaRelatedComponent extends Component {
     const total = targets_count + sources_count;
     let primaryItem = null;
 
-    if (dbid in previousFilters && filters !== previousFilters[dbid]) {
-      this.props.relay.setVariables({ filters });
-      this.props.relay.forceFetch();
-    } else if (targets.length > 0) {
-      targets[0].node.targets.edges.forEach((child) => {
-        medias.push({ node: Object.assign(child.node, { target_id: targets[0].node.id }) });
-      });
+    if (targets.length > 0) {
+      const target_id = targets[0].node.id;
+      medias = targets[0].node.targets.edges
+        .map(({ node }) => ({ media: node, target_id }))
+        .filter(({ media }) => !media.archived);
       filtered_count = total - medias.length;
     } else if (sources.length > 0) {
       primaryItem = sources[0].node.source;
-      sources[0].node.siblings.edges.forEach((sibling) => {
-        if (sibling.node.id !== this.props.media.id) {
-          medias.push({ node: Object.assign(sibling.node, { source_id: sources[0].node.id }) });
-        }
-      });
+      medias = sources[0].node.siblings.edges
+        .filter(({ node }) => node.id !== this.props.media.id)
+        .map(({ node }) => ({ media: node, source_id: sources[0].node.id }))
+        .filter(({ media }) => !media.archived);
     }
-    previousFilters[dbid] = filters;
 
     return (
       <div style={{ marginTop: units(5) }}>
@@ -168,24 +158,24 @@ class MediaRelatedComponent extends Component {
           { (sources_count === 0 && targets_count === 0) ?
             null :
             <ul style={{ width: '100%' }}>
-              {medias.map((item) => {
-                if (item.node.archived) {
-                  return null;
-                }
-                return (
-                  <li key={item.node.id} className="medias__item media-related__secondary-item" style={{ paddingBottom: units(1) }}>
-                    {<MediaDetail
-                      media={item.node}
-                      condensed
-                      currentRelatedMedia={this.props.media}
-                      parentComponent={this}
-                      parentComponentName="MediaRelated"
-                      hideRelated
-                    />}
-                    {<ul className="empty" />}
-                  </li>
-                );
-              })}
+              {medias.map(item => (
+                <li
+                  key={item.media.id}
+                  className="medias__item media-related__secondary-item"
+                  style={{ paddingBottom: units(1) }}
+                >
+                  <MediaDetail
+                    media={item.media}
+                    condensed
+                    currentRelatedMedia={this.props.media}
+                    source_id={item.source_id || null}
+                    target_id={item.target_id || null}
+                    parentComponent={this}
+                    parentComponentName="MediaRelated"
+                    hideRelated
+                  />
+                </li>
+              ))}
             </ul>
           }
         </FlexRow>
@@ -202,8 +192,12 @@ MediaRelatedComponent.propTypes = {
 const MediaRelatedContainer = Relay.createContainer(withPusher(MediaRelatedComponent), {
   initialVariables: {
     contextId: null,
-    filters: getFilters(),
+    filters: null,
   },
+  prepareVariables: vars => ({
+    ...vars,
+    filters: getFilters(),
+  }),
   fragments: {
     media: () => Relay.QL`
       fragment on ProjectMedia {
@@ -249,8 +243,9 @@ const MediaRelatedContainer = Relay.createContainer(withPusher(MediaRelatedCompo
                 targets(first: 10000) {
                   edges {
                     node {
-                      __typename
-                      ${mediaFragment}
+                      id
+                      archived
+                      ${MediaDetail.getFragment('media')}
                     }
                   }
                 }
@@ -265,12 +260,16 @@ const MediaRelatedContainer = Relay.createContainer(withPusher(MediaRelatedCompo
                 siblings(first: 10000) {
                   edges {
                     node {
-                      ${mediaFragment}
+                      id
+                      archived
+                      ${MediaDetail.getFragment('media')}
                     }
                   }
                 }
                 source {
-                  ${mediaFragment}
+                  id
+                  archived
+                  ${MediaDetail.getFragment('media')}
                 }
               }
             }

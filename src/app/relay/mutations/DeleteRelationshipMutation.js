@@ -46,19 +46,19 @@ class DeleteRelationshipMutation extends Relay.Mutation {
         },
       };
       return response;
-    } else if (this.props.media.target_id) {
+    } else if (this.props.target_id) {
       const response = {
         deletedId: this.props.media.id,
         relationships_target: {
-          id: this.props.media.target_id,
+          id: this.props.target_id,
         },
       };
       return response;
-    } else if (this.props.media.source_id) {
+    } else if (this.props.source_id) {
       const response = {
         deletedId: this.props.media.id,
         relationships_source: {
-          id: this.props.media.source_id,
+          id: this.props.source_id,
         },
       };
       return response;

@@ -190,7 +190,7 @@ EditTitleAndDescriptionDialog.propTypes = {
     id: PropTypes.string.isRequired,
     metadata: PropTypes.shape({
       title: PropTypes.string.isRequired,
-      description: PropTypes.string.isRequired,
+      description: PropTypes.string, // or undefined
     }).isRequired,
     media: PropTypes.shape({
       embed_path: PropTypes.string,

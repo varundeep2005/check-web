@@ -368,11 +368,6 @@ const MediaActionsBarContainer = Relay.createContainer(ConnectedMediaActionsBarC
     projectId: null,
     projectIdIsSet: false,
   },
-  prepareVariables: vars => ({
-    ...vars,
-    projectId: getProjectIdFromUrl() || 0,
-    projectIdIsSet: Boolean(getProjectIdFromUrl()),
-  }),
   fragments: {
     media: () => Relay.QL`
       fragment on ProjectMedia {
@@ -381,6 +376,7 @@ const MediaActionsBarContainer = Relay.createContainer(ConnectedMediaActionsBarC
         ${MoveProjectMediaToProjectAction.getFragment('projectMedia')}
         ${RemoveProjectMediaFromProjectAction.getFragment('projectMedia')}
         ${MediaActionsMenuButton.getFragment('projectMedia')}
+        ${UpdateProjectMediaMutation.getFragment('media')}
         dbid
         project_ids
         title
@@ -480,12 +476,23 @@ class MediaActionsBar extends React.PureComponent {
   render() {
     const { projectMediaId } = this.props;
     const ids = `${projectMediaId}`;
-    const route = new MediaRoute({ ids });
+    const route = new MediaRoute({
+      ids,
+      projectId: getProjectIdFromUrl() || 0,
+      projectIdIsSet: Boolean(getProjectIdFromUrl()),
+    });
 
     return (
       <Relay.RootContainer
         Component={MediaActionsBarContainer}
-        renderFetched={data => <MediaActionsBarContainer {...this.props} {...data} />}
+        renderFetched={data => (
+          <MediaActionsBarContainer
+            projectId={getProjectIdFromUrl() || 0}
+            projectIdIsSet={Boolean(getProjectIdFromUrl())}
+            {...this.props}
+            {...data}
+          />
+        )}
         route={route}
       />
     );

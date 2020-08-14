@@ -1,17 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Relay from 'react-relay/classic';
 import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
 import CardHeader from '@material-ui/core/CardHeader';
 import MenuItem from '@material-ui/core/MenuItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogTitle from '@material-ui/core/DialogTitle';
-import TextField from '@material-ui/core/TextField';
 import Menu from '@material-ui/core/Menu';
 import IconButton from '@material-ui/core/IconButton';
 import IconMoreVert from '@material-ui/icons/MoreVert';
@@ -20,18 +13,17 @@ import { withSetFlashMessage } from '../FlashMessage';
 import TimeBefore from '../TimeBefore';
 import MediaTypeDisplayName from './MediaTypeDisplayName';
 import MediaRoute from '../../relay/MediaRoute';
-import UpdateProjectMediaMutation from '../../relay/mutations/UpdateProjectMediaMutation';
 import DeleteRelationshipMutation from '../../relay/mutations/DeleteRelationshipMutation';
 import UpdateRelationshipMutation from '../../relay/mutations/UpdateRelationshipMutation';
-import { truncateLength, getErrorMessage, parseStringUnixTimestamp } from '../../helpers';
+import EditTitleAndDescriptionMenuItem from './EditTitleAndDescriptionMenuItem';
+import { truncateLength, parseStringUnixTimestamp } from '../../helpers';
 import { stringHelper } from '../../customHelpers';
 import { black87 } from '../../styles/js/shared';
 
-class MediaCondensedComponent extends Component {
+class MediaCondensedComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      isEditing: false,
       broken: false,
     };
   }
@@ -44,21 +36,10 @@ class MediaCondensedComponent extends Component {
     return (typeof this.state.title === 'string') ? this.state.title.trim() : this.props.media.title;
   }
 
-  handleEdit() {
-    this.setState({ isEditing: true, anchorEl: null });
-  }
-
   handleCancel() {
     this.setState({
-      isEditing: false,
       title: null,
       description: null,
-    });
-  }
-
-  handleCloseDialogs() {
-    this.setState({
-      isEditing: false,
     });
   }
 
@@ -74,53 +55,6 @@ class MediaCondensedComponent extends Component {
 
   handleChangeDescription(e) {
     this.setState({ description: e.target.value });
-  }
-
-  handleSave(media, event) {
-    if (event) {
-      event.preventDefault();
-    }
-
-    const embed = {};
-
-    const { title, description } = this.state;
-
-    if (typeof title === 'string') {
-      embed.title = title.trim();
-    }
-
-    if (typeof description === 'string') {
-      embed.description = description.trim();
-    }
-
-    if (embed.title === '' && media.media.embed_path) {
-      embed.title = media.media.embed_path.split('/').pop().replace('embed_', '');
-    }
-
-    const onFailure = (transaction) => {
-      const fallbackMessage = (
-        <FormattedMessage
-          id="mediaCondensed.editReportError"
-          defaultMessage="Sorry, an error occurred while updating the item. Please try again and contact {supportEmail} if the condition persists."
-          values={{ supportEmail: stringHelper('SUPPORT_EMAIL') }}
-        />
-      );
-      const message = getErrorMessage(transaction, fallbackMessage);
-      this.props.setFlashMessage(message);
-    };
-
-    if (this.canSubmit()) {
-      Relay.Store.commitUpdate(
-        new UpdateProjectMediaMutation({
-          media,
-          metadata: JSON.stringify(embed),
-          id: media.id,
-        }),
-        { onFailure },
-      );
-    }
-
-    this.handleCancel();
   }
 
   handleBreakRelationship() {
@@ -144,6 +78,8 @@ class MediaCondensedComponent extends Component {
         source,
         target,
         media: this.props.media,
+        target_id: this.props.target_id || null,
+        source_id: this.props.source_id || null,
         current: this.props.currentRelatedMedia,
       }),
       { onFailure },
@@ -212,66 +148,6 @@ class MediaCondensedComponent extends Component {
         }
       });
     }
-
-    const editDialog = (
-      <Dialog
-        open={this.state.isEditing}
-        onClose={this.handleCloseDialogs.bind(this)}
-      >
-        <DialogTitle>
-          <FormattedMessage id="mediaCondensed.editReport" defaultMessage="Edit" />
-        </DialogTitle>
-        <DialogContent>
-          <form onSubmit={this.handleSave.bind(this, media)} name="edit-media-form">
-            <TextField
-              type="text"
-              label={
-                <FormattedMessage
-                  id="mediaCondensed.title"
-                  defaultMessage="Title"
-                />
-              }
-              defaultValue={this.getTitle()}
-              onChange={this.handleChangeTitle.bind(this)}
-              margin="normal"
-              fullWidth
-            />
-            <TextField
-              type="text"
-              label={
-                <FormattedMessage
-                  id="mediaCondensed.description"
-                  defaultMessage="Description"
-                />
-              }
-              defaultValue={this.getDescription()}
-              onChange={this.handleChangeDescription.bind(this)}
-              margin="normal"
-              fullWidth
-              multiline
-            />
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={this.handleCancel.bind(this)}>
-            <FormattedMessage
-              id="mediaCondensed.cancelButton"
-              defaultMessage="Cancel"
-            />
-          </Button>
-          <Button
-            onClick={this.handleSave.bind(this, media)}
-            disabled={!this.canSubmit()}
-            color="primary"
-          >
-            <FormattedMessage
-              id="mediaCondensed.doneButton"
-              defaultMessage="Done"
-            />
-          </Button>
-        </DialogActions>
-      </Dialog>
-    );
 
     const { mediaUrl } = this.props;
 
@@ -345,34 +221,23 @@ class MediaCondensedComponent extends Component {
             >
               {(media.relationships && media.relationships.sources_count > 0 && can(media.relationship.permissions, 'update Relationship')) ? (
                 <MenuItem key="promote" className="media-condensed__promote-relationshp" onClick={this.handlePromoteRelationship.bind(this)}>
-                  <ListItemText
-                    primary={
-                      <FormattedMessage id="mediaCondensed.promote" defaultMessage="Promote to primary item" />
-                    }
-                  />
+                  <FormattedMessage id="mediaCondensed.promote" defaultMessage="Promote to primary item" />
                 </MenuItem>
               ) : null}
               {(media.relationships && media.relationships.sources_count > 0 && can(media.relationship.permissions, 'destroy Relationship')) ? (
                 <MenuItem key="break" className="media-condensed__break-relationship" onClick={this.handleBreakRelationship.bind(this)} >
-                  <ListItemText
-                    primary={
-                      <FormattedMessage id="mediaCondensed.break" defaultMessage="Break relation to primary item" />
-                    }
-                  />
+                  <FormattedMessage id="mediaCondensed.break" defaultMessage="Break relation to primary item" />
                 </MenuItem>
               ) : null}
               {can(media.permissions, 'update ProjectMedia') ? (
-                <MenuItem key="edit" className="media-condensed__edit" onClick={this.handleEdit.bind(this)}>
-                  <ListItemText
-                    primary={
-                      <FormattedMessage id="mediaCondensed.edit" defaultMessage="Edit title and description" />
-                    }
-                  />
-                </MenuItem>
+                <EditTitleAndDescriptionMenuItem
+                  projectMedia={media}
+                  className="media-condensed__edit"
+                  onClick={this.handleCloseMenu}
+                />
               ) : null}
             </Menu>
           </div> : null }
-        { this.state.isEditing ? editDialog : null }
       </span>
     );
   }
@@ -391,6 +256,7 @@ const MediaCondensedContainer = Relay.createContainer(ConnectedMediaCondensedCom
         id
         dbid
         title
+        ${EditTitleAndDescriptionMenuItem.getFragment('projectMedia')}
         description
         archived
         type
@@ -420,6 +286,9 @@ const MediaCondensedContainer = Relay.createContainer(ConnectedMediaCondensedCom
           source { id, dbid }
           target { id, dbid }
           permissions
+        }
+        relationships {
+          sources_count
         }
       }
     `,

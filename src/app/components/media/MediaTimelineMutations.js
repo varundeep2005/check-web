@@ -564,6 +564,7 @@ export const createCommentThread =
               comments: annotations(first: 10000, annotation_type: "comment") {
                 edges {
                   node {
+                    __typename
                     ... on Comment {
                       id
                       created_at

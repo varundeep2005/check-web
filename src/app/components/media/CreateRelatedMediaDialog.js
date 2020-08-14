@@ -21,8 +21,6 @@ class CreateRelatedMediaDialog extends React.Component {
   constructor(props) {
     super(props);
 
-    this.formRef = React.createRef(null);
-
     this.state = {
       mode: 'new',
       selectedId: null,

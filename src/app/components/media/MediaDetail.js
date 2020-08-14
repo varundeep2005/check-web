@@ -1,5 +1,6 @@
 import React from 'react';
 import Card from '@material-ui/core/Card';
+import { createFragmentContainer, graphql } from 'react-relay/compat';
 import { withPusher, pusherShape } from '../../pusher';
 import MediaExpanded from './MediaExpanded';
 import { MediaCondensedRootContainer } from './MediaCondensed';
@@ -46,6 +47,7 @@ class MediaDetail extends React.Component {
   subscribe() {
     const { pusher, media } = this.props;
     pusher.subscribe(media.pusher_channel).bind('media_updated', 'MediaDetail', (data, run) => {
+      // TODO adamhooper subscribe in <MediaCondensed> instead, when a flag is set
       if (this.props.parentComponentName === 'MediaRelated') {
         if (run) {
           this.props.parentComponent.props.relay.forceFetch();
@@ -90,6 +92,8 @@ class MediaDetail extends React.Component {
         {this.props.condensed ? (
           <MediaCondensedRootContainer
             media={this.props.media}
+            source_id={this.props.source_id || null}
+            target_id={this.props.target_id || null}
             mediaUrl={mediaUrl}
             currentRelatedMedia={this.props.currentRelatedMedia}
           />
@@ -124,4 +128,16 @@ MediaDetail.propTypes = {
   pusher: pusherShape.isRequired,
 };
 
-export default withPusher(MediaDetail);
+export default createFragmentContainer(withPusher(MediaDetail), {
+  media: graphql`
+    fragment MediaDetail_media on ProjectMedia {
+      id
+      dbid
+      project_ids
+      pusher_channel
+      team {
+        slug
+      }
+    }
+  `,
+});

@@ -7,12 +7,15 @@ import MediasLoading from './MediasLoading';
 // TODO put MediaComponent in this file
 // eslint-disable-next-line no-unused-vars
 import MediaTitle from './MediaTitle';
+// eslint-disable-next-line no-unused-vars
+import MediaDetail from './MediaDetail';
 
 const MediaContainer = createFragmentContainer(MediaComponent, {
   media: graphql`
     fragment Media_media on ProjectMedia {
       id
       ...MediaTitle_projectMedia
+      ...MediaDetail_media
       dbid
       title
       metadata
@@ -32,6 +35,7 @@ const MediaContainer = createFragmentContainer(MediaComponent, {
       comments: annotations(first: 10000, annotation_type: "comment") {
         edges {
           node {
+            __typename
             ... on Comment {
               id
               dbid
@@ -45,6 +49,7 @@ const MediaContainer = createFragmentContainer(MediaComponent, {
               comments: annotations(first: 10000, annotation_type: "comment") {
                 edges {
                   node {
+                    __typename
                     ... on Comment {
                       id
                       created_at
@@ -65,6 +70,7 @@ const MediaContainer = createFragmentContainer(MediaComponent, {
       clips: annotations(first: 10000, annotation_type: "clip") {
         edges {
           node {
+            __typename
             ... on Dynamic {
               id
               data
@@ -93,6 +99,7 @@ const MediaContainer = createFragmentContainer(MediaComponent, {
       geolocations: annotations(first: 10000, annotation_type: "geolocation") {
         edges {
           node {
+            __typename
             ... on Dynamic {
               id
               parsed_fragment

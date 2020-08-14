@@ -87,7 +87,7 @@ class UpdateProjectMediaMutation extends Relay.Mutation {
       return {
         project_media: {
           id: this.props.media.id,
-          title: embed.title,
+          title: embed.title || '',
           description: embed.description,
           metadata: JSON.stringify(embed),
           overridden: JSON.stringify(overridden),
