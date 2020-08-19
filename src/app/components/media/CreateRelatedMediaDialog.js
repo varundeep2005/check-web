@@ -56,7 +56,6 @@ class CreateRelatedMediaDialog extends React.Component {
             indicatorColor="primary"
             textColor="primary"
             onChange={this.handleChange}
-            fullWidth
           >
             <Tab
               value="new"
