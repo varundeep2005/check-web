@@ -175,6 +175,15 @@ class MediaComponent extends Component {
     this.setPlayerRect();
   }
 
+  refetch = () => {
+    this.props.relay.refetch(
+      { mediaID: this.props.media.id },
+      null,
+      maybeError => maybeError ? console.error(maybeError) : null, // eslint-disable-line no-console
+      { force: true },
+    );
+  }
+
   subscribe() {
     const { pusher, clientSessionId, media } = this.props;
     pusher.subscribe(media.pusher_channel).bind('relationship_change', 'MediaComponent', (data, run) => {
@@ -185,12 +194,12 @@ class MediaComponent extends Component {
         relationship.target_id === media.dbid)
       ) {
         if (run) {
-          this.props.relay.forceFetch();
+          this.refetch();
           return true;
         }
         return {
           id: `media-${media.dbid}`,
-          callback: this.props.relay.forceFetch,
+          callback: this.refetch,
         };
       }
       return false;
@@ -200,7 +209,7 @@ class MediaComponent extends Component {
       const annotation = JSON.parse(data.message);
       if (annotation.annotated_id === media.dbid && clientSessionId !== data.actor_session_id) {
         if (run) {
-          this.props.relay.forceFetch();
+          this.refetch();
           return true;
         }
         return {
@@ -401,6 +410,9 @@ MediaComponent.propTypes = {
   // eslint-disable-next-line react/no-typos
   pusher: pusherShape.isRequired,
   clientSessionId: PropTypes.string.isRequired,
+  relay: PropTypes.shape({
+    refetch: PropTypes.func.isRequired,
+  }).isRequired,
 };
 
 MediaComponent.contextTypes = {

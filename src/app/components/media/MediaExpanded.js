@@ -77,7 +77,7 @@ class MediaExpandedComponent extends Component {
 
   subscribe() {
     const { pusher, clientSessionId, media } = this.props;
-    pusher.subscribe(media.pusher_channel).bind('media_updated', 'MediaComponent', (data, run) => {
+    pusher.subscribe(media.pusher_channel).bind('media_updated', 'MediaExpanded', (data, run) => {
       const annotation = JSON.parse(data.message);
       if (annotation.annotated_id === media.dbid && clientSessionId !== data.actor_session_id) {
         if (run) {
