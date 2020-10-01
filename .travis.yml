@@ -88,6 +88,7 @@ before_install:
 # config files
 - if [ -n "${TOKEN}" ]; then d=configurator/$APP/travis/check-web/; for f in $(find $d -type f); do cp "$f" "${f/$d/}"; done; fi
 - if [ -z "${TOKEN}" ]; then find . -name '*.example' -not -path '*apollo*' | while read f; do cp "$f" "${f%%.example}"; done; fi
+- if [ -z "${TOKEN}" ]; then sudo ln -s /home/travis/build/meedan/check-web/check-api /api; fi
 install:
 - npm install
 before_script:
