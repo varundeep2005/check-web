@@ -79,7 +79,7 @@ before_install:
 - bundle install --path=/tmp/bundler
 - bundle exec rake db:migrate
 - bundle exec rails runner 'a = ApiKey.create!; a.access_token = "test"; a.save!'
-- bundle exec rails s -p 3005 >/dev/null &
+- bundle exec rails s -p 3200 >/dev/null &
 - cd -
 # chromedriver
 - chromedriver --port=9515 >/dev/null 2>/dev/null &
