@@ -193,6 +193,8 @@ module AppSpecHelpers
   end
 
   def save_screenshot(title)
+    return if !@config['imgur_client_id']
+
     path = '/tmp/' + (0...8).map{ (65 + rand(26)).chr }.join + '.png'
     @driver.save_screenshot(path)
 
